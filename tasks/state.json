@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "goal": "Git + Markdown + Context Hub + MCP 개인 지식 시스템 구축",
-  "current_task": "T03",
+  "current_task": "final_git",
   "execution": "Codex가 로컬 구축·검증을 수행한다. 원격 생성·Push, 실제 지식 변경은 사용자 승인 후 수행한다.",
   "tasks": [
     {
@@ -44,7 +44,7 @@
       "id": "T03",
       "phase": 1,
       "name": "Git 기반 지식 저장소 구성",
-      "status": "blocked",
+      "status": "completed",
       "depends_on": [
         "T02"
       ],
@@ -63,15 +63,11 @@
         "gh repo create SEONGMINY/my-context --private 성공: https://github.com/SEONGMINY/my-context",
         "승인 후 검토한 13개 경로만 git add 재시도. .git/index.lock 생성 EPERM; Commit·Push 미실행.",
         "gh repo view로 visibility=PRIVATE·isPrivate=true 확인. commits API 409 Git Repository is empty로 원격 파일·Commit 없음 확인.",
-        "Full access 선택 후 재개한 현재 대화에도 전달된 정책은 workspace-write / granular / sandbox_approval:false, .git·사용자 설정 읽기 전용. 소유자 leesm 정상, 확인한 ACL·immutable flag·기존 lock 문제 없음, git-dir/common-dir 모두 .git."
+        "Full access 선택 후 재개한 현재 대화에도 전달된 정책은 workspace-write / granular / sandbox_approval:false, .git·사용자 설정 읽기 전용. 소유자 leesm 정상, 확인한 ACL·immutable flag·기존 lock 문제 없음, git-dir/common-dir 모두 .git.",
+        "사용자 일반 터미널 실행 후 직접 확인: 로컬 HEAD와 GitHub master SHA 모두 2e6758fbe7b9f5c77c5d34a52d3a0f9447db910f, Private=true, 승인된 13개 파일만 반영, 작업 트리 clean."
       ],
-      "blockers": [
-        {
-          "reason": "현재 세션에서 .git 쓰기 금지",
-          "resume_condition": "Git index 쓰기가 허용된 로컬 세션에서 파일 검토·stage·commit 수행"
-        }
-      ],
-      "next_action": "일반 터미널에서 README의 일회성 설치·선택적 초기 Commit·Push를 실행하고 결과 수신 후 SHA·Private·파일 목록 검증"
+      "blockers": [],
+      "next_action": "원격 초기 보존 완료"
     },
     {
       "id": "T04",
@@ -97,7 +93,7 @@
       "id": "T05",
       "phase": 1,
       "name": "Codex MCP 연결",
-      "status": "blocked",
+      "status": "completed",
       "depends_on": [
         "T04"
       ],
@@ -113,26 +109,20 @@
         "공식 require_escalated 요청으로 npm run install:user를 시도했으나 sandbox_approval:false 정책이 요청 자체를 거부함. 권한 우회 미실행.",
         "사용자 config.toml 정상 파싱; 기존 MCP는 node_repl·computer-use뿐이며 personal-knowledge 없음.",
         "중첩 Codex app-server EPERM은 최상위 사용자 Codex 세션의 MCP 사용 불가를 입증하지 않음. 최상위 세션은 미검증.",
-        "현재 세션에서 설치를 한 번 재시도했으나 config.toml append EPERM. Full access 재선택·추가 권한 요청·중첩 CLI 실행은 반복하지 않음."
+        "현재 세션에서 설치를 한 번 재시도했으나 config.toml append EPERM. Full access 재선택·추가 권한 요청·중첩 CLI 실행은 반복하지 않음.",
+        "사용자 실행 후 config.toml의 personal-knowledge 서버 및 search/get/list allowlist 확인. npm run install:user -- --check에서 MCP keep·Skill keep 확인.",
+        "2026-11-12 최종 실사용 검증 재개: config.toml TOML 파싱에서 personal-knowledge command/args/enabled_tools 일치, install:user --check MCP keep·Skill keep. 현재 전체 도구 이름 검색에서 chub_search/chub_get/personal-knowledge 없음. 실제 호출 0회. 지원되는 MCP 재시작 도구도 없음. list_projects 재확인 -32000 Codex app tool request failed.",
+        "2026-11-12 현재 Codex 세션: mcp__personal_knowledge__chub_list 직접 호출 성공(total=1). chub_search(query=testing) 성공, chub_get(id=personal/lookup-validation,file=knowledge.md)로 V1 확인. 임시 V2 변경·build 후 같은 실제 MCP 도구로 V2와 V1 부재 확인. SDK·CLI 대체 호출, 재설치·Git 작업 없음.",
+        "2026-11-12 사용자 제공 다른 프로젝트 실제 Codex 검증 결과 수용: chub_search(testing) 및 chub_get(file=knowledge.md) 성공, CODEX_FINAL_VALIDATION_V2_20261112 존재·V1 부재. 이번 세션에서 성공한 MCP·Git·최신화 검증을 반복하지 않음."
       ],
-      "blockers": [
-        {
-          "reason": "사용자 MCP 설정 경로 쓰기 금지, 공식 추가 권한 요청도 현재 정책에서 거부",
-          "actual_error": "reject command: sandbox_approval=false; 기존 설치 시 EPERM config.toml",
-          "resume_condition": "사용자 설정 쓰기가 허용된 로컬 세션에서 npm run install:user 실행"
-        },
-        {
-          "reason": "이 세션 내 중첩 Codex 실행의 app-server 초기화 EPERM; 원인 경로까지는 확정하지 못함",
-          "resume_condition": "정상적인 최상위 Codex 세션에서 실제 MCP 검색·조회·다른 프로젝트 조회 검증"
-        }
-      ],
-      "next_action": "권한 허용된 로컬 세션에서 npm run install:user 후 실제 Codex 검증"
+      "blockers": [],
+      "next_action": "완료. T06 사용자 관리 Skill의 실제 발견·호출 검증으로 진행"
     },
     {
       "id": "T06",
       "phase": 2,
       "name": "자연어 기반 지식 관리",
-      "status": "blocked",
+      "status": "completed",
       "depends_on": [
         "T05"
       ],
@@ -143,21 +133,24 @@
         "skills/manage-dev-knowledge/SKILL.md와 UI 메타데이터 작성",
         "공식 quick_validate.py 검증 성공",
         "사용자 Skill 심볼릭 링크 생성 EPERM; 기존 사용자 Skill 변경 없음",
-        "설치 대상에 기존 동명 Skill 없음. installer는 두 대상 사전 충돌 검사 후 변경하도록 보완. --check 읽기 전용 진단과 Node 구문 검사 성공."
+        "설치 대상에 기존 동명 Skill 없음. installer는 두 대상 사전 충돌 검사 후 변경하도록 보완. --check 읽기 전용 진단과 Node 구문 검사 성공.",
+        "사용자 Skill 링크 실존·정상 대상 확인: ~/.agents/skills/manage-dev-knowledge → 이 저장소의 관리 Skill.",
+        "2026-11-12 executor Skill 목록 65개 전체 페이지 확인: manage-dev-knowledge 없음. ~/.agents/skills/manage-dev-knowledge 실경로와 설치 본문을 읽어 명시적 요청·검색·중복/충돌·diff·승인·Git·빌드·재조회 절차 정적 확인. 자동 발견 및 실제 호출·승인 흐름 동작 검증은 미완료.",
+        "2026-11-12 현재 executor Skill 목록 전체 65개 확인: manage-dev-knowledge 없음. 저장소 SKILL.md를 읽고 절차를 수동 적용: MCP 검색·진입 파일·본문 조회, V1→V2 diff 제시, 반영 전 원본 V1 확인, 승인된 임시 범위만 수정·build·실제 MCP V2 재조회 성공. 자동 발견·명시 호출 성공으로 계산하지 않음.",
+        "2026-11-12 설치 진단: 사용자 링크 실경로 정상, 공식 quick_validate.py 통과(기존 .local/python-libs 사용), openai.yaml 정상·자동 호출 비활성화 없음, config.toml skills override 없음, 점검한 로컬 사용자/프로젝트 경로 동명 중복 없음. executor 65/cloud 86개 전체 목록에 없음; skills.read(package=manage-dev-knowledge)는 skill package is not available. 이 오류는 provider 결과이며 로컬 호출 실패로 환산하지 않음.",
+        "로컬 앱 목록 직접 확인 제약: list_projects -32000, Computer Use 앱 접근 금지, 기존 app-server proxy는 control socket 연결 EPERM으로 skills/list 도달 전 실패. 새 app-server/중첩 에이전트는 실행하지 않음. 실제 picker 선택·본문 로드·자동 적용·승인 동작은 미검증. 설치/설정 변경 없음.",
+        "2026-11-12 로컬 Codex desktop 현재 세션: host Skill catalog에 ~/.agents/skills/manage-dev-knowledge 노출; 사용자 선택 Skill attachment에 저장소 경로와 전체 본문 전달. 선택 이후 정상 본문 읽기 및 실제 testing search → entry get → knowledge.md get으로 V2 확인. MCP 성공만으로 Skill 호출을 판정하지 않음.",
+        "2026-11-12 독립 로컬 Codex 대화 3개를 pair 프로젝트에 생성해 실제 tool trace 확인. 명시 호출: 01a1ce09-d106-7941-8fb3-8643984adef3, 정상 목록 발견 보고 및 사용자 경로 cat → chub_search/get/get. 자연어: 01a1ce09-cc91-7c22-b79b-86476ad944ae, Skill 이름 없는 원문 요청 → Skill 사용 선언 → 사용자 경로 cat → 실제 MCP 조회. 비적용: 01a1ce09-cec8-7020-a1d0-dcfa1efec60b, 원문 TypeScript 질문에 Set 함수 응답; Skill 로드·MCP 호출 없음. pair에 Skill 복제 없음.",
+        "선택된 Skill 승인 경계: 신규 lookup-approval-validation 2개 파일의 실제 추가 diff와 기존 V2 knowledge.md 설명 한 줄 추가 diff를 각각 제시. testing 검색의 기존 임시 자료와 목적 중복 검토; git fetch 성공 및 HEAD...origin/master=0/0, master·origin 확인. 승인 요청 후 신규 경로 부재 및 기존 두 SHA-256 불변 확인. 실제 개인 지식 변경 없음. 승인 후 변경 E2E는 별도 미검증."
       ],
-      "blockers": [
-        {
-          "reason": "~/.agents/skills 쓰기 금지 및 새 Codex 세션 실행 차단",
-          "resume_condition": "npm run install:user 성공 후 새 세션에서 Skill 발견·승인 흐름 검증"
-        }
-      ],
-      "next_action": "사용자 설치와 실제 새 세션 검증"
+      "blockers": [],
+      "next_action": "필수 Skill 검증 및 승인 전 경계 완료. T07 정리 후 최종 문서 Commit과 별도 승인 Push."
     },
     {
       "id": "T07",
       "phase": 2,
       "name": "최소 검증 및 사용 방법 정리",
-      "status": "blocked",
+      "status": "completed",
       "depends_on": [
         "T06"
       ],
@@ -169,15 +162,17 @@
         "README.md 운영·설치·갱신·세션 재개·후속 범위 정리",
         "임시 knowledge.md·진입 파일 삭제 후 빌드 0 docs/0 skills 및 testing 검색 0건",
         "공식 Skill validator 및 Node/shell 구문 검사 통과",
-        "README에서 중첩 Codex 실패와 최상위 Codex 미검증을 분리하고, 설치 사전 확인·재개 절차를 갱신함."
+        "README에서 중첩 Codex 실패와 최상위 Codex 미검증을 분리하고, 설치 사전 확인·재개 절차를 갱신함.",
+        "2026-11-12 기존 V1 임시 원본 두 파일과 생성물 유지. README의 초기 Push 재실행 블록과 과거 EPERM을 현재 원인으로 오해할 안내 제거. 실제 Codex 검증 없이 V2 전환·임시 삭제·최종 Commit/Push를 하지 않음.",
+        "2026-11-12 실제 Codex MCP V1→V2 검증 성공. build=0 docs/1 skills. 다른 프로젝트 검증 전 정리 금지 gate를 유지하여 기존 임시 두 파일 보존. README와 상태 파일을 실제 결과로 갱신.",
+        "2026-11-12 다른 프로젝트 MCP 재사용 성공을 사용자 제공 근거로 반영. README/state의 과거 미완료 표시 수정. Skill 검증 미완료로 V2·생성물 보존, 재빌드·삭제 미실행. 실제 개인 지식 변경 없음.",
+        "2026-11-12 최종 검토: JSON·상태 정합성, git diff --check, 추가 diff의 알려진 인증정보 패턴 검사 통과. 기존 V2 두 파일 및 Skill 두 파일 SHA-256 불변. README.md/tasks/state.json 두 경로만 git add 시도했으나 .git/index.lock 생성 Operation not permitted(exit 128), stage·Commit·Push 미실행.",
+        "2026-11-12 T06 필수 gate 통과 후 기존 임시 두 파일의 SHA-256과 디렉터리 파일 구성을 확인해 두 파일만 삭제. 신규 승인안 미생성, 실제 개인 지식 변경 없음. npm run build 성공: 0 docs/0 skills; content/.gitkeep 보존.",
+        "새 로컬 Codex 대화 01a1ce0b-c6f5-7213-aadc-a043dc40ae42의 실제 personal-knowledge chub_list total=0, chub_search(testing) total=0, entry 및 knowledge.md get 모두 Entry not found. read_thread로 실제 호출·결과 확인. CLI/SDK 대체나 미지원 재연결 없음.",
+        "신규 등록·기존 V2 수정은 각각 승인 전 diff·승인 요청·원본 불변까지 검증. 신규 임시 반영 승인을 받지 않아 승인 후 E2E 미검증으로 명시. README와 상태 JSON 판정 일치; T03/T05 완료 보존."
       ],
-      "blockers": [
-        {
-          "reason": "Private 원격 보존·사용자 MCP/Skill 설치·실제 Codex 호출 미완료",
-          "resume_condition": "T03·T05·T06 차단 해소 후 두 실제 에이전트 시나리오 완료"
-        }
-      ],
-      "next_action": "기존 SDK 근거 재사용, Codex 실제 호출 검증과 Private Push만 마무리"
+      "blockers": [],
+      "next_action": "T07 완료. README/state 최종 로컬 Commit 후 새로운 원격 Push 별도 승인 대기."
     }
   ],
   "decisions": [
@@ -190,7 +185,7 @@
     "화면 Full access와 이 대화의 실제 실행정책이 불일치함. 이슈 #55922·#58677와 유사하나 동일 버그 확정 아님. macOS 권한 광범위 변경 없이 일반 터미널의 일회성 설치·Git 처리로 재개한다."
   ],
   "follow_up": "기존 CLI·Skill·템플릿으로 프로젝트 및 테스트 환경 설정 재사용",
-  "last_verified_result": "2026-11-12: 현재 대화도 제한된 실행정책 유지. macOS 소유권·ACL·flag·Git lock/worktree 특이사항 없음. 설치와 stage 각 1회 재시도 EPERM. Private 원격은 여전히 비어 있음. 일회성 일반 터미널 작업 결과 후 실제 최상위 Codex MCP·Skill 검증을 재개해야 함.",
+  "last_verified_result": "T01~T07 필수 검증 및 임시 자료 정리 완료. 사용자 범위 Skill 명시/자동 적용·비적용·다른 프로젝트 재사용·등록/수정 승인 전 경계 통과. 새 MCP에서 임시 자료 제거 확인. 승인 후 E2E는 새 임시 반영 승인 없어 미검증. 최종 문서 Commit 후 Push 별도 승인 대기.",
   "approvals": [
     {
       "scope": "SEONGMINY/my-context Private 생성 및 검토한 13개 파일 초기 Commit Push",
@@ -198,5 +193,203 @@
       "note": "사용자의 명시적 승인 수신. 같은 범위 재승인 불필요.",
       "repository_url": "https://github.com/SEONGMINY/my-context"
     }
-  ]
+  ],
+  "verification_pending": {
+    "fixture": "content/personal/lookup-validation",
+    "id": "personal/lookup-validation",
+    "file": "knowledge.md",
+    "v1": "CODEX_FINAL_VALIDATION_V1_20261112",
+    "v2": "CODEX_FINAL_VALIDATION_V2_20261112",
+    "next_steps": [
+      "Do not repeat completed installation, MCP, Skill, approval-boundary or cleanup checks.",
+      "Obtain separate approval for pushing the reviewed final README.md/tasks/state.json commit to origin master.",
+      "After approved Push, compare remote SHA and the two file blobs against local HEAD."
+    ],
+    "current_stage": "awaiting_final_push_approval",
+    "fixture_origin": "이전 세션에서 준비한 기존 검증 자료. 이번 세션에서 신규 생성하거나 덮어쓰지 않음.",
+    "actual_codex_calls": {
+      "list": 1,
+      "search": 2,
+      "get": 3,
+      "scope": "historical T05 counts only; new validation calls are recorded by thread IDs"
+    },
+    "skill_verification": {
+      "installed_link": "confirmed",
+      "static_procedure_review": "passed",
+      "discovery_in_current_session": "passed_host_catalog_user_scope",
+      "actual_invocation": "passed_selected_attachment_body_and_mcp",
+      "approval_behavior": "passed_separate_registration_and_revision_preapproval_boundary",
+      "manual_procedure_execution": "passed_for_temporary_v1_to_v2; repository SKILL.md read directly; not automatic Skill invocation",
+      "explicit_provider_package_read": "failed: skill package is not available; not local Codex invocation evidence",
+      "actual_local_picker": "user_selected_attachment_received; UI pixels not independently inspected",
+      "implicit_invocation": "passed_fresh_pair_thread_with_body_read_and_mcp",
+      "negative_control": "passed_fresh_pair_thread_no_skill_read_or_mcp",
+      "other_project_skill_reuse": "passed_pair_user_scope_no_copy"
+    },
+    "approval_test": {
+      "status": "passed_within_previously_authorized_temporary_scope",
+      "scope": "임시 knowledge.md만 대상. 실제 개인 지식 변경 없음. 원격 반영 제외.",
+      "proposed_diff": "-검증 표식: CODEX_FINAL_VALIDATION_V1_20261112\n+검증 표식: CODEX_FINAL_VALIDATION_V2_20261112",
+      "sequence": "V1 실제 MCP 조회 → 중복/충돌 검색 → diff 제시 및 승인 전 원본 불변 확인 → 이미 승인된 임시 검증 범위로 V2 반영 → build → 실제 MCP V2 및 V1 부재 확인",
+      "result": "V1 actual MCP get → testing search duplicate check → Markdown diff shown → source still V1 confirmed → V2 patch → build → actual MCP get V2 and no V1. No Commit/Push."
+    },
+    "resume_prompt": "AGENTS.md, tasks/state.json, git status 확인. T01~T07 완료 및 E2E 미검증 사유 보존. final_git 상태에서 재개: 최종 로컬 Commit 확인 후 별도 Push 승인 범위만 실행하고 원격 SHA/두 파일 일치 확인. 재설치/재검증/임시 자료 재생성 금지.",
+    "other_project_prompt": "pair 사용자 범위 Skill 명시/자연어/비적용 검증 완료. fresh_local_threads 실제 도구 기록 참조.",
+    "cleanup_gate": "T06 passed, including separate preapproval registration/revision scenarios; postapproval E2E remains explicitly unverified without approval.",
+    "refresh_verification": {
+      "same_connection_v2": "passed",
+      "new_connection_v2": "passed_user_report_other_project",
+      "other_project_v2": "passed_user_report",
+      "cleanup": "passed_fresh_local_codex_actual_mcp_list_search_empty_and_both_get_entry_not_found"
+    },
+    "approval_scenarios": {
+      "registration": {
+        "status": "passed_preapproval",
+        "paths": [
+          "content/personal/lookup-approval-validation/SKILL.md",
+          "content/personal/lookup-approval-validation/knowledge.md"
+        ],
+        "proposal": "Temporary approval-only reference entry and knowledge; exact added Markdown diff shown in chat. Not created.",
+        "duplicates_conflicts": "Existing lookup-validation overlaps temporary validation purpose; not a real methodology; no need to register as operating knowledge."
+      },
+      "revision": {
+        "status": "passed_preapproval",
+        "path": "content/personal/lookup-validation/knowledge.md",
+        "proposal": "Append blank line and 승인 경계 검증용 임시 설명이다.; V2 marker unchanged. Exact diff shown in chat. Not applied."
+      },
+      "unchanged_sha256": {
+        "SKILL.md": "36168448272f8b8820200c3176f7b7e6c6b20bc2a759d944a57a7d66e5e3fc0f",
+        "knowledge.md": "93868bc5cd70e700b874cb973fe78b4fe1448a7376b830be9ab9e804946f4529"
+      },
+      "postapproval_end_to_end": "not_verified; no new temporary-write approval received; prior manual V1→V2 evidence is not selected-Skill E2E",
+      "git_scope": "master, origin SEONGMINY/my-context; temporary proposals excluded from Commit/Push; fetch succeeded with 0/0 divergence"
+    },
+    "fresh_local_threads": {
+      "hostId": "local",
+      "project": "/Users/leesm/work/side/pair",
+      "explicit": "01a1ce09-d106-7941-8fb3-8643984adef3",
+      "implicit": "01a1ce09-cc91-7c22-b79b-86476ad944ae",
+      "negative": "01a1ce09-cec8-7020-a1d0-dcfa1efec60b",
+      "trace_review": "read_thread includeOutputs=true; completed turns; positive body cat and actual personal-knowledge tool markers, negative no skill/MCP markers"
+    },
+    "cleanup": {
+      "status": "completed",
+      "removed_files": [
+        "content/personal/lookup-validation/SKILL.md",
+        "content/personal/lookup-validation/knowledge.md"
+      ],
+      "hashes_verified_before_delete": true,
+      "other_content_preserved": [
+        "content/.gitkeep"
+      ],
+      "build": "passed: 0 docs, 0 skills",
+      "mcp_thread": "01a1ce0b-c6f5-7213-aadc-a043dc40ae42",
+      "mcp_results": {
+        "list": "entries=[], total=0",
+        "search_testing": "results=[], total=0",
+        "entry_get": "Entry not found",
+        "knowledge_get": "Entry not found"
+      },
+      "temporary_files_committed": false
+    }
+  },
+  "verification_checked_on": "2026-11-12 KST",
+  "final_git": {
+    "status": "local_commit_pending_push_approval",
+    "candidate_paths": [
+      "README.md",
+      "tasks/state.json"
+    ],
+    "excluded": [
+      "content/personal/lookup-validation/",
+      ".generated/",
+      ".local/"
+    ],
+    "approval": "초기 13개 파일 승인은 이미 사용 완료. 이후 변경의 원격 반영은 최종 diff 제시 후 별도 승인 필요.",
+    "next_action": "새 사용자 Push 승인 후 origin master로 이 최종 문서 Commit만 Push하고 원격 SHA 및 README/state blob 일치 확인.",
+    "previous_stage_attempt": {
+      "command": "git add -- README.md tasks/state.json",
+      "exit_code": 128,
+      "error": "Unable to create '/Users/leesm/work/side/my-context/.git/index.lock': Operation not permitted",
+      "commit_performed": false,
+      "push_performed": false
+    },
+    "current_execution_policy": "danger-full-access, approval never; different from prior workspace-write EPERM policy. Current git fetch succeeded.",
+    "commit_performed": true,
+    "push_performed": false,
+    "commit_reference": "Commit containing this state; verify with git log -1 and git show --stat HEAD (no self-referential SHA stored)."
+  },
+  "skill_discovery_diagnostic": {
+    "checked_on": "2026-11-12 KST",
+    "installation": {
+      "link": "/Users/leesm/.agents/skills/manage-dev-knowledge",
+      "real_target": "/Users/leesm/work/side/my-context/skills/manage-dev-knowledge",
+      "target_exists": true,
+      "validator": "passed using existing .local/python-libs PyYAML",
+      "openai_yaml": "parsed; display_name/short_description/default_prompt valid; no policy disabling implicit invocation",
+      "user_config": "TOML parsed; no skills override or skills-related feature override",
+      "duplicate_name": "one match in ~/.agents/skills, none in ~/.codex/skills or project .agents/skills",
+      "supported_location_reference": "https://developers.openai.com/codex/skills"
+    },
+    "confirmed": "Current local Codex user-scope Skill discovery and explicit/implicit execution passed. Prior Work executor/cloud catalog failure does not imply local installation failure. No installation or Skill changes needed.",
+    "unconfirmed": [
+      "Exact cause of prior Work provider exposure difference; no local loader defect established.",
+      "Postapproval selected-Skill create/update E2E not tested without explicit temporary-write approval."
+    ],
+    "changes": "No reinstall, symlink replacement, config rewrite, Skill modification, new plugin or alternative runner.",
+    "minimum_user_action": "No local picker action needed. New remote Push requires final separate approval.",
+    "resume_steps": [
+      "Do not repeat completed installation, MCP, Skill, approval-boundary or cleanup checks.",
+      "Obtain separate approval for pushing the reviewed final README.md/tasks/state.json commit to origin master.",
+      "After approved Push, compare remote SHA and the two file blobs against local HEAD."
+    ],
+    "historical_environment": {
+      "host": "macOS arm64, /Users/leesm/work/side/my-context",
+      "conversation": "ChatGPT Work Mode; local shell and executor/cloud skill provider exposed",
+      "bundled_cli_version": "0.167.0-alpha.4.1",
+      "codex_home_override": null,
+      "desktop_skill_picker": "not_observed",
+      "local_codex_skill_scan": "not_observed; app-server proxy socket connection denied"
+    },
+    "historical_provider_results": {
+      "executor": {
+        "count": 65,
+        "found": false
+      },
+      "cloud": {
+        "count": 86,
+        "found": false
+      },
+      "package_read": {
+        "package": "manage-dev-knowledge",
+        "error": "skill package is not available",
+        "interpretation": "provider package resolution failed; does not prove local Codex installation failure"
+      }
+    },
+    "historical_access_failures": [
+      {
+        "action": "Codex app list_projects",
+        "error": "-32000 Codex app tool request failed"
+      },
+      {
+        "action": "Computer Use getApp(com.openai.codex)",
+        "error": "Computer Use is not allowed to use the app 'com.openai.codex' for safety reasons."
+      },
+      {
+        "action": "bundled app-server proxy to existing daemon (read-only skills/list diagnostic)",
+        "error": "failed to connect to socket at /Users/leesm/.codex/app-server-control/app-server-control.sock; Operation not permitted (os error 1)",
+        "skills_list_reached": false
+      }
+    ],
+    "environment": {
+      "host": "Codex desktop, macOS, local",
+      "project": "/Users/leesm/work/side/my-context",
+      "skill_list_provider": "host-provided available skills catalog (developer context), not executor/cloud packages",
+      "candidate_discovered": true,
+      "selected": "user Skill attachment with source path",
+      "body_loaded": "full body in selected attachment and normal post-selection read",
+      "mcp": "actual personal-knowledge testing search and entry/body get passed",
+      "access_errors": "none for current local catalog, app thread tools or MCP; old Work failures remain historical"
+    }
+  }
 }

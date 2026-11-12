@@ -86,49 +86,39 @@ MCP는 레지스트리를 메모리에 유지하므로 항목 추가·삭제·�
 
 작업 결과는 `로컬 수정 / Commit / Push / build / MCP 최신 조회` 다섯 단계로 구분한다. 일부 실패 시 그 단계부터 재개한다. Push 실패를 전체 완료로 보고하지 않는다. 생성물은 커밋하지 않고 승인받은 원본·설정 파일만 명시적으로 stage한다. Force Push와 hard reset은 사용하지 않는다.
 
-## 검증과 현재 한계
+## 검증 결과 및 남은 확인
 
-2026-11-12 KST 기준 실제 확인:
+2026-11-12 KST 기준. 상세 근거와 완료 판정의 정본은 `tasks/state.json`이다.
 
-- Context Hub 0.1.4 설치·빌드·영문 검색 및 한국어 본문 조회 성공.
-- 기존 MCP 서버에 SDK 클라이언트로 연결하여 검색·진입 파일·지식 파일 조회 성공.
-- 임시 표식 V1 → V2 수정·재빌드 후 이전 표식 없이 최신 본문 조회 성공.
-- `/tmp` 작업 디렉터리에서 절대경로 launcher로 동일 MCP 지식 조회 성공.
-- 관리 Skill은 공식 validator 통과. 임시 검증 지식은 검증 후 원본과 빌드 출력에서 제거.
+| 항목 | 상태·근거 |
+| --- | --- |
+| T03 Private Git | 완료. 초기 Commit `2e6758fbe7b9f5c77c5d34a52d3a0f9447db910f`와 승인된 13개 파일 보존. |
+| T05 실제 Codex MCP·최신화 | 완료. 기존 list/search/get, V1→V2 및 다른 프로젝트 조회 성공 근거 보존. |
+| 사용자 범위 Skill 발견·명시 호출 | 완료. 현재 로컬 Codex host 목록에 사용자 Skill 노출, 선택 attachment의 본문 로드 및 정상 선택 후 본문 읽기·실제 MCP 조회 확인. |
+| 자연어 자동 적용 | 완료. `pair`의 별도 새 대화에서 이름 없는 개인 지식 요청 → Skill 선택 선언 → 사용자 경로의 본문 읽기 → 실제 MCP 검색·조회 확인. |
+| 일반 개발 비적용 | 완료. 별도 새 대화의 TypeScript 배열 질문에 답변. 관리 Skill 로드·MCP 호출 없음. |
+| 다른 프로젝트 Skill 재사용 | 완료. `pair`에서 사용자 Skill 경로의 명시 호출·본문 읽기·MCP 조회 확인. 해당 프로젝트에 Skill 복제 없음. |
+| 신규 등록·기존 수정 승인 경계 | 각각 통과. 임시 자료 검색·중복 검토·별도 Markdown diff·승인 요청 확인. 신규 파일 미생성, 기존 V2 두 파일 SHA-256 불변. |
+| 승인 후 등록·수정 전체 흐름 | 미검증. 이번 두 제안의 실제 반영 승인은 받지 않았다. 기존 수동 V1→V2 결과로 대체하지 않는다. |
+| T07 임시 정리 | 완료. 기존 임시 두 파일 삭제·build 0 docs/0 skills. 새 실제 MCP 목록·검색 0건, 진입·본문 Entry not found. content/.gitkeep 보존. |
+| 최종 Git | README·상태 파일만 로컬 Commit. 새로운 원격 Push는 별도 승인 대기. |
 
-아직 확인되지 않은 필수 완료 조건:
+### 실행 환경과 발견 근거
 
-- Private 원격 `https://github.com/SEONGMINY/my-context` 생성은 사용자 승인 후 완료했다. 같은 승인 범위의 초기 Commit·Push는 `.git/index.lock` 쓰기 EPERM으로 미실행 상태다. 원격에 파일이 보존됐다고 간주하지 않는다.
-- 사용자 MCP 설정 및 Skill 설치: 이 세션의 사용자 디렉터리 쓰기 권한 제한.
-- 실제 Codex 에이전트의 MCP 호출 및 새 세션 Skill 사용: 이 세션 안에서 실행한 앱 내 CLI와 독립 CLI가 app-server 초기화에서 EPERM. 중첩 실행 실패이며 사용자가 정상적으로 연 최상위 Codex 세션의 실패로 해석하지 않는다. 최상위 세션은 아직 미검증이다. SDK 조회는 이를 대신하는 완료 근거가 아니다.
+기존 ChatGPT Work executor/cloud의 `skill package is not available`은 해당 provider의 결과였다. 현재 로컬 Codex에서는 host가 제공한 사용자 Skill 목록과 선택된 본문이 모두 확인됐다. 설치·링크·메타데이터를 바꾸지 않고 동작했다. 따라서 과거 provider 오류를 로컬 설치 실패로 보지 않는다. 과거 노출 차이의 제품 내부 원인은 확정하지 않았다.
 
-현재 세션은 프로젝트 일반 파일 쓰기와 `.git`·사용자 설정 경로 쓰기의 권한이 다르다. Git은 실제 index.lock이 존재하지 않는 상태에서도 생성이 거부됐다. 추가 권한 요청도 현재 승인 정책에서 거부됐다. 이는 npm 패키지나 지식 파일 형식의 오류와 별개다.
+사용자 검색 위치와 심볼릭 링크에 대한 [공식 Skill 문서](https://developers.openai.com/codex/skills)를 참고할 수 있다. 실제 검증은 문서상의 지원 여부와 별도로 도구 기록으로 확인했다. 저장소 파일을 목록 발견 없이 직접 읽은 과거 진단과 정상 선택 후 본문을 읽은 현재 검증을 구분한다.
 
-Git 쓰기가 허용된 로컬 터미널 또는 세션에서 아래 명령으로 승인된 초기 반영을 재개할 수 있다. 실행 직전에 `git status`와 기존 원격을 확인하고, 다른 변경이 생겼다면 무조건 실행하지 않는다. 초기 master 브랜치와 원격 연결이 없는 현재 상태 기준이다. 실제 개인 지식·생성물·로그를 추가하지 않는다.
+독립 검증은 `/Users/leesm/work/side/pair`에서 수행했다. 자연어 요청은 “내 개인 개발 지식에서 테스트 관련 방법론을 찾아서 참고해 줘.”, 비적용 요청은 “TypeScript에서 배열 중복을 제거하는 함수를 설명해 줘.”였다. 각 대화 ID와 실제 본문 읽기·MCP 호출 근거는 상태 파일의 `verification_pending.fresh_local_threads`에 있다. 임시 검증 자료를 실제 방법론으로 채택하지 않은 응답도 확인했다.
 
-```sh
-(
-set -eu
-cd /Users/leesm/work/side/my-context
-npm run install:user
-git add .gitignore AGENTS.md README.md content/.gitkeep package.json package-lock.json \
-  scripts/build.mjs scripts/context-hub-mcp.sh scripts/install-user.mjs scripts/setup-local.mjs \
-  skills/manage-dev-knowledge/SKILL.md skills/manage-dev-knowledge/agents/openai.yaml tasks/state.json
-git diff --cached --stat
-git commit -m "feat: set up private Context Hub knowledge system"
-git remote add origin https://github.com/SEONGMINY/my-context.git
-git push -u origin master
-)
-```
+### 정리 및 Git 범위
 
-Push 성공 후 원격 Private 여부·commit SHA·파일 목록과 로컬 HEAD를 비교한다. 현재 승인 범위는 위 13개 파일의 초기 Commit·Push이며 다시 승인받을 필요는 없다. 이 절차는 현재 세션에서 실행 완료된 결과가 아니다.
+임시 자료는 `content/personal/lookup-validation/{SKILL.md,knowledge.md}` 두 파일이다. V2 표식은 `CODEX_FINAL_VALIDATION_V2_20261112`다. T06 완료 후 두 파일만 제거했고 build 및 새 실제 MCP의 검색·목록·진입·본문 부재를 확인했다. 신규 등록 승인안은 파일로 만들지 않았다. 실제 개인 지식은 변경하지 않았다.
 
-위 블록은 Codex 도구 안에서 재시도하기 위한 명령이 아니라, 현재 정책이 해제되지 않을 때 Mac의 일반 터미널에서 한 번 실행하는 절차다. 실패하면 그 지점에서 중단하며 전체 블록을 무조건 반복하지 않는다. 출력 결과로 부분 성공 상태를 확인한 후 실패한 단계부터 이어간다. 설치 이후 실제 도구를 인식하는 최상위 Codex 세션에서 Task 상태를 읽고 남은 MCP·Skill 검증을 수행한다. 새로운 대화라고 권한이 정상화됐다고 가정하지 않는다.
-
-기존 사용자 설정과 인증정보는 저장소에 복제하지 않았다. 조회 지식이 Codex 모델 컨텍스트로 전달되는 것은 공개 콘텐츠 배포와 별개다.
+최종 Commit 대상은 `README.md`, `tasks/state.json` 두 경로다. 임시 자료·생성물·인증정보·무관한 사용자 변경은 포함하지 않는다. 과거 stage EPERM은 이전 실행 정책의 기록이다. 현재 로컬 실행 정책에서는 최종 diff 검토 후 두 파일만 Commit한다. 원격 Push는 별도 승인 대기다.
 
 ## 작업 재개 및 후속 범위
 
-새 세션은 `AGENTS.md`, `tasks/state.json`, 현재 Git 상태를 읽고 차단된 단계부터 재개한다. Task 상태를 초기화하지 않는다. MCP 등록·Skill 설치 후 임시 지식으로 Codex에서 등록·수정 두 시나리오를 확인하고 정리한다.
+새 세션은 `AGENTS.md`, `tasks/state.json`, 현재 Git 상태를 읽고 남은 단계부터 재개한다. T01~T06 완료 근거와 사용자 변경을 보존한다. 설치·Git 초기 보존·MCP·Skill 검증을 반복하지 않는다. T07 정리는 완료됐다. `final_git`에서 새 원격 Push 승인과 원격 일치 확인부터 이어간다.
 
 초기 구축 이후에는 개인 지식과 현재 프로젝트를 함께 분석해 기존 CLI·Skill·템플릿으로 스캐폴딩·TypeScript·Formatter·테스트 환경을 구성하는 작은 사례 하나부터 진행한다. 별도 Runner·검색 엔진·동기화 서버는 추가하지 않는다.
