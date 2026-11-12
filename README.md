@@ -99,8 +99,8 @@ MCP는 레지스트리를 메모리에 유지하므로 항목 추가·삭제·�
 | 일반 개발 비적용 | 완료. 별도 새 대화의 TypeScript 배열 질문에 답변. 관리 Skill 로드·MCP 호출 없음. |
 | 다른 프로젝트 Skill 재사용 | 완료. `pair`에서 사용자 Skill 경로의 명시 호출·본문 읽기·MCP 조회 확인. 해당 프로젝트에 Skill 복제 없음. |
 | 신규 등록·기존 수정 승인 경계 | 각각 통과. 임시 자료 검색·중복 검토·별도 Markdown diff·승인 요청 확인. 신규 파일 미생성, 기존 V2 두 파일 SHA-256 불변. |
-| 승인 후 등록·수정 전체 흐름 | 미검증. 이번 두 제안의 실제 반영 승인은 받지 않았다. 기존 수동 V1→V2 결과로 대체하지 않는다. |
-| T07 임시 정리 | 완료. 기존 임시 두 파일 삭제·build 0 docs/0 skills. 새 실제 MCP 목록·검색 0건, 진입·본문 Entry not found. content/.gitkeep 보존. |
+| 승인 후 로컬 반영·최신화 | 완료. 지연 도착한 명시 승인 후 신규 등록·기존 수정 각각 반영 → build 0 docs/2 skills → 새 실제 MCP 검색·진입·본문 확인. 임시 파일 Commit/Push는 승인 범위에서 제외. |
+| T07 임시 정리 | 완료. 기존 V2 및 승인된 신규 임시 자료 총 네 파일 정리·build 0 docs/0 skills. 최종 새 실제 MCP 목록·두 검색 0건 및 두 ID 진입·본문 Entry not found 확인. content/.gitkeep 보존. |
 | 최종 Git | README·상태 파일만 로컬 Commit. 새로운 원격 Push는 별도 승인 대기. |
 
 ### 실행 환경과 발견 근거
@@ -113,7 +113,7 @@ MCP는 레지스트리를 메모리에 유지하므로 항목 추가·삭제·�
 
 ### 정리 및 Git 범위
 
-임시 자료는 `content/personal/lookup-validation/{SKILL.md,knowledge.md}` 두 파일이다. V2 표식은 `CODEX_FINAL_VALIDATION_V2_20261112`다. T06 완료 후 두 파일만 제거했고 build 및 새 실제 MCP의 검색·목록·진입·본문 부재를 확인했다. 신규 등록 승인안은 파일로 만들지 않았다. 실제 개인 지식은 변경하지 않았다.
+검증에는 `content/personal/lookup-validation/`과 `content/personal/lookup-approval-validation/`의 `SKILL.md`, `knowledge.md` 네 파일만 사용했다. 최초 정리 후 지연 도착한 승인에 따라 기존 V2 기준본을 이전 해시와 일치하게 복원하고 두 제안을 반영했다. V2 표식 보존·승인 설명 추가·신규 본문을 새 실제 MCP에서 확인했다. 이후 네 임시 파일만 제거하고 재빌드했다. 또 다른 새 실제 MCP에서 두 항목의 검색·목록·진입·본문 부재를 확인했다. 실제 개인 지식은 변경하지 않았다.
 
 최종 Commit 대상은 `README.md`, `tasks/state.json` 두 경로다. 임시 자료·생성물·인증정보·무관한 사용자 변경은 포함하지 않는다. 과거 stage EPERM은 이전 실행 정책의 기록이다. 현재 로컬 실행 정책에서는 최종 diff 검토 후 두 파일만 Commit한다. 원격 Push는 별도 승인 대기다.
 
