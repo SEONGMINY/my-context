@@ -1,0 +1,4 @@
+interface:
+  display_name: "개인 개발 지식 관리"
+  short_description: "명시적으로 요청한 개인 지식의 조회와 승인 기반 등록·수정"
+  default_prompt: "Use $manage-dev-knowledge to retrieve or propose an approved update to my Context Hub development knowledge."

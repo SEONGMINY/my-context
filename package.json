@@ -1,0 +1,19 @@
+{
+  "name": "my-context",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private Markdown knowledge served through Context Hub MCP",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "search": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub search",
+    "get": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub get",
+    "setup": "node scripts/setup-local.mjs",
+    "install:user": "node scripts/install-user.mjs"
+  },
+  "dependencies": {
+    "@aisuite/chub": "0.1.4"
+  }
+}
