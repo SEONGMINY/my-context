@@ -1,69 +1,69 @@
-# Development workflow contracts
+# 개발 작업 절차의 공통 계약
 
-These are **semantic contracts** shared by the development-workflow skill. They do not mandate a JSON file, TypeScript runtime, GitHub, or any specific agent. If machine-readable plans are actually adopted, define one authoritative schema and test compatibility rather than duplicating field definitions across Markdown, JS and examples.
+이 문서는 `development-workflow` Skill이 공유하는 **의미적 계약**을 정의한다. JSON 파일, TypeScript 런타임, GitHub 또는 특정 에이전트의 사용을 강제하지 않는다. 기계가 읽는 계획을 실제로 도입하는 경우에는 Markdown·JavaScript·예시에 필드 정의를 각각 중복 작성하지 말고, 권위 있는 Schema 하나를 정의한 뒤 호환성을 검증한다.
 
-## Sources of truth
+## 정보의 권위 있는 원본(SSoT)
 
-| Fact | Authoritative owner |
+| 정보 | 권위 있는 소유자 |
 | --- | --- |
-| Goal, scope, constraints, acceptance criteria | Target project's current request/spec/Issue |
-| Nodes, dependencies and execution status | One target-project plan or existing task manager |
-| Code, tests and changes | Git working tree, commits, PRs and relevant test system |
-| Test outcome and subject revision | The actual test/CI/review evidence |
-| Consequential decisions | Target project's decision record or existing ADR |
-| Gate policy and method | This common workflow skill and its contracts |
-| Current-context summary | Derived from the above; never a competing owner |
+| 목표, 범위, 제약, 완료 기준 | 대상 프로젝트의 현재 요청·명세·Issue |
+| Node, 의존성, 실행 상태 | 대상 프로젝트의 단일 계획 또는 기존 작업 관리 도구 |
+| 코드, 테스트, 변경 사항 | Git 작업 트리·커밋·PR·관련 테스트 시스템 |
+| 테스트 결과와 검증 대상 리비전 | 실제 테스트·CI·리뷰 증거 |
+| 중요한 의사결정 | 대상 프로젝트의 결정 기록 또는 기존 ADR |
+| Gate 정책과 작업 방법론 | 공통 개발 Skill과 이 계약 문서 |
+| 현재 맥락 요약 | 위 원본에서 파생한 정보이며 독립적인 원본이 아님 |
 
-A project may combine several facts into one file. A separate file for every concept is unnecessary. Prefer references to duplication.
+한 프로젝트에서 여러 종류의 정보를 한 파일에 함께 관리해도 된다. 개념마다 별도 파일을 만들 필요는 없다. 내용을 복제하기보다 원본을 참조한다.
 
-## Concepts
+## 핵심 개념
 
-**WorkSpecification:** goal; in/out scope; constraints; acceptance criteria; links to relevant project code/contracts. Only create a persistent artifact if the project needs it.
+**WorkSpecification(작업 명세):** 목표, 포함·제외 범위, 제약, 완료 기준, 관련 프로젝트 코드·계약의 참조. 프로젝트에서 필요할 때만 영속적인 산출물을 생성한다.
 
-**Node:** independently accepted deliverable or verification boundary; stable ID; title; genuine dependencies; local finish conditions. **Step:** activities within that node, not a separate dependency boundary. A small job may have no explicit nodes.
+**Node(작업 노드):** 독립적으로 수용 가능한 산출물 또는 검증 경계. 안정적인 ID, 제목, 실제 의존성, 해당 Node만의 완료 조건을 갖는다. **Step(단계)**은 Node 안에서 수행하는 활동이며 별도 의존성 경계가 아니다. 작은 작업은 명시적 Node 없이 진행할 수 있다.
 
-**WorkPlan:** authoritative list of nodes and dependency edges when structured planning adds value. A node is eligible only when its actual prerequisites are accepted; 'dropped' does not inherently mean 'satisfied'. The task manager, not a duplicate document, owns status.
+**WorkPlan(작업 계획):** 구조화된 계획이 실질적인 이익을 제공할 때 사용하는 Node와 의존 관계의 권위 있는 목록. 실제 선행 조건이 수용된 경우에만 Node를 실행 가능하다고 판단한다. `dropped`(제외·취소)를 자동으로 `satisfied`(의존 조건 충족)로 취급하지 않는다. 상태의 원본은 별도 복제 문서가 아니라 기존 작업 관리 도구가 소유한다.
 
-**Verification:** a criterion; result passed/failed/unknown; evidence reference and relevant revision when available. Successful parsing or valid DAG structure is not proof that the user's requirements or the implementation are correct.
+**Verification(검증):** 확인할 기준, `passed / failed / unknown` 결과, 증거 참조, 확인 가능한 경우 관련 리비전. 데이터 파싱 성공이나 유효한 DAG 구조만으로 사용자 요구사항이나 구현이 올바르다고 증명할 수는 없다.
 
-**Decision:** problem; considered options; choice; rationale; affected references; earlier decision superseded, if any. Preserve consequential history, but leave routine code choices in normal code/PR context.
+**Decision(결정):** 문제, 고려한 대안, 선택, 근거, 영향을 받는 참조, 대체한 이전 결정(있는 경우). 중요한 결정의 이력은 보존하되, 일상적인 구현 선택은 일반적인 코드·PR 맥락에 남긴다.
 
-**WorkContext:** a derived view of present goals, valid decisions, state, evidence gaps and blockers; no independent state authority.
+**WorkContext(현재 작업 맥락):** 현재 목표, 유효한 결정, 진행 상태, 검증 공백, 차단 사항을 기존 원본에서 구성한 파생 정보. 별도의 상태 결정 권한이 없다.
 
-**TaskBrief:** objective; base revision; relevant contracts and input references; allowed/forbidden modifications; dependencies; acceptance and verification criteria. Do not send full unrelated conversation history.
+**TaskBrief(작업 전달 정보):** 목표, 기준 리비전, 관련 계약과 입력 참조, 허용·금지된 수정, 의존성, 완료·검증 기준. 관련 없는 전체 대화 기록을 전달하지 않는다.
 
-**TaskHandoff:** output or blocked status; changed artifacts/commit or PR; passed/failed/unknown checks; important findings; proposed contract changes; impact on downstream work. A worker's report is not acceptance: the coordinator checks artifacts before unblocking dependents.
+**TaskHandoff(작업 인계 결과):** 산출물 또는 차단 상태, 변경된 파일·커밋·PR, `passed / failed / unknown` 검사, 중요한 발견, 제안한 계약 변경, 후속 작업에 미치는 영향. 작업자의 완료 보고가 곧 결과의 수용은 아니다. 조정 담당자가 실제 산출물을 확인한 후에야 후속 Node의 의존성을 해제한다.
 
-## Gate result semantics
+## Gate 결과의 의미
 
-- **pass:** the defined check ran and its precise condition was met.
-- **fail:** a defined condition was violated; fix and recheck before a blocking transition.
-- **unknown:** the check did not run or evidence could not be established; it is never implicitly pass.
-- **not_applicable:** a reasoned determination that this check does not apply to the present work.
+- **pass(통과):** 정의된 검사를 실제로 수행했고 해당 검사 조건을 만족했다.
+- **fail(실패):** 정의된 조건을 위반했다. 차단되는 단계로 넘어가기 전에 수정하고 다시 검사한다.
+- **unknown(미확인):** 검사를 실행하지 않았거나 증거를 확인할 수 없다. 암묵적으로 통과로 취급하지 않는다.
+- **not_applicable(해당 없음):** 현재 작업에 그 검사가 적용되지 않는다고 근거를 갖고 판단했다.
 
-Gate execution policy is separate from the result. A structurally invalid DAG blocks reliance on that DAG. Advisory concerns (e.g. too many nodes) invite judgement, not automatic global failure. Skipping or overriding a blocking check must follow existing authorization and disclose the exception.
+Gate의 실행·차단 정책과 검사 결과는 별개다. 구조적으로 잘못된 DAG를 신뢰해 실행해서는 안 된다. Node가 너무 많다는 등의 권고 사항은 판단을 돕기 위한 것이지 전체 작업을 자동 실패시키는 사유가 아니다. 차단 검사를 생략하거나 예외 처리하려면 기존 권한 정책을 따르고 그 사실을 명시한다.
 
-| Gate | When | Semantic assessment | Deterministic boundary |
+| Gate | 실행 시점 | 의미적 판단(AI·사람) | 결정론적 검사의 범위 |
 | --- | --- | --- | --- |
-| G1 Contract | Before impactful implementation | Intent, exclusions, project contract and approval | Optional required-field checks |
-| G2 Planning | On complex decomposition/replanning | Quality of split, independence, delegation cost | IDs, references, self/cyclic dependencies |
-| G3 Verification | Before claiming verified completion | Sufficiency of test evidence and residual risk | Parse results; detect missing references/revision mismatch |
-| G4 Change | When a consequential choice/scope changes | Need for approval, meaning and downstream impact | Reference integrity and graph reachability |
-| G5 Handoff | On context/agent transition | Whether receiving worker can safely continue | Optional brief fields and referenced artifacts |
-| G6 Methodology | When workflow or its integration changes | Representative behavior, overhead, compatibility | Package, installer, schema, fixture and CI tests |
+| G1 Contract | 영향이 큰 구현에 착수하기 전 | 의도, 제외 범위, 프로젝트 계약, 승인 | 선택적 필수 필드 검사 |
+| G2 Planning | 복잡한 분해·재계획 시 | 분해 적절성, 독립성, 위임 비용 | ID, 참조, 자기·순환 의존성 |
+| G3 Verification | 검증 완료를 주장하기 전 | 테스트 증거의 충분성, 잔여 위험 | 결과 파싱, 누락 참조·리비전 불일치 |
+| G4 Change | 중요한 선택·범위 변경 시 | 승인 필요성, 변경의 의미·후속 영향 | 참조 무결성, 그래프 도달 가능성 |
+| G5 Handoff | 세션·에이전트 전환 시 | 인계받은 작업자의 안전한 재개 가능성 | 선택적 Brief 필드와 참조 산출물 |
+| G6 Methodology | 작업 절차·연동 방식 변경 시 | 대표 행동, 추가 비용, 호환성 | 패키지·설치·Schema·Fixture·CI 검사 |
 
-## Changes and concurrent agents
+## 변경과 동시 작업 에이전트
 
-1. One coordinator or existing task system owns acceptance and shared status. Parallel workers get disjoint file scopes or isolated Git worktrees.
-2. A worker immediately reports a blocker, contract conflict or proposed consequential change; the coordinator verifies and distributes only the approved update to affected nodes.
-3. Ordinary progress is observable to the coordinator, not copied into every worker's context. A receiving node consumes the **accepted** output of prerequisites and checks its base revision.
-4. Changing code, dependencies or criteria can make earlier evidence stale. Compute explicitly known affected nodes first; use code search/tests for effects not represented in the DAG. Unknown impact remains unknown.
-5. A dropped prerequisite requires reconsidering the dependent node, not silently treating it as done.
+1. 결과 수용과 공통 상태는 하나의 조정 담당자 또는 기존 작업 관리 시스템이 소유한다. 병렬 작업자에게는 서로 겹치지 않는 파일 수정 범위나 격리된 Git Worktree를 제공한다.
+2. 작업자가 차단 사항, 계약 충돌, 중요한 변경 제안을 발견하면 즉시 보고한다. 조정 담당자가 확인한 뒤 **승인된 변경만** 영향을 받는 Node에 전달한다.
+3. 일반 진행 상태는 조정 담당자가 확인할 수 있게 하되, 모든 작업자의 컨텍스트에 복제하지 않는다. 후속 Node는 선행 작업의 **수용된** 결과를 읽고 자신의 기준 리비전을 확인한다.
+4. 코드·의존성·완료 기준이 바뀌면 이전 검증 증거가 더 이상 유효하지 않을 수 있다. 먼저 명시적 의존 그래프에서 영향받는 Node를 찾고, DAG에 표현되지 않은 코드 영향은 코드 검색·테스트로 확인한다. 판단할 수 없는 영향은 미확인 상태로 둔다.
+5. 선행 Node가 취소·제외되었다면 후속 Node의 전제를 다시 검토한다. 완료된 것으로 조용히 처리하지 않는다.
 
-## Minimal persistence and automation
+## 최소 저장과 자동화
 
-- Lightweight changes: code + relevant tests + normal PR/report. No extra plan/decision files.
-- Structured multi-node work: reuse Issue/task infrastructure; JSON only if relationships cannot be represented reliably otherwise.
-- A mechanical JS validator is **conditional**, and should stay read-only with pure graph/contract logic and a thin CLI shell. No Rust, global event bus or new orchestrator in the initial implementation.
-- Skill discovery, MCP searchability and actual execution are separate properties. Test each available environment, and report unavailable environments accurately.
-- Personal knowledge MCP retrieval and updates remain opt-in under the separate manage-dev-knowledge policy.
+- **경량 수정:** 코드, 관련 테스트, 기존 PR 또는 결과 보고만 사용한다. 별도 계획·결정 파일을 만들지 않는다.
+- **여러 Node를 사용하는 구조화 작업:** 기존 Issue·작업 관리 도구를 재사용한다. 그 도구만으로 관계를 신뢰성 있게 표현할 수 없을 때만 JSON을 사용한다.
+- **기계적 JavaScript 검증기:** 조건부로만 도입한다. 필요한 경우 읽기 전용을 기본으로 하고 순수한 그래프·계약 검증 로직과 얇은 CLI 입출력 계층으로 분리한다. 초기 구현에 Rust, 전역 이벤트 버스, 새 오케스트레이터를 도입하지 않는다.
+- **Skill 적용 검증:** Skill 발견 가능성, MCP에서 검색 가능성, 실제 실행 가능성은 서로 다른 특성이다. 사용 가능한 환경마다 따로 확인하고, 사용할 수 없는 환경은 정확히 미검증으로 보고한다.
+- **개인 지식:** MCP를 통한 개인 지식 조회·변경은 별도 `manage-dev-knowledge` 정책에 따라 사용자 명시적 요청이 있을 때만 수행한다.

@@ -1,82 +1,82 @@
 ---
 name: development-workflow
-description: "Use for software development tasks requiring requirements clarification, meaningful task decomposition, evidence-based verification, consequential decision changes, or session handoff. Apply adaptively; do not add process to trivial fixes or automatically retrieve personal knowledge."
+description: "개발 작업에서 요구사항 명확화, 의미 있는 작업 분해(Node/Step), 증거 기반 검증, 중요한 의사결정 변경, 세션·에이전트 인계가 필요할 때 사용한다. 작업에 맞춰 절차를 조절하며, 사소한 수정에 불필요한 절차를 추가하거나 개인 지식을 자동 조회하지 않는다."
 ---
 
-# Development workflow
+# 개발 작업 절차
 
-Preserve the user's intent (SDD) while planning, executing and verifying work with meaningful dependencies (Hide). Use the project's existing files, Issue/PR, tests and agent tools. This skill is guidance, not an orchestration engine.
+사용자의 의도를 보존하는 SDD와 실제 의존성에 따라 작업을 계획·실행·검증하는 Hide의 원칙을 함께 적용한다. 대상 프로젝트에 이미 있는 파일, Issue/PR, 테스트, 에이전트 도구를 사용한다. 이 Skill은 **작업 지침**이지 새로운 오케스트레이터가 아니다.
 
-Read [the contracts](references/contracts.md) when defining a structured plan, changing important decisions, interpreting a gate, or handing work to another agent. For a small clear change, use the lightweight path below without loading extra references.
+구조화된 계획을 정의하거나, 중요한 결정을 변경하거나, Gate를 해석하거나, 다른 에이전트에게 작업을 인계할 때는 [공통 계약](references/contracts.md)을 읽는다. 작고 명확한 변경에서는 추가 참고 문서를 불러오지 않고 아래의 경량 절차만 적용한다.
 
-## Authority and boundaries
+## 권한과 적용 경계
 
-- Follow current user instructions and the target project's rules, architecture, and acceptance criteria. This skill does not override project-specific contracts.
-- Inspect relevant source and tests before suggesting changes. Distinguish observed facts, inferences, proposals and unverified assumptions.
-- Do not search or modify my-context personal knowledge unless explicitly requested. If the user requests that, follow the separate manage-dev-knowledge skill and its approval rules.
-- Respect the environment's existing authorization for edits, commits, pushes, merges, releases and destructive actions. Invoking this skill grants no additional permission.
-- Do not create a new scheduler, global task database, agent messaging system or mandatory project file layout.
+- 현재 사용자의 지시와 대상 프로젝트의 규칙·아키텍처·완료 기준을 따른다. 공통 Skill은 프로젝트별 계약보다 우선하지 않는다.
+- 변경을 제안하기 전에 관련 코드와 테스트를 확인한다. 직접 확인한 사실, 추론, 제안, 미검증 가정을 구분한다.
+- 사용자가 명시적으로 요청하지 않았다면 my-context의 개인 지식을 조회하거나 수정하지 않는다. 사용자가 요청한 경우에는 별도의 `manage-dev-knowledge` Skill과 승인 정책을 따른다.
+- 파일 수정, 커밋, 푸시, 병합, 배포, 파괴적 작업 등에 대해 현재 환경에서 이미 정해진 권한을 준수한다. 이 Skill을 사용해도 추가 권한이 생기지 않는다.
+- 새로운 스케줄러, 중앙 작업 데이터베이스, 에이전트 메시징 시스템 또는 프로젝트별 필수 파일 구조를 만들지 않는다.
 
-## Choose the smallest useful path
+## 필요한 만큼만 적용
 
-**Lightweight (default):** For a clear, bounded fix: inspect the contract and code, make the authorized change, run relevant checks, report evidence and gaps. No plan, decision record, DAG or new file is required.
+**경량 모드(기본값):** 범위가 작고 명확한 수정에서는 기존 계약과 코드를 확인하고, 허용된 변경을 수행한 뒤 관련 검증을 실행한다. 결과의 증거와 미확인 사항을 보고한다. 별도 계획, 결정 기록, DAG, 새 파일은 필요하지 않다.
 
-**Structured (conditional):** Use when ambiguity has material consequences, work has separately deliverable outcomes or real dependencies, a consequential decision changes, or work spans agents/sessions. Prefer an existing Issue, PR, task manager or project document. Create a structured plan only if existing records cannot represent the needed relationships.
+**구조화 모드(조건부):** 중요한 결과를 바꿀 수 있는 모호성이 있거나, 독립적으로 전달할 산출물 또는 실제 의존성이 있거나, 중요한 결정이 변경되거나, 여러 에이전트·세션에 걸쳐 진행할 때 사용한다. 기존 Issue, PR, 작업 관리 도구, 프로젝트 문서를 우선 사용한다. 기존 원본으로 필요한 관계를 표현할 수 없을 때만 구조화된 계획을 추가한다.
 
-Work may move from lightweight to structured or back as complexity changes. Avoid numeric thresholds and ceremonial steps.
+작업의 복잡성이 바뀌면 경량 모드와 구조화 모드 사이를 전환할 수 있다. 고정된 수치 기준이나 형식적인 절차를 강요하지 않는다.
 
-## 1. Understand — G1 Contract
+## 1. 요구사항 이해 — G1 Contract
 
-1. Establish the goal, scope and exclusions, relevant existing code/contracts, constraints, acceptance criteria and actual permissions.
-2. Check for conflict with earlier decisions or current project policy. Ask only about uncertainties that change scope, user-visible behavior, safety, architecture or substantial rework.
-3. When a reasonable conventional choice is reversible and low risk, make it and briefly state the assumption. Do not treat silence as approval for scope or contract changes.
-4. Do not start an implementation that would violate a known constraint. If the user's intention remains materially unresolved, explain the decision needed.
+1. 목표, 작업 범위와 제외 범위, 관련 기존 코드·계약, 제약, 완료 기준, 실제 작업 권한을 파악한다.
+2. 이전 결정 또는 현재 프로젝트 정책과 충돌하는지 확인한다. 범위, 사용자에게 보이는 동작, 안전성, 아키텍처 또는 상당한 재작업 비용을 바꾸는 불확실성에만 질문한다.
+3. 되돌릴 수 있고 위험이 낮은 일반적인 선택은 합리적으로 판단하되, 그 가정을 간단히 밝힌다. 사용자가 답하지 않았다는 이유로 범위나 계약 변경을 승인받았다고 간주하지 않는다.
+4. 이미 확인된 제약을 위반하는 구현에 착수하지 않는다. 사용자 의도에서 중요한 부분이 아직 불명확하다면 필요한 결정을 설명한다.
 
-Keep the specification where the project already manages it. The result is a clear agreement, not necessarily a new spec file.
+명세는 프로젝트에서 원래 관리하던 위치에 유지한다. 목표는 별도 명세 파일을 만드는 것이 아니라 충분히 명확한 합의에 도달하는 것이다.
 
-## 2. Plan — G2 Planning
+## 2. 작업 계획 — G2 Planning
 
-For substantial work, identify **Nodes** (independent deliverables or verification boundaries) and **Steps** (work within one node). State each node's output, completion criterion and real dependencies.
+규모가 있는 작업에서는 **Node**(독립적인 산출물 또는 검증 경계)와 **Step**(Node 내부에서 수행하는 작업)을 구분한다. Node별 산출물, 완료 조건, 실제 의존성을 명시한다.
 
-- A dependency means a node genuinely requires another node's accepted result. Do not use chronological preference as a false dependency.
-- Research queries, retries and routine coding substeps are not automatically separate nodes.
-- Compare delegation/parallelization benefit with context handoff, shared-file contention and integration cost. Prefer a single owner for a tightly coupled artifact.
-- If a machine-readable DAG exists, validate unique IDs, dependency references, self-edges and cycles before relying on readiness. If validation tooling is absent, do not report a passed machine check.
-- A cancelled/dropped prerequisite does not automatically satisfy a dependent node. Re-evaluate the dependent node's assumptions.
-- Keep one authoritative plan/status owner. Other agents report outcomes and evidence; they do not independently overwrite the shared state.
+- 의존 관계는 후속 Node가 선행 Node의 **수용된 결과**를 실제로 필요로 할 때만 설정한다. 단순한 선호 실행 순서를 가짜 의존성으로 표현하지 않는다.
+- 자료 조사, 재시도, 일상적인 구현 세부 단계마다 별도의 Node를 만들지 않는다.
+- 위임과 병렬화로 얻는 이익을 맥락 인계 비용, 공유 파일 충돌 가능성, 통합 비용과 비교한다. 결합도가 높은 산출물은 한 명이 소유하도록 하는 편이 좋다.
+- 기계가 읽을 수 있는 DAG가 있다면 작업 가능 여부를 판단하기 전에 ID 중복, 의존성 참조, 자기 참조, 순환을 검증한다. 검증 도구를 사용할 수 없었다면 기계적 검사가 통과했다고 보고하지 않는다.
+- 선행 Node가 취소되거나 제외되었다고 해서 후속 Node의 의존 조건이 자동으로 충족되지는 않는다. 후속 Node의 전제조건을 다시 평가한다.
+- 계획과 상태의 권위 있는 소유자를 하나만 둔다. 다른 에이전트는 결과와 증거를 보고하며 공통 상태를 독립적으로 덮어쓰지 않는다.
 
-Do not introduce plan.json, JSON Schema or a validator merely because this skill mentions graphs.
+그래프를 언급한다는 이유만으로 `plan.json`, JSON Schema 또는 검증기를 도입하지 않는다.
 
-## 3. Execute and verify — G3 Verification
+## 3. 실행 및 검증 — G3 Verification
 
-Use the project's existing tools and implementation conventions. Keep work within approved scope and preserve unrelated changes.
+대상 프로젝트의 기존 도구와 구현 관례를 따른다. 승인된 범위 안에서 작업하며 무관한 변경 사항을 보존한다.
 
-- Define checks against acceptance criteria, not only whether files changed.
-- Distinguish implementation output from verified completion. Report test commands, results, subject revision when available, and what was not checked.
-- Do not claim a test or review ran unless it did. Unavailable tools, missing evidence and unrun checks remain **unknown**, not passed.
-- When code/contracts change after verification, identify affected evidence. Reuse unaffected checks only when their continued applicability is justified.
-- Independent review is most valuable for high-impact, cross-contract, security-sensitive, or multi-agent changes; do not impose it on every tiny edit.
+- 파일이 변경되었는지만 보지 않고 완료 기준에 맞춰 검증 항목을 정한다.
+- 구현 산출물과 **검증된 완료**를 구분한다. 실행한 테스트 명령, 결과, 확인 가능한 경우 검증 대상 리비전, 확인하지 못한 부분을 보고한다.
+- 실제로 실행하지 않은 테스트나 리뷰를 수행했다고 주장하지 않는다. 사용할 수 없는 도구, 누락된 증거, 실행하지 않은 검사는 **unknown(미확인)**으로 유지하며 통과로 취급하지 않는다.
+- 검증 이후 코드나 계약이 변경되면 영향을 받는 증거를 확인한다. 영향을 받지 않은 검증 결과는 여전히 적용 가능하다는 근거가 있을 때만 재사용한다.
+- 독립 검토는 영향도가 크거나, 여러 계약에 걸치거나, 보안에 민감하거나, 여러 에이전트가 참여하는 변경에서 특히 유용하다. 사소한 수정마다 강제하지 않는다.
 
-## 4. Decide and replan — G4 Change
+## 4. 의사결정 및 재계획 — G4 Change
 
-Record **consequential** decisions using the project's existing decision record: problem, material options, chosen direction, reason, affected artifacts and any superseded decision. Do not record every routine implementation detail.
+**중요한** 결정은 프로젝트의 기존 결정 기록에 남긴다. 문제, 주요 대안, 선택한 방향, 이유, 영향을 받는 산출물, 대체된 이전 결정이 있다면 그 관계를 기록한다. 일상적인 구현 선택을 모두 기록하지 않는다.
 
-On goal, scope or important contract changes, seek authorization required by the project/user before proceeding. Re-evaluate directly and indirectly dependent nodes, affected tests and earlier evidence. Preserve previous important decisions rather than silently rewriting history.
+목표, 범위 또는 중요한 계약이 변경되면 진행 전에 프로젝트·사용자 정책에 따라 필요한 승인을 받는다. 직접·간접 의존 Node, 영향을 받는 테스트, 기존 검증 증거를 재평가한다. 중요한 이전 결정을 설명 없이 다시 쓰거나 삭제하지 않고 이력을 보존한다.
 
-## 5. Continue and hand off — G5 Handoff
+## 5. 작업 이어가기 및 인계 — G5 Handoff
 
-For a session or agent transition, reconstruct the current goal, exclusions, valid decisions, accepted outputs, unfinished work, verification gaps and blockers from the authoritative sources.
+세션이나 담당 에이전트가 바뀌면 권위 있는 원본을 기준으로 현재 목표, 제외 범위, 유효한 결정, 수용된 산출물, 남은 작업, 검증 공백, 차단 사항을 다시 구성한다.
 
-Provide the receiving agent with only relevant contract references, base revision, allowed change scope, dependencies and acceptance criteria. Hand back changed artifacts, test evidence, unresolved findings and downstream effects. A handoff summary is a navigation aid, not a substitute for source verification.
+인계받을 에이전트에게는 관련 계약 참조, 기준 리비전, 허용된 변경 범위, 의존성, 완료 기준만 제공한다. 결과를 돌려줄 때는 변경된 산출물, 테스트 증거, 미해결 발견, 후속 작업에 미치는 영향을 전달한다. 인계 요약은 원본을 찾기 위한 안내이지 원본 검증을 대체하지 않는다.
 
-Share **blocking findings and approved contract changes immediately** with affected workers; share ordinary progress with the coordinator. Do not broadcast unfinished reasoning or every other worker's transcript.
+**차단 사항과 승인된 계약 변경은 영향을 받는 작업자에게 즉시** 공유한다. 일반 진행 상황은 조정 담당자에게 보고한다. 미완성 추론이나 다른 작업자의 전체 대화 기록을 모든 에이전트에게 전파하지 않는다.
 
-## 6. Maintain the methodology — G6 Methodology
+## 6. 방법론 유지·개선 — G6 Methodology
 
-When modifying this skill, its contracts or integration, run deterministic repository tests and evaluate representative small, ambiguous, dependent, changed-decision and cross-session scenarios. Keep static checks distinct from model-behavior evaluation.
+이 Skill, 공통 계약 또는 설치·연동 방식을 변경할 때는 저장소의 결정론적 테스트를 실행하고, 작은 작업, 모호한 요구사항, 의존 작업, 결정 변경, 세션 간 인계의 대표 사례를 평가한다. 정적 검사와 모델의 실제 행동 평가를 구분한다.
 
-A mechanical pass covers only the stated invariant. If evaluation cannot run, report it as unverified. Track additional files, time, tokens and rework when measurable; remove gates that do not justify their cost.
+기계적 검사 통과는 명시된 불변조건만 보장한다. 평가를 실행할 수 없다면 미검증으로 보고한다. 측정 가능한 경우 추가 파일 수, 시간, 토큰, 재작업을 확인하고 비용에 비해 효과가 없는 Gate는 제거한다.
 
-## Reporting
+## 결과 보고
 
-Prefer concise, spoken-language output: what changed and why; verified evidence; unresolved/unknown items; next actionable decision. Never label an unverified result as completed. For uncomplicated work, keep the report short.
+무엇을 왜 변경했는지, 실제로 확인한 증거, 미해결·미확인 사항, 다음에 필요한 결정을 짧고 자연스러운 말투로 전달한다. 검증하지 않은 결과를 완료로 표시하지 않는다. 단순한 작업은 보고도 간결하게 작성한다.
