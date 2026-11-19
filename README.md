@@ -75,3 +75,19 @@ personal-knowledge MCP의 chub_list를 직접 호출해줘.
 다른 기기에서 저장한 지식을 Git으로 받아오면 my-context에서 `npm run build`로 로컬 검색 인덱스를 갱신하세요. 새 Codex 세션에서 MCP로 검색하고 바뀐 내용을 확인할 수 있습니다.
 
 자세한 변경·검증 절차는 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)에, 프로젝트의 방향과 출발점은 [VISION](docs/VISION.md)과 [PROBLEM](docs/PROBLEM.md)에 정리했습니다.
+
+## 원격 MCP 연결을 위한 로컬 검증
+
+인증된 HTTP 연결을 로컬에서 먼저 검증할 수 있습니다. `content/`의 Context Hub 항목과 `publish-skills.json`에 지정한 `skills/`의 절차·첨부 파일을 같은 MCP에서 조회합니다. 예를 들어 `skills/domain-storytelling/SKILL.md`를 제공하려면 frontmatter의 `name`을 `domain-storytelling`으로 쓰고, 같은 이름을 목록에 추가한 뒤 절차와 필요한 첨부 파일을 함께 커밋합니다. 이 방식에서는 별도의 Codex Skill 설치가 필요 없습니다.
+
+```bash
+npm ci
+node scripts/publish-release.mjs HEAD
+MY_CONTEXT_MCP_TOKEN_FILE=/path/to/token-file npm run serve
+```
+
+토큰 파일에는 접속에 사용할 Bearer 토큰을 넣습니다. 서버는 기본적으로 `http://127.0.0.1:8090/mcp`에서 검색·조회만 제공합니다. Codex에는 이 주소를 Streamable HTTP로 등록하고 같은 토큰을 설정합니다.
+
+새 커밋을 제공하려면 `node scripts/publish-release.mjs <git-revision>`을 실행하세요. 새 인덱스가 검증을 통과하면 이후 MCP 요청부터 사용됩니다. 실패하면 이전 인덱스가 계속 제공되며, 이전 커밋을 지정해 되돌릴 수 있습니다.
+
+실제 지식 없이 이 흐름 전체를 확인하려면 `node scripts/verify-release.mjs`를 실행하세요. 외부 호스팅과 Git 변경에 따른 자동 배포는 후속 단계입니다.
