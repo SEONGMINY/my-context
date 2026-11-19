@@ -1,14 +1,40 @@
 # my-context
 
-**여러 프로젝트와 환경에서 개발 원칙과 작업 절차를 다시 쓸 수 있어요.**
+my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업 절차를 모아 둔 저장소예요. 각 항목은 GitHub에서 읽을 수 있어요. 개발 Workflow는 로컬 Skill로 설치할 수 있고, 운영 MCP에서는 배포된 항목을 조회할 수 있어요.
 
-my-context는 개발 원칙, 작업 절차, 템플릿, 보조 스크립트를 관리해요. 이 GitHub 저장소에서 소스 코드와 등록한 자산의 원본을 볼 수 있어요. Codex는 원격 MCP에서 작업에 필요한 자산을 조회해요.
+## 포함된 항목
 
-## Codex에 연결하기
+| 항목 | 언제 쓰나요? | 사용 경로 |
+| --- | --- | --- |
+| [`development-workflow`](skills/development-workflow/SKILL.md) | 요구사항을 정리하고 작업을 나눌 때. 변경을 검증하거나 작업을 인계할 때. | [로컬 설치](#개발-workflow-설치하기) · MCP 배포 대상 |
+| [`domain-storytelling`](skills/domain-storytelling/SKILL.md) | 인터뷰로 현재 업무를 파악하고 개선 범위와 요구사항을 정리할 때. | [워크숍 양식](skills/domain-storytelling/templates/workshop-documents.md) · MCP 배포 대상 |
+| [테스트 작성 원칙](content/personal/lookup-testing-principles/knowledge.md) | 무엇을 테스트할지 정하고 테스트 결과가 실제 동작을 보여주는지 검토할 때. | GitHub에서 읽기 · MCP 배포 대상 |
+| [`manage-dev-knowledge`](skills/manage-dev-knowledge/SKILL.md) | 이 저장소에 지식을 추가하거나 수정할 때. | 저장소 내 관리 Skill |
 
-운영 MCP에는 허용된 계정만 연결할 수 있어요. 작업 환경마다 MCP 연결을 한 번 등록해 주세요. 운영자가 허용한 이메일로 로그인해 주세요. [사용자 추가](docs/DEPLOYMENT.md#운영-사용자-추가)
+## 시작하기
 
-1. 아래 명령으로 연결을 등록해 주세요.
+### 개발 Workflow 설치하기
+
+Node.js와 npm이 필요해요.
+
+1. 저장소를 클론해 주세요.
+2. 저장소 루트에서 아래 명령을 실행해 주세요.
+
+   ```bash
+   npm run install:workflow -- --check
+   npm run install:workflow
+   ```
+
+3. 새 에이전트 세션을 열어 주세요.
+4. `development-workflow`를 호출해 주세요. Codex에서는 `$development-workflow`를 입력해요.
+
+설치 명령은 Codex·Pi용 `~/.agents/skills/`와 Claude Code용 `~/.claude/skills/`에 같은 원본을 가리키는 링크를 만들어요. 기존 파일과 충돌하면 설치가 멈춰요. 각 도구의 새 세션에서 Skill이 보이는지 확인해 주세요. [설치와 동작 검증](test/workflow-evaluation.md)
+
+### Codex에 연결하기
+
+운영 MCP에서 필요한 원칙이나 작업 절차를 조회할 수 있어요. 운영자가 허용한 이메일이 필요해요. [사용자 추가](docs/DEPLOYMENT.md#운영-사용자-추가)
+
+1. 작업 환경마다 아래 명령으로 MCP를 한 번 등록해 주세요.
 
    ```bash
    codex mcp add my-context \
@@ -23,32 +49,16 @@ my-context는 개발 원칙, 작업 절차, 템플릿, 보조 스크립트를 �
 3. 새 Codex 세션을 열어 주세요.
 4. “`my-context`의 `chub_list`를 호출해줘”라고 요청해 주세요.
 
-`chub_list`가 빈 목록을 반환해도 연결은 성공한 거예요. 이전 주소를 사용 중이면 위 명령으로 연결을 다시 등록해 주세요.
+운영 MCP에는 마지막 배포에 포함된 항목이 표시돼요. GitHub의 새 항목은 운영 배포에 포함된 뒤 MCP에서 찾을 수 있어요. 빈 목록을 받아도 연결은 성공한 거예요.
 
-## 사용 예시
-
-운영 MCP에 관련 자산이 있으면 다음과 같이 요청해 보세요.
+도메인 스토리텔링을 배포했다면 다음과 같이 요청해 보세요.
 
 ```text
-my-context에서 내 도메인 스토리텔링 절차를 찾아줘.
-그 절차의 템플릿으로 이 프로젝트의 업무 흐름을 정리해줘.
+my-context에서 도메인 스토리텔링 절차를 찾아줘.
+그 절차의 양식으로 이 프로젝트의 현재 업무 흐름을 정리해줘.
 ```
 
-조회한 자산은 현재 프로젝트의 규칙에 맞춰 적용해 주세요. 스크립트는 해당 프로젝트에서 실행해 주세요. 한글 검색 결과가 없으면 `domain storytelling`처럼 관련 영문 키워드를 써 보세요.
-
-## 공통 개발 Workflow Skill
-
-요구사항 구체화, 작업 분해, 검증, 중요 결정 변경, 세션 인계에 사용할 수 있는 선택적 Skill이에요. 작은 수정에는 별도 작업 문서를 만들지 않아요.
-
-```bash
-npm run install:workflow -- --check
-npm run install:workflow
-npm run test:workflow
-```
-
-설치 스크립트는 Codex·Pi가 사용하는 `~/.agents/skills/`와 Claude Code의 `~/.claude/skills/`에 같은 Skill 원본을 연결해요. 기존 파일이 있으면 덮어쓰지 않고 중단해요. 새 세션에서 `development-workflow`를 실제로 찾아 호출해 확인해 주세요. 도구별 로딩은 설치와 별개로 검증해야 해요.
-
-개발 Workflow를 사용하는 것만으로 개인 지식 MCP를 조회하지 않아요. 각 프로젝트의 계약·승인 정책이 우선해요.
+조회한 자산은 현재 프로젝트의 규칙에 맞춰 적용해 주세요. 한글 검색 결과가 없으면 `domain storytelling`처럼 관련 영문 키워드를 써 보세요.
 
 ## 조회와 배포
 
