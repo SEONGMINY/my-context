@@ -47,7 +47,7 @@
 4. Access 앱의 고급 설정에서 **Managed OAuth**를 켜 주세요. Codex가 동적 등록에 루프백 주소를 사용하면 해당 콜백을 허용해 주세요.
 5. Zero Trust 팀 도메인과 **Application Audience (AUD) Tag**를 확인해 주세요.
 
-파일럿 `workers.dev` 주소에서 허용된 Cloudflare 계정으로 Codex에 로그인했어요. 빈 인덱스에서 `chub_list` 응답을 확인했고, 인증 정보가 없거나 유효하지 않은 요청은 `401`로 거부됐어요. 미허용 계정으로 로그인하는 검증도 필요해요. [호스트 보호](https://developers.cloudflare.com/workers/configuration/cloudflare-access/#protect-a-specific-hostname-custom-domain-or-path) · [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/) · [이메일 로그인](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/one-time-pin/) · [AUD 확인](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/#get-your-aud-tag)
+파일럿 `workers.dev` 주소에서 허용된 Cloudflare 계정으로 Codex에 로그인했어요. 빈 인덱스에서 `chub_list` 응답을 확인했고, 인증 정보가 없거나 유효하지 않은 요청은 `401`로 거부됐어요. 같은 계정의 허용 정책을 잠시 분리한 상태에서 새 로그인도 거부되는지 확인한 뒤 정책을 다시 연결했어요. [호스트 보호](https://developers.cloudflare.com/workers/configuration/cloudflare-access/#protect-a-specific-hostname-custom-domain-or-path) · [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/) · [이메일 로그인](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/one-time-pin/) · [AUD 확인](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/#get-your-aud-tag)
 
 ### 로그인과 거부 확인
 
@@ -93,12 +93,23 @@ Worker는 `Cf-Access-Jwt-Assertion`의 서명, 발급자, AUD, 만료를 확인�
 
 Worker 빌드는 지정한 Git 커밋을 사용해요. 첫 배포에서 Wrangler 로그인 화면이 열리면 배포할 계정으로 로그인해 주세요.
 
-## GitHub Actions를 켜기 전에
+## 운영 OAuth 전환과 복구
 
-1. **자산을 넣어 수동 배포해 주세요.** 원칙 하나와 첨부 파일이 있는 작업 절차 하나면 충분해요. 두 노트북에서 같은 MCP 주소로 검색과 파일 조회를 확인해 주세요.
-2. **배포 없는 검증을 추가해 주세요.** 임시 자산으로 `worker:build`와 Wrangler 드라이런을 실행해 주세요. 기존 `node scripts/verify-release.mjs`는 로컬 HTTP 경로를 검증해요.
-3. **배포 자격 증명을 준비해 주세요.** 대상 계정으로 범위를 제한한 Cloudflare API 토큰을 만들어 주세요. `CLOUDFLARE_API_TOKEN`과 `CLOUDFLARE_ACCOUNT_ID`를 GitHub Actions의 비밀 설정에 추가해 주세요. MCP 토큰은 Worker에 등록된 비밀을 사용해요. [Cloudflare의 GitHub Actions 안내](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
-4. **수동 워크플로를 먼저 실행해 주세요.** 검증이 통과한 커밋에서 `npm run worker -- deploy`를 실행해 주세요. 같은 MCP 주소에서 새 자산을 조회해 주세요.
-5. **자동 배포를 켜 주세요.** 수동 워크플로 검증이 끝나면 `master`에 반영된 변경에 배포를 연결해 주세요.
+1. `npm run worker -- deployments list --config wrangler.jsonc`로 현재 운영 버전 ID를 확인해 주세요. 전환 동안에는 기존 `MY_CONTEXT_MCP_TOKEN` 비밀을 유지해 주세요.
+2. 운영 호스트 전체를 보호하는 Access 앱에 Managed OAuth를 켜고 승인된 이메일만 허용해 주세요. 운영 앱의 AUD를 사용해서 OAuth 모드로 Worker를 배포해 주세요.
+3. 운영 주소의 OAuth 검색 응답을 확인하고, 새 Codex 연결에서 브라우저 로그인 후 `chub_list`를 호출해 주세요. 기존 Bearer 연결을 사용하던 기기에서도 OAuth로 다시 연결해 주세요.
+4. Bearer 방식으로 복구하려면 `npm run worker -- rollback <전환-전-버전-ID> --config wrangler.jsonc`로 이전 Worker부터 복구해 주세요. 그다음 운영 호스트에 적용한 Access 보호를 해제하고 기존 Bearer 연결에서 응답을 확인해 주세요. [Worker 버전 복구](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/)
+
+## GitHub Actions
+
+PR과 `master` 푸시에서 인증 테스트, 릴리스 통합 테스트, Worker 빌드, Wrangler 드라이런을 실행해요. 이 검증에는 Cloudflare 자격 증명이 필요 없어요. [워크플로 파일](../.github/workflows/worker.yml)
+
+운영 MCP를 OAuth로 전환하고 브라우저 로그인과 배포 복구 방법을 확인한 다음, Actions의 수동 배포를 설정해 주세요.
+
+1. GitHub의 `production` 환경에 `CLOUDFLARE_ACCOUNT_ID`, `MY_CONTEXT_ACCESS_TEAM_DOMAIN`, `MY_CONTEXT_ACCESS_AUD` 변수를 추가해 주세요. 팀 도메인은 `https://`를 포함하고 AUD는 운영 Access 앱의 값을 사용해요.
+2. 대상 Cloudflare 계정의 Workers 배포로 범위를 제한한 API 토큰을 만들어 `production` 환경의 `CLOUDFLARE_API_TOKEN` 비밀에 넣어 주세요. [Cloudflare의 GitHub Actions 안내](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
+3. 저장소의 Actions 변수 `MY_CONTEXT_PRODUCTION_DEPLOY_ENABLED`를 `true`로 설정해 주세요.
+4. Actions의 **Worker CI and deploy**에서 `master`를 선택하고 `deploy_production`을 켜서 실행해 주세요. 같은 커밋의 검증과 운영 OAuth 확인이 통과하면 배포해요.
+5. 배포가 끝나면 운영 주소에 연결해 주세요. 새 자산을 배포했다면 Codex에서 해당 자산을 조회해 주세요.
 
 GitHub Actions 없이 자동 배포하려면 [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)에서 기존 Worker를 GitHub에 연결할 수 있어요. 이 경우 Cloudflare가 배포 자격 증명을 관리해요.
