@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -67,4 +67,15 @@ test('unknown arguments are rejected without writes', async () => withHome((home
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Usage:/);
   assert.equal(existsSync(join(home, '.agents')), false);
+}));
+
+test('a dangling symlink prevents partial installation', async () => withHome((home) => {
+  const blocked = claude(home);
+  mkdirSync(join(home, '.claude/skills'), { recursive: true });
+  symlinkSync(join(home, 'missing-skill'), blocked, 'dir');
+  const result = run(home);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Existing skill preserved/);
+  assert.equal(existsSync(join(home, '.agents')), false);
+  assert.equal(lstatSync(blocked).isSymbolicLink(), true);
 }));

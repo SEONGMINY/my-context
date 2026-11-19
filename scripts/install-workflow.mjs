@@ -21,18 +21,24 @@ const destinations = [
 ];
 
 function inspect(destination) {
+  let entry;
   try {
-    const entry = lstatSync(destination);
-    if (!entry.isSymbolicLink() || realpathSync(destination) !== realpathSync(source)) {
-      throw new Error('Existing skill preserved; target differs: ' + destination);
-    }
-    return { path: destination, action: 'keep' };
+    entry = lstatSync(destination);
   } catch (error) {
-    if (error.code === 'ENOENT' && error.path === destination) {
-      return { path: destination, action: 'link' };
-    }
+    if (error.code === 'ENOENT') return { path: destination, action: 'link' };
     throw error;
   }
+  // A dangling symlink is an existing conflict, not a free destination.
+  let resolved;
+  try {
+    resolved = realpathSync(destination);
+  } catch {
+    throw new Error('Existing skill preserved; target differs: ' + destination);
+  }
+  if (!entry.isSymbolicLink() || resolved !== realpathSync(source)) {
+    throw new Error('Existing skill preserved; target differs: ' + destination);
+  }
+  return { path: destination, action: 'keep' };
 }
 
 const plan = destinations.map(inspect);
