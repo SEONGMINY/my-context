@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -78,4 +78,29 @@ test('a dangling symlink prevents partial installation', async () => withHome((h
   assert.match(result.stderr, /Existing skill preserved/);
   assert.equal(existsSync(join(home, '.agents')), false);
   assert.equal(lstatSync(blocked).isSymbolicLink(), true);
+}));
+
+test('installed files are discoverable by path with intact metadata and relative contracts', async () => withHome((home) => {
+  const result = run(home);
+  assert.equal(result.status, 0, result.stderr);
+  const source = readFileSync(join(skill, 'SKILL.md'), 'utf8');
+  for (const target of [common(home), claude(home)]) {
+    const installed = readFileSync(join(target, 'SKILL.md'), 'utf8');
+    assert.equal(installed, source);
+    assert.match(installed, /^---\nname: development-workflow\ndescription: ".+"\n---\n/);
+    assert.match(installed, /\]\(references\/contracts\.md\)/);
+    assert.match(readFileSync(join(target, 'references/contracts.md'), 'utf8'), /G1 Contract/);
+    assert.match(readFileSync(join(target, 'references/contracts.md'), 'utf8'), /G6 Methodology/);
+  }
+}));
+
+test('an existing file in the first client location is never overwritten', async () => withHome((home) => {
+  const blocked = common(home);
+  mkdirSync(join(home, '.agents/skills'), { recursive: true });
+  writeFileSync(blocked, 'original personal skill');
+  const result = run(home);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Existing skill preserved/);
+  assert.equal(readFileSync(blocked, 'utf8'), 'original personal skill');
+  assert.equal(existsSync(join(home, '.claude')), false);
 }));
