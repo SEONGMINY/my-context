@@ -36,6 +36,20 @@ my-context에서 내 도메인 스토리텔링 절차를 찾아줘.
 
 조회한 자산은 현재 프로젝트의 규칙에 맞춰 적용해 주세요. 스크립트는 해당 프로젝트에서 실행해 주세요. 한글 검색 결과가 없으면 `domain storytelling`처럼 관련 영문 키워드를 써 보세요.
 
+## 공통 개발 Workflow Skill
+
+요구사항 구체화, 작업 분해, 검증, 중요 결정 변경, 세션 인계에 사용할 수 있는 선택적 Skill이에요. 작은 수정에는 별도 작업 문서를 만들지 않아요.
+
+```bash
+npm run install:workflow -- --check
+npm run install:workflow
+npm run test:workflow
+```
+
+설치 스크립트는 Codex·Pi가 사용하는 `~/.agents/skills/`와 Claude Code의 `~/.claude/skills/`에 같은 Skill 원본을 연결해요. 기존 파일이 있으면 덮어쓰지 않고 중단해요. 새 세션에서 `development-workflow`를 실제로 찾아 호출해 확인해 주세요. 도구별 로딩은 설치와 별개로 검증해야 해요.
+
+개발 Workflow를 사용하는 것만으로 개인 지식 MCP를 조회하지 않아요. 각 프로젝트의 계약·승인 정책이 우선해요.
+
 ## 조회와 배포
 
 ```mermaid
