@@ -1,14 +1,18 @@
 # my-context
 
-여러 프로젝트에서 개인 개발 지식을 **필요할 때 Context로 활용**하고, 공통 Skill을 재사용할 수 있도록 원본을 관리한다. 지식의 정본은 Private Git의 일반 Markdown이다. MCP는 교체 가능한 조회 인터페이스이며, Product의 규칙과 실행 책임은 각 프로젝트에 남긴다.
+my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통 작업 절차를 재사용하는 도구다. 비공개 Git 저장소에 Markdown 원본과 첨부 파일을 보관한다. MCP는 자산을 제공한다. 각 프로젝트가 자산을 적용하고 결과를 검증한다. [제품 비전](docs/VISION.md)
 
 ## 저장소 구성
 
-- `content/` — 개인 개발 지식 원본과 Context Hub 검색 진입 파일.
-- `skills/` — 여러 프로젝트에서 재사용할 Codex Skill의 원본.
-- `scripts/` — Context Hub 빌드, 로컬 설정, 사용자 범위 연결 스크립트.
-- `worker/` — 운영 MCP의 인증과 조회 인터페이스.
-- `docs/` — 운영·배포 절차, 제품 비전, 사용자 문제.
-- `README.md` — Codex 연결과 첫 사용 안내.
+- `content/` — 개인 지식 원본과 검색 진입 파일
+- `skills/` — 공통 Skill 원본과 첨부 파일
+- `worker/` — 운영 MCP의 인증과 읽기 전용 조회
+- `scripts/` — 빌드, 릴리스 검증, 로컬 연결
+- `test/` — Worker 인증 테스트
+- `docs/`, `README.md` — 제품·운영 문서와 사용 안내
 
-개인 지식은 사용자 요청 없이 조회하거나 변경하지 않는다. 개인 지식은 프로젝트의 명시적 계약보다 우선하지 않는다. 원본 변경은 [관리 Skill](skills/manage-dev-knowledge/SKILL.md), 운영 배포는 [배포 가이드](docs/DEPLOYMENT.md)를 참고한다.
+## 작업 기준
+
+- 사용자가 요청할 때만 개인 지식을 조회하거나 변경한다. 지식을 적용할 때는 대상 프로젝트의 규칙을 우선한다. 원본을 변경할 때는 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
+- 검색 인덱스와 Worker 번들은 커밋하지 않는다.
+- 코드 변경은 [CI](.github/workflows/worker.yml)의 관련 검사로 검증한다. 운영에 반영할 때는 [배포 가이드](docs/DEPLOYMENT.md)를 따른다.
