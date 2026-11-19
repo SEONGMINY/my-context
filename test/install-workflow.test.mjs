@@ -202,7 +202,12 @@ test('설치 실패 후 링크 정리에도 실패하면 > 부분 설치를 숨�
   };
 
   // when: 설치에 실패하고 롤백도 실패
-  const failure = assert.throws(() => applyPlannedSkillLinks(plan, skill, failingFs));
+  let failure;
+  try {
+    applyPlannedSkillLinks(plan, skill, failingFs);
+  } catch (error) {
+    failure = error;
+  }
 
   // then: 남은 부분 설치를 명시적으로 보고하고 기존 파일을 임의로 삭제하지 않음
   assert.ok(failure instanceof AggregateError);

@@ -27,16 +27,18 @@ function keySetMustNotLoad() {
   throw new Error('This request must not load Access verification keys.');
 }
 
-test('Bearer mode preserves default authentication and its challenge', async (t) => {
+test('Bearer 모드에서 토큰을 확인하면 > 유효한 요청을 허용하고 잘못된 요청은 401로 거부한다', async (t) => {
   // Workers exposes this Web Crypto extension. Node provides the equivalent separately.
   if (!crypto.subtle.timingSafeEqual) {
     crypto.subtle.timingSafeEqual = timingSafeEqual;
     t.after(() => { delete crypto.subtle.timingSafeEqual; });
   }
+  // given: 기본 Bearer 인증 모드와 유효한 테스트 토큰
   const authenticate = createAuthenticator({ createKeySet: keySetMustNotLoad });
   const env = { MY_CONTEXT_MCP_TOKEN: bearerToken };
   const valid = mcpRequest({ Authorization: `Bearer ${bearerToken}` });
 
+  // when + then: 유효한 요청은 허용, 누락·변조된 요청은 거부
   assert.equal(await authenticate(valid, env), null);
   assert.equal(await authenticate(valid, { ...env, MY_CONTEXT_AUTH_MODE: 'bearer' }), null);
   for (const request of [mcpRequest(), mcpRequest({ Authorization: `Bearer ${bearerToken}x` }),
@@ -48,7 +50,8 @@ test('Bearer mode preserves default authentication and its challenge', async (t)
   assert.equal((await authenticate(valid, {})).status, 503);
 });
 
-test('Access mode requires its own configuration and never falls back to Bearer', async () => {
+test('Access 모드에서 Bearer 또는 잘못된 설정을 사용하면 > 인증을 거부하고 Bearer로 대체하지 않는다', async () => {
+  // given: Access 인증 모드가 설정되어 있음
   let keyLoads = 0;
   const authenticate = createAuthenticator({ createKeySet() {
     keyLoads += 1;
@@ -56,6 +59,7 @@ test('Access mode requires its own configuration and never falls back to Bearer'
   } });
   const validBearer = mcpRequest({ Authorization: `Bearer ${bearerToken}` });
 
+  // when + then: Bearer 요청이나 불완전한 설정은 인증되지 않음
   assert.equal((await authenticate(validBearer, accessEnv)).status, 401);
   assert.equal((await authenticate(validBearer, { ...accessEnv, MY_CONTEXT_ACCESS_TEAM_DOMAIN: '' })).status, 503);
   assert.equal((await authenticate(validBearer, { ...accessEnv, MY_CONTEXT_ACCESS_AUD: '' })).status, 503);
@@ -63,7 +67,8 @@ test('Access mode requires its own configuration and never falls back to Bearer'
   assert.equal(keyLoads, 0);
 });
 
-test('Access mode accepts only a valid signed assertion for the configured issuer and audience', async (t) => {
+test('Access 모드에서 JWT를 확인하면 > 올바른 서명·발급자·대상인 요청만 허용한다', async (t) => {
+  // given: 로컬 공개키·서명키·검증 대상 클레임
   const { publicKey, privateKey } = await generateKeyPair('RS256');
   const { privateKey: untrustedKey } = await generateKeyPair('RS256');
   const keyId = 'fixture-key';
@@ -78,22 +83,24 @@ test('Access mode accepts only a valid signed assertion for the configured issue
   const sign = (overrides = {}, key = privateKey) => new SignJWT({ ...claims, ...overrides })
     .setProtectedHeader({ alg: 'RS256', kid: keyId })
     .sign(key);
+  // when + then: 유효한 JWT는 허용
   const valid = await sign();
   assert.equal(await authenticate(accessRequest(valid), accessEnv), null);
 
   const invalidAssertions = [
-    ['wrong signature', await sign({}, untrustedKey)],
-    ['wrong audience', await sign({ aud: ['a-different-worker'] })],
-    ['wrong issuer', await sign({ iss: 'https://other.cloudflareaccess.com' })],
-    ['expired assertion', await sign({ exp: now - 300 })],
-    ['future assertion', await sign({ nbf: now + 300 })],
-    ['missing expiry', await sign({ exp: undefined })],
-    ['missing issuer', await sign({ iss: undefined })],
-    ['missing audience', await sign({ aud: undefined })],
-    ['unsupported algorithm', await new SignJWT(claims).setProtectedHeader({ alg: 'HS256', kid: keyId })
+    ['서명이 잘못된 경우', await sign({}, untrustedKey)],
+    ['대상이 잘못된 경우', await sign({ aud: ['a-different-worker'] })],
+    ['발급자가 잘못된 경우', await sign({ iss: 'https://other.cloudflareaccess.com' })],
+    ['유효기간이 지난 경우', await sign({ exp: now - 300 })],
+    ['아직 유효하지 않은 경우', await sign({ nbf: now + 300 })],
+    ['만료 시각이 없는 경우', await sign({ exp: undefined })],
+    ['발급자가 없는 경우', await sign({ iss: undefined })],
+    ['대상이 없는 경우', await sign({ aud: undefined })],
+    ['지원하지 않는 서명 알고리즘인 경우', await new SignJWT(claims).setProtectedHeader({ alg: 'HS256', kid: keyId })
       .sign(new Uint8Array(32).fill(1))],
-    ['malformed assertion', 'invalid.jwt.fixture'],
+    ['잘못된 형식인 경우', 'invalid.jwt.fixture'],
   ];
+  // when + then: 각 잘못된 JWT는 401로 거부
   for (const [name, assertion] of invalidAssertions) {
     await t.test(name, async () => {
       const request = accessRequest(assertion, { Authorization: `Bearer ${bearerToken}` });
