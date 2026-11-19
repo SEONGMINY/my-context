@@ -1,0 +1,8 @@
+{
+  "name": "my-context-oauth-pilot",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-11-19",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": { "MY_CONTEXT_AUTH_MODE": "cloudflare-access" }
+}

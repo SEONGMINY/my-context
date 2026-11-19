@@ -4,9 +4,10 @@ import { search } from '@aisuite/chub/src/lib/bm25.js';
 import { normalizeLanguage } from '@aisuite/chub/src/lib/normalize.js';
 import { z } from 'zod';
 import release from '../.generated/worker/release.json' with { type: 'json' };
+import { createAuthenticator } from './auth.mjs';
 
 const entries = new Map(release.entries.map((entry) => [entry.id, entry]));
-const encoder = new TextEncoder();
+const authenticate = createAuthenticator();
 const language = z.string().max(80).optional();
 const tags = z.string().max(512).optional();
 const getInput = {
@@ -109,13 +110,8 @@ export default {
     const origin = request.headers.get('origin');
     if (origin !== null && origin !== url.origin) return new Response(null, { status: 403 });
 
-    const token = env.MY_CONTEXT_MCP_TOKEN;
-    if (!token?.trim()) return new Response(null, { status: 503 });
-    const received = encoder.encode(request.headers.get('authorization') || '');
-    const expected = encoder.encode(`Bearer ${token}`);
-    if (received.length !== expected.length || !crypto.subtle.timingSafeEqual(received, expected)) {
-      return new Response(null, { status: 401, headers: { 'WWW-Authenticate': 'Bearer' } });
-    }
+    const denied = await authenticate(request, env);
+    if (denied) return denied;
     if (request.method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } });
 
     const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
