@@ -1,5 +1,8 @@
 node_modules/
 .generated/
 .local/
+.wrangler/
+.dev.vars
+.dev.vars.*
 .DS_Store
 *.log

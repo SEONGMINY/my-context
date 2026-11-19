@@ -1,93 +1,96 @@
 # my-context
 
-**프로젝트가 바뀌어도, 내 개발 경험과 판단 기준을 매번 다시 설명할 필요가 없어요.**
+**프로젝트나 노트북이 바뀌어도, 내 개발 경험과 판단 기준을 매번 다시 설명할 필요가 없어요.**
 
-AI와 개발하면서 쌓인 경험은 대화나 프로젝트 안에 남기 쉽습니다. 다른 프로젝트를 시작하면 이전 기록을 다시 찾아야 하고, 개인적인 원칙을 `AGENTS.md`마다 복사하면 프로젝트 규칙과 섞일 수도 있어요.
-
-my-context는 **개인 개발 지식을 Git의 Markdown으로 보관**하고, 필요할 때 Codex가 찾아 현재 작업의 참고 자료로 사용할 수 있게 연결합니다.
+AI와 작업하며 쌓은 경험은 대화나 프로젝트 안에 남기 쉬워요. my-context는 **개인 원칙과 재사용할 작업 절차를 비공개 Git 저장소에 보관**하고, Codex가 필요할 때 MCP로 찾아 쓸 수 있게 해요. 절차에 딸린 템플릿이나 보조 스크립트도 함께 가져올 수 있습니다.
 
 ## 실제로 사용해 보면
 
-예를 들어 API 개발이 늦어졌을 때 MSW로 화면 개발을 먼저 진행했던 경험을 다른 프로젝트에서도 활용하고 싶다고 해볼게요.
-
-**먼저, 경험을 남깁니다.**
+새 프로젝트에서 요구사항을 받았고, 저장해 둔 도메인 스토리텔링 방식으로 업무 흐름을 정리하고 싶다고 해볼게요.
 
 ```text
-API가 준비되지 않았을 때 MSW로 화면 개발을 먼저 진행한 경험을
-내 개발 지식에 등록해줘. 기존 지식과 비교하고 변경안을 보여줘.
+my-context에서 내 도메인 스토리텔링 절차와 결과물 템플릿을 찾아줘.
+이 프로젝트의 요구사항을 바탕으로 행위자와 업무 흐름을 정리해줘.
 ```
 
-Codex는 기존 내용을 확인하고 저장할 Markdown을 제안합니다. **변경안과 반영 범위를 승인하면** 지식을 저장하고 검색할 수 있게 갱신합니다.
+Codex는 저장된 절차를 찾아 필요한 질문을 짚고, 템플릿으로 결과를 정리해요. 테스트 코드가 고민이라면 “내 테스트 코드 원칙을 찾아 이 변경에 적용해줘”라고 요청할 수도 있습니다. 두 요청은 등록해 둔 자산이 있을 때의 사용 예시예요.
 
-**다른 프로젝트에서는 이렇게 찾아봅니다.**
-
-```text
-이 프로젝트도 API 준비가 늦어지고 있어.
-내 개발 지식에서 비슷한 경험을 찾아 참고해줘.
-```
-
-예를 들어 저장해 둔 MSW 활용 경험을 참고해 **화면 개발을 먼저 진행하는 방안**을 제안하고, 실제 API 계약이 확정되기 전에 확인할 부분을 함께 짚어줄 수 있어요.
-
-*MSW 사례는 사용 흐름을 보여주기 위한 예시입니다.*
+개인 자산은 **요청했을 때만** 읽어요. 적용할 때는 현재 프로젝트의 요구사항과 규칙을 우선하며, 스크립트 실행과 결과 검증도 해당 프로젝트에서 진행합니다.
 
 ## 어떻게 동작하나요?
 
-지식은 프로젝트 밖에 두고, **요청했을 때 필요한 내용만 읽습니다.**
-
 ```mermaid
 flowchart TB
-    Product["Product / Codex<br/>현재 프로젝트에서 작업"]
-    MCP["MCP · Context Hub<br/>필요한 지식 검색 · 조회"]
-    Context["my-context<br/>Private Git · Markdown 원본"]
-    Product <-->|"조회 요청 · 결과"| MCP
-    MCP <-->|"검색 인덱스 · 지식 본문"| Context
+    subgraph publishing ["운영자가 자산을 배포해요"]
+        direction LR
+        source["Private Git · 승인된 커밋"] -->|"빌드"| bundle["검색 인덱스 · 원칙 · 절차 · 첨부 파일"]
+    end
+
+    subgraph reading ["작업 중 필요한 자산을 찾아요"]
+        laptopA["노트북 A · Codex"]
+        laptopB["노트북 B · Codex"]
+    end
+
+    bundle -->|"수동 배포"| worker["Cloudflare Worker · 읽기 전용 MCP"]
+    laptopA <-->|"인증된 검색·조회"| worker
+    laptopB <-->|"인증된 검색·조회"| worker
 ```
 
-my-context의 Markdown으로 Context Hub 검색 인덱스를 만들고, Codex는 MCP를 통해 관련 지식을 찾아 읽습니다.
+Codex는 **Worker에 배포된 버전**을 읽어요. Git에 변경을 커밋하면 운영자가 Worker를 다시 배포하고, 두 노트북은 같은 주소에서 새 버전을 조회합니다.
 
-조회한 지식은 **현재 작업의 참고 자료**입니다. 프로젝트의 요구사항과 규칙이 우선하며, `AGENTS.md`와 실행·검증 절차(Harness)는 각 프로젝트에서 관리해요. 여러 프로젝트에서 쓰는 **공통 Skill**은 my-context에 두고 Codex의 Skill 기능으로 사용합니다.
+## Codex에 연결하기
 
-## 설치 및 첫 사용
+사용하는 환경마다 **원격 MCP 주소와 Bearer 토큰을 한 번 등록**하면 돼요. 조회하는 기기에는 저장소를 클론하거나 Skill을 따로 설치할 필요가 없습니다.
 
-macOS에서 로컬 Codex와 Node.js가 필요합니다. 지원 버전은 **20.20.0 이상의 20.x 또는 22.22.0 이상**입니다. Private 저장소에 접근할 수 있는 환경에서 실행하세요.
+- **주소** — `https://my-context.my-context.workers.dev/mcp`
+- **연결 방식** — Streamable HTTP
+- **인증** — 운영자가 공유한 Bearer 토큰
+
+Codex CLI에서는 토큰을 실행 환경의 `MY_CONTEXT_MCP_TOKEN`에 설정한 후 연결을 등록하세요.
 
 ```bash
-git clone git@github.com:SEONGMINY/my-context.git
-cd my-context
-npm ci
-npm run setup
-npm run build
-npm run install:user
+codex mcp add my-context-cloudflare \
+  --url https://my-context.my-context.workers.dev/mcp \
+  --bearer-token-env-var MY_CONTEXT_MCP_TOKEN
 ```
 
-설치 명령은 Codex에 `personal-knowledge` MCP 설정을 등록하고 `manage-dev-knowledge` Skill을 연결합니다. 설치 상태만 점검하려면 `npm run install:user -- --check`를 실행하세요. 두 항목이 모두 `keep`이면 설정과 링크가 이미 일치합니다.
+데스크톱 앱을 사용한다면 앱이 토큰을 읽을 수 있도록 실행 환경에 전달하거나, 토큰 파일을 읽는 로컬 헤더 명령을 연결할 수 있어요. 헤더 명령을 사용할 때 `http_headers_helper`에는 명령을 문자열로 넣습니다. [Codex MCP 연결 안내](https://learn.chatgpt.com/docs/extend/mcp)
 
-실제 MCP 연결은 새 Codex 세션에서 다음 요청으로 확인하세요.
+새 Codex 세션에서 이렇게 물어보세요.
 
 ```text
-personal-knowledge MCP의 chub_list를 직접 호출해줘.
+my-context-cloudflare의 chub_list를 직접 호출해줘.
 ```
 
-도구 호출이 성공하면 연결된 것입니다. 등록된 지식이 없으면 빈 목록이 나옵니다. 이후 위의 지식 등록 예시부터 시작하면 됩니다. Skill이 자동으로 선택되지 않으면 `$manage-dev-knowledge`로 호출할 수 있어요.
+호출이 성공하면 연결된 거예요. 배포된 자산이 없으면 빈 목록이 나와요. `401`이 나오면 Codex 실행 환경에서 토큰을 읽을 수 있는지 확인해 주세요. 검색은 이름·설명·태그를 사용하므로 한국어 요청으로 찾기 어렵다면 `testing`처럼 관련 영문 키워드를 함께 써 보세요.
 
-지식은 **명시적으로 요청할 때만** 조회하며, 저장·수정과 원격 반영에는 승인이 필요합니다. 현재 검색은 이름·설명·태그 중심이며 한국어 본문 의미 검색은 지원하지 않아요.
+## 자산을 등록하고 갱신하기
 
-다른 기기에서 저장한 지식을 Git으로 받아오면 my-context에서 `npm run build`로 로컬 검색 인덱스를 갱신하세요. 새 Codex 세션에서 MCP로 검색하고 바뀐 내용을 확인할 수 있습니다.
+| 저장할 것 | 어디에 두나요? |
+| --- | --- |
+| 원칙이나 경험 | `content/personal/` 아래 항목 폴더에 본문 `knowledge.md`와 검색용 `SKILL.md`를 함께 둬요. |
+| 반복해서 쓰는 절차 | `skills/` 아래에 폴더를 만들고 `SKILL.md`의 `name`을 폴더 이름과 맞춘 뒤 [배포 목록](publish-skills.json)에 추가해요. |
+| 템플릿과 보조 스크립트 | 절차가 있는 폴더 안에 두면 MCP에서 필요한 파일만 가져올 수 있어요. |
 
-자세한 변경·검증 절차는 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)에, 프로젝트의 방향과 출발점은 [VISION](docs/VISION.md)과 [PROBLEM](docs/PROBLEM.md)에 정리했습니다.
+등록·수정·삭제는 변경안을 검토하고 승인한 범위에서 반영해요. 배포할 변경은 먼저 Git에 커밋합니다. 기존 지식과 비교하거나 Markdown을 편집하는 절차는 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)에 있어요.
 
-## 원격 MCP 연결을 위한 로컬 검증
-
-인증된 HTTP 연결을 로컬에서 먼저 검증할 수 있습니다. `content/`의 Context Hub 항목과 `publish-skills.json`에 지정한 `skills/`의 절차·첨부 파일을 같은 MCP에서 조회합니다. 예를 들어 `skills/domain-storytelling/SKILL.md`를 제공하려면 frontmatter의 `name`을 `domain-storytelling`으로 쓰고, 같은 이름을 목록에 추가한 뒤 절차와 필요한 첨부 파일을 함께 커밋합니다. 이 방식에서는 별도의 Codex Skill 설치가 필요 없습니다.
+운영자는 저장소와 Cloudflare 계정에 접근할 수 있는 환경에서 Node.js 22.22.0 이상으로 배포해요.
 
 ```bash
-npm ci
-node scripts/publish-release.mjs HEAD
-MY_CONTEXT_MCP_TOKEN_FILE=/path/to/token-file npm run serve
+npm ci &&
+npm run worker:build -- HEAD &&
+npm run worker -- deploy --secrets-file /path/to/worker-secrets.env
 ```
 
-토큰 파일에는 접속에 사용할 Bearer 토큰을 넣습니다. 서버는 기본적으로 `http://127.0.0.1:8090/mcp`에서 검색·조회만 제공합니다. Codex에는 이 주소를 Streamable HTTP로 등록하고 같은 토큰을 설정합니다.
+비밀 파일은 저장소 밖에 두고 `MY_CONTEXT_MCP_TOKEN`에 접속 토큰을 설정해요. 다른 Cloudflare 계정에 배포했다면 Wrangler가 반환한 `workers.dev` 주소 뒤에 `/mcp`를 붙여 사용하세요.
 
-새 커밋을 제공하려면 `node scripts/publish-release.mjs <git-revision>`을 실행하세요. 새 인덱스가 검증을 통과하면 이후 MCP 요청부터 사용됩니다. 실패하면 이전 인덱스가 계속 제공되며, 이전 커밋을 지정해 되돌릴 수 있습니다.
+<details>
+<summary>운영자가 로컬에서 확인하는 방법</summary>
 
-실제 지식 없이 이 흐름 전체를 확인하려면 `node scripts/verify-release.mjs`를 실행하세요. 외부 호스팅과 Git 변경에 따른 자동 배포는 후속 단계입니다.
+- **Worker 확인** — Git 커밋을 `npm run worker:build -- HEAD`로 빌드하고 `.dev.vars`에 테스트 토큰을 넣은 뒤 `npm run worker -- dev`를 실행해요.
+- **기존 로컬 Context Hub 설치** — `npm ci` → `npm run setup` → `npm run build` → `npm run install:user` 순서예요. `npm run install:user -- --check`로 설정을 점검할 수 있어요. 설치에는 macOS와 프로젝트가 지원하는 Node.js 버전이 필요합니다.
+- **로컬 HTTP 통합 테스트** — `node scripts/verify-release.mjs`는 임시 데이터로 릴리스 전환과 조회를 확인해요.
+
+</details>
+
+프로젝트가 지향하는 방향과 출발점은 [VISION](docs/VISION.md)과 [PROBLEM](docs/PROBLEM.md)에 정리했습니다.

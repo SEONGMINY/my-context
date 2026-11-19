@@ -9,6 +9,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "serve": "node scripts/serve.mjs",
+    "worker:build": "node scripts/build-worker.mjs",
+    "worker": "npx --yes wrangler@4.165.0",
     "search": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub search",
     "get": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub get",
     "setup": "node scripts/setup-local.mjs",
@@ -16,9 +18,8 @@
   },
   "dependencies": {
     "@aisuite/chub": "0.1.4",
-    "supergateway": "4.2.2"
-  },
-  "devDependencies": {
-    "@modelcontextprotocol/sdk": "1.32.2"
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "supergateway": "4.2.2",
+    "zod": "4.6.7"
   }
 }

@@ -1,0 +1,8 @@
+{
+  "name": "my-context",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-11-19",
+  "workers_dev": true,
+  "preview_urls": false,
+  "secrets": { "required": ["MY_CONTEXT_MCP_TOKEN"] }
+}
