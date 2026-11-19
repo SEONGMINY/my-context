@@ -11,15 +11,15 @@ my-context는 원칙, 작업 절차, 템플릿, 보조 스크립트를 비공개
 1. 아래 명령으로 연결을 등록해 주세요.
 
    ```bash
-   codex mcp add my-context-cloudflare \
-     --url https://my-context.my-context.workers.dev/mcp
+   codex mcp add my-context \
+     --url https://minylee.my-context.workers.dev/mcp
    ```
 
-2. 브라우저가 열리면 Cloudflare로 로그인해 주세요. 브라우저가 열리지 않으면 `codex mcp login my-context-cloudflare`를 실행해 주세요.
+2. 브라우저에서 **my-context**에 로그인해 주세요. 브라우저가 열리지 않으면 `codex mcp login my-context`를 실행해 주세요.
 3. 새 Codex 세션을 열어 주세요.
-4. “`my-context-cloudflare`의 `chub_list`를 호출해줘”라고 요청해 주세요.
+4. “`my-context`의 `chub_list`를 호출해줘”라고 요청해 주세요.
 
-빈 목록도 연결에 성공한 결과예요. 기존 Bearer 연결을 사용했다면 해당 연결의 토큰 설정을 지우고 다시 등록해 주세요. [사용자 관리와 연결 설정](docs/DEPLOYMENT.md#운영-사용자-추가)
+빈 목록도 연결에 성공한 결과예요. 이전 URL을 쓰고 있다면 위 명령으로 주소를 갱신해 주세요. 이전 연결 이름이 `my-context-cloudflare`라면 새 연결을 확인한 뒤 `codex mcp remove my-context-cloudflare`로 이전 연결을 정리해 주세요. [사용자 관리와 연결 설정](docs/DEPLOYMENT.md#운영-사용자-추가)
 
 ## 사용 예시
 

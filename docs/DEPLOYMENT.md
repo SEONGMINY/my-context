@@ -2,7 +2,7 @@
 
 ## 운영 사용자 추가
 
-1. Cloudflare Zero Trust에서 **Access controls → Applications → my-context-production**을 열어 주세요.
+1. Cloudflare Zero Trust에서 **Access controls → Applications → my-context**를 열어 주세요.
 2. **Access policies → Create new policy**에서 **Allow**를 선택해 주세요. **Include → Emails**에 추가할 사용자의 정확한 로그인 이메일을 넣어 주세요.
 3. 정책을 저장하고 운영 앱에 연결해 주세요. 사용자가 Cloudflare 로그인으로 [MCP 연결](../README.md#codex에-연결하기)을 확인하게 해 주세요.
 
@@ -90,7 +90,7 @@ Worker 빌드는 지정한 Git 커밋을 사용해요. 첫 배포에서 Wrangler
 
 배포 전에 `npm run worker -- deployments list --config wrangler.jsonc`로 정상 동작 중인 버전 ID를 확인해 주세요. 문제가 생기면 `npm run worker -- rollback <버전-ID> --config wrangler.jsonc`로 해당 버전을 복구해 주세요. 운영 주소에서 OAuth 로그인과 `chub_list`를 확인해 주세요.
 
-OAuth 전환 전 Bearer 버전으로 돌아가야 한다면 먼저 Worker를 해당 버전으로 복구해 주세요. 그다음 운영 호스트의 Access 보호를 해제하고 기존 연결을 확인해 주세요. 이 복구에는 기존 `MY_CONTEXT_MCP_TOKEN` 비밀이 필요해요. [Worker 버전 복구](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/)
+이전 주소 `my-context.my-context.workers.dev`는 같은 Access 앱으로 보호돼요. 기존 기기는 [새 운영 주소로 연결을 갱신해 주세요](../README.md#codex에-연결하기). 새 배포는 `minylee` Worker에 적용돼요. [Worker 버전 복구](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/)
 
 ## GitHub Actions
 
@@ -99,7 +99,7 @@ PR과 `master` 푸시에서 인증 테스트, 릴리스 통합 테스트, Worker
 운영 MCP를 OAuth로 전환하고 브라우저 로그인과 배포 복구 방법을 확인한 다음, Actions의 수동 배포를 설정해 주세요.
 
 1. GitHub의 `production` 환경에 `CLOUDFLARE_ACCOUNT_ID`, `MY_CONTEXT_ACCESS_TEAM_DOMAIN`, `MY_CONTEXT_ACCESS_AUD` 변수를 추가해 주세요. 팀 도메인은 `https://`를 포함하고 AUD는 운영 Access 앱의 값을 사용해요.
-2. 대상 Cloudflare 계정의 Workers 배포로 범위를 제한한 API 토큰을 만들어 `production` 환경의 `CLOUDFLARE_API_TOKEN` 비밀에 넣어 주세요. [Cloudflare의 GitHub Actions 안내](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
+2. `minylee` Worker에 Workers Editor 권한을 부여한 계정 API 토큰을 만들어 `production` 환경의 `CLOUDFLARE_API_TOKEN` 비밀에 넣어 주세요. [Cloudflare의 Worker 권한 안내](https://developers.cloudflare.com/workers/authorization/)
 3. 저장소의 Actions 변수 `MY_CONTEXT_PRODUCTION_DEPLOY_ENABLED`를 `true`로 설정해 주세요.
 4. Actions의 **Worker CI and deploy**에서 `master`를 선택하고 `deploy_production`을 켜서 실행해 주세요. 같은 커밋의 검증과 운영 OAuth 확인이 통과하면 배포해요.
 5. 배포가 끝나면 운영 주소에 연결해 주세요. 새 자산을 배포했다면 Codex에서 해당 자산을 조회해 주세요.
