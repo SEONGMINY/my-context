@@ -28,7 +28,7 @@ Codex는 기존 내용을 확인하고 저장할 Markdown을 제안합니다. **
 
 예를 들어 저장해 둔 MSW 활용 경험을 참고해 **화면 개발을 먼저 진행하는 방안**을 제안하고, 실제 API 계약이 확정되기 전에 확인할 부분을 함께 짚어줄 수 있어요.
 
-*사용 흐름을 보여주기 위한 예시입니다. 현재는 검증용 지식을 정리한 상태이며, 실제 개인 지식이 등록돼 있지는 않습니다.*
+*MSW 사례는 사용 흐름을 보여주기 위한 예시입니다.*
 
 ## 어떻게 동작하나요?
 
@@ -43,19 +43,13 @@ flowchart TB
     MCP <-->|"검색 인덱스 · 지식 본문"| Context
 ```
 
-my-context의 Markdown으로 Context Hub 검색 인덱스를 만들고, Codex는 MCP를 통해 관련 지식을 찾아 읽습니다. **MCP는 조회 인터페이스일 뿐** 지식의 원본이나 프로젝트의 판단을 소유하지 않아요.
+my-context의 Markdown으로 Context Hub 검색 인덱스를 만들고, Codex는 MCP를 통해 관련 지식을 찾아 읽습니다.
 
-조회한 지식은 **명령이 아닌 참고 Context**입니다. 현재 프로젝트의 요구사항과 규칙이 우선하며, 구현과 검증도 그 프로젝트에서 진행합니다. 여러 프로젝트에서 쓸 **공통 Skill**도 my-context에서 관리하지만, MCP가 아닌 Codex의 Skill 기능으로 사용해요.
-
-## 왜 프로젝트마다 지식을 저장하지 않나요?
-
-개인 경험을 프로젝트마다 복사하면 같은 내용을 여러 곳에서 관리해야 하고, 프로젝트 고유의 규칙과 섞이기 쉬워요. my-context는 **지식의 원본을 한곳에 두고, 필요한 프로젝트에서 찾아 읽도록** 연결합니다.
-
-`AGENTS.md`에는 해당 프로젝트의 지침을 남깁니다. 실행과 테스트를 위한 Harness도 그 프로젝트에서 관리해요.
+조회한 지식은 **현재 작업의 참고 자료**입니다. 프로젝트의 요구사항과 규칙이 우선하며, `AGENTS.md`와 실행·검증 절차(Harness)는 각 프로젝트에서 관리해요. 여러 프로젝트에서 쓰는 **공통 Skill**은 my-context에 두고 Codex의 Skill 기능으로 사용합니다.
 
 ## 설치 및 첫 사용
 
-macOS의 로컬 Codex와 Node.js **18 이상**이 필요합니다. Private 저장소에 접근할 수 있는 환경에서 실행하세요.
+macOS에서 로컬 Codex와 Node.js가 필요합니다. 지원 버전은 **20.20.0 이상의 20.x 또는 22.22.0 이상**입니다. Private 저장소에 접근할 수 있는 환경에서 실행하세요.
 
 ```bash
 git clone git@github.com:SEONGMINY/my-context.git
@@ -66,14 +60,18 @@ npm run build
 npm run install:user
 ```
 
-설치 명령은 Codex에 `personal-knowledge` MCP 설정을 등록하고 `manage-dev-knowledge` Skill을 연결합니다. **설정 등록과 실제 연결 성공은 다르므로**, 새 Codex 세션에서 먼저 확인하세요.
+설치 명령은 Codex에 `personal-knowledge` MCP 설정을 등록하고 `manage-dev-knowledge` Skill을 연결합니다. 설치 상태만 점검하려면 `npm run install:user -- --check`를 실행하세요. 두 항목이 모두 `keep`이면 설정과 링크가 이미 일치합니다.
+
+실제 MCP 연결은 새 Codex 세션에서 다음 요청으로 확인하세요.
 
 ```text
 personal-knowledge MCP의 chub_list를 직접 호출해줘.
 ```
 
-도구 호출이 성공하면 연결된 것입니다. **현재는 지식이 없어 빈 목록이 나오는 것이 정상**이에요. 이후 위의 지식 등록 예시부터 시작하면 됩니다. Skill이 자동으로 선택되지 않으면 `$manage-dev-knowledge`로 호출할 수 있어요.
+도구 호출이 성공하면 연결된 것입니다. 등록된 지식이 없으면 빈 목록이 나옵니다. 이후 위의 지식 등록 예시부터 시작하면 됩니다. Skill이 자동으로 선택되지 않으면 `$manage-dev-knowledge`로 호출할 수 있어요.
 
 지식은 **명시적으로 요청할 때만** 조회하며, 저장·수정과 원격 반영에는 승인이 필요합니다. 현재 검색은 이름·설명·태그 중심이며 한국어 본문 의미 검색은 지원하지 않아요.
+
+다른 기기에서 저장한 지식을 Git으로 받아오면 my-context에서 `npm run build`로 로컬 검색 인덱스를 갱신하세요. 새 Codex 세션에서 MCP로 검색하고 바뀐 내용을 확인할 수 있습니다.
 
 자세한 변경·검증 절차는 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)에, 프로젝트의 방향과 출발점은 [VISION](docs/VISION.md)과 [PROBLEM](docs/PROBLEM.md)에 정리했습니다.
