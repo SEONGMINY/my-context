@@ -4,5 +4,5 @@
   "compatibility_date": "2026-11-19",
   "workers_dev": true,
   "preview_urls": false,
-  "secrets": { "required": ["MY_CONTEXT_MCP_TOKEN"] }
+  "vars": { "MY_CONTEXT_AUTH_MODE": "cloudflare-access" }
 }

@@ -1,34 +1,25 @@
 # MCP 연결과 배포
 
-## 토큰 준비
+## 운영 사용자 추가
 
-| 이름 | 용도 | 어디에서 받나요? |
-| --- | --- | --- |
-| `MY_CONTEXT_MCP_TOKEN` | Codex의 조회 요청을 인증해요. | 운영자가 만든 Bearer 토큰이에요. |
-| `CLOUDFLARE_API_TOKEN` | GitHub Actions에서 Worker를 배포해요. | Cloudflare의 Account API tokens에서 만들어요. |
-| `CLOUDFLARE_ACCOUNT_ID` | 배포할 Cloudflare 계정을 지정해요. | Cloudflare 대시보드에서 확인해요. |
+1. Cloudflare Zero Trust에서 **Access controls → Applications → my-context-production**을 열어 주세요.
+2. **Access policies → Create new policy**에서 **Allow**를 선택해 주세요. **Include → Emails**에 추가할 사용자의 정확한 로그인 이메일을 넣어 주세요.
+3. 정책을 저장하고 운영 앱에 연결해 주세요. 사용자가 Cloudflare 로그인으로 [MCP 연결](../README.md#codex에-연결하기)을 확인하게 해 주세요.
 
-운영 MCP는 공유 Bearer 토큰을 사용해요. 다른 노트북을 연결하려면 운영자에게 현재 토큰을 받아 주세요. 운영 토큰을 처음 만든다면 아래 명령을 사용해 주세요. 토큰 파일은 저장소 밖에 생겨요.
+운영 앱에는 파일럿과 공유하는 소유자 정책이 있어요. 추가 사용자는 운영 앱 전용 정책에 넣으면 파일럿의 허용 목록을 그대로 유지할 수 있어요. 허용된 사용자는 운영 MCP에 배포된 모든 자산을 조회할 수 있어요. GitHub 저장소나 Cloudflare 관리자 초대, Worker 재배포는 필요 없어요. [Access 정책](https://developers.cloudflare.com/cloudflare-one/access-controls/policies/)
 
-```bash
-(
-  umask 077
-  set -C
-  mcp_token=$(openssl rand -hex 32) || exit 1
-  mkdir -p "$HOME/.config/my-context" &&
-    printf 'MY_CONTEXT_MCP_TOKEN=%s\n' "$mcp_token" > "$HOME/.config/my-context/cloudflare-worker.env"
-)
-```
+## 배포 설정
 
-파일이 이미 있으면 기존 토큰을 사용해 주세요. 새 토큰으로 바꾸면 Worker와 각 Codex 연결에 같은 새 토큰을 적용해 주세요. [Cloudflare Worker 비밀 설정](https://developers.cloudflare.com/workers/configuration/secrets/)
-
-### Codex 데스크톱
-
-앱의 실행 환경에서 `MY_CONTEXT_MCP_TOKEN`을 읽을 수 있어야 해요. 토큰 파일을 사용하는 환경에서는 `http_headers_helper`로 헤더를 제공할 수 있어요. 이 설정에는 명령을 **문자열**로 넣어 주세요. 명령은 `Authorization` 헤더를 JSON으로 반환해요. [Codex MCP 설정](https://learn.chatgpt.com/docs/extend/mcp)
+| 이름 | 용도 |
+| --- | --- |
+| `MY_CONTEXT_ACCESS_TEAM_DOMAIN` | Access 팀의 HTTPS 주소예요. |
+| `MY_CONTEXT_ACCESS_AUD` | 운영 Access 앱의 Audience 태그예요. |
+| `CLOUDFLARE_API_TOKEN` | GitHub Actions가 Worker를 배포할 때만 사용해요. |
+| `CLOUDFLARE_ACCOUNT_ID` | GitHub Actions가 배포할 Cloudflare 계정을 지정해요. |
 
 ## Managed OAuth 파일럿
 
-`my-context-oauth-pilot`은 로그인 흐름을 확인하는 별도 Worker예요. 허용된 사용자는 브라우저에서 로그인해요. Codex는 Cloudflare Access가 발급한 토큰을 사용해요. 운영 Worker는 기존 주소와 공유 Bearer 토큰을 계속 사용해요.
+`my-context-oauth-pilot`은 로그인 흐름을 확인하는 별도 Worker예요. 허용된 사용자는 브라우저에서 로그인해요. Codex는 Cloudflare Access가 발급한 토큰을 사용해요. 운영 Worker는 별도의 Access 앱과 Audience를 사용해요.
 
 ### 파일럿 배포 준비
 
@@ -80,12 +71,14 @@ Worker는 `Cf-Access-Jwt-Assertion`의 서명, 발급자, AUD, 만료를 확인�
 1. [관리 Skill](../skills/manage-dev-knowledge/SKILL.md)에 따라 변경안을 검토해 주세요.
 2. 작업 절차를 배포할 때는 해당 폴더 이름을 [배포 목록](../publish-skills.json)에 넣어 주세요.
 3. 승인된 변경을 Git에 커밋해 주세요.
-4. 저장소 루트에서 아래 명령을 실행해 주세요.
+4. 운영 앱의 팀 도메인과 AUD를 셸 변수에 설정하고 저장소 루트에서 아래 명령을 실행해 주세요.
 
    ```bash
    npm ci &&
    npm run worker:build -- HEAD &&
-   npm run worker -- deploy --secrets-file "$HOME/.config/my-context/cloudflare-worker.env"
+   npm run worker -- deploy --config wrangler.jsonc \
+     --var "MY_CONTEXT_ACCESS_TEAM_DOMAIN:$MY_CONTEXT_ACCESS_TEAM_DOMAIN" \
+           "MY_CONTEXT_ACCESS_AUD:$MY_CONTEXT_ACCESS_AUD"
    ```
 
 5. 배포한 MCP에서 `chub_list`를 호출해 주세요.
@@ -93,12 +86,11 @@ Worker는 `Cf-Access-Jwt-Assertion`의 서명, 발급자, AUD, 만료를 확인�
 
 Worker 빌드는 지정한 Git 커밋을 사용해요. 첫 배포에서 Wrangler 로그인 화면이 열리면 배포할 계정으로 로그인해 주세요.
 
-## 운영 OAuth 전환과 복구
+## 운영 배포 복구
 
-1. `npm run worker -- deployments list --config wrangler.jsonc`로 현재 운영 버전 ID를 확인해 주세요. 전환 동안에는 기존 `MY_CONTEXT_MCP_TOKEN` 비밀을 유지해 주세요.
-2. 운영 호스트 전체를 보호하는 Access 앱에 Managed OAuth를 켜고 승인된 이메일만 허용해 주세요. 운영 앱의 AUD를 사용해서 OAuth 모드로 Worker를 배포해 주세요.
-3. 운영 주소의 OAuth 검색 응답을 확인하고, 새 Codex 연결에서 브라우저 로그인 후 `chub_list`를 호출해 주세요. 기존 Bearer 연결을 사용하던 기기에서도 OAuth로 다시 연결해 주세요.
-4. Bearer 방식으로 복구하려면 `npm run worker -- rollback <전환-전-버전-ID> --config wrangler.jsonc`로 이전 Worker부터 복구해 주세요. 그다음 운영 호스트에 적용한 Access 보호를 해제하고 기존 Bearer 연결에서 응답을 확인해 주세요. [Worker 버전 복구](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/)
+배포 전에 `npm run worker -- deployments list --config wrangler.jsonc`로 정상 동작 중인 버전 ID를 확인해 주세요. 문제가 생기면 `npm run worker -- rollback <버전-ID> --config wrangler.jsonc`로 해당 버전을 복구해 주세요. 운영 주소에서 OAuth 로그인과 `chub_list`를 확인해 주세요.
+
+OAuth 전환 전 Bearer 버전으로 돌아가야 한다면 먼저 Worker를 해당 버전으로 복구해 주세요. 그다음 운영 호스트의 Access 보호를 해제하고 기존 연결을 확인해 주세요. 이 복구에는 기존 `MY_CONTEXT_MCP_TOKEN` 비밀이 필요해요. [Worker 버전 복구](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/)
 
 ## GitHub Actions
 

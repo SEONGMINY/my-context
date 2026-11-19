@@ -6,21 +6,20 @@ my-context는 원칙, 작업 절차, 템플릿, 보조 스크립트를 비공개
 
 ## Codex에 연결하기
 
-노트북마다 MCP 연결을 한 번 등록해요. 운영자가 공유한 Bearer 토큰이 필요해요. [토큰을 받거나 만드는 방법](docs/DEPLOYMENT.md#토큰-준비)을 참고해 주세요.
+노트북마다 MCP 연결을 한 번 등록해요. 운영자가 허용한 이메일로 브라우저에서 로그인해 주세요.
 
-1. Codex를 실행하는 환경에 `MY_CONTEXT_MCP_TOKEN`을 설정해 주세요.
-2. 아래 명령으로 연결을 등록해 주세요.
+1. 아래 명령으로 연결을 등록해 주세요.
 
    ```bash
    codex mcp add my-context-cloudflare \
-     --url https://my-context.my-context.workers.dev/mcp \
-     --bearer-token-env-var MY_CONTEXT_MCP_TOKEN
+     --url https://my-context.my-context.workers.dev/mcp
    ```
 
+2. 브라우저가 열리면 Cloudflare로 로그인해 주세요. 브라우저가 열리지 않으면 `codex mcp login my-context-cloudflare`를 실행해 주세요.
 3. 새 Codex 세션을 열어 주세요.
 4. “`my-context-cloudflare`의 `chub_list`를 호출해줘”라고 요청해 주세요.
 
-빈 목록도 연결에 성공한 결과예요. `401`이 나오면 Codex가 Bearer 토큰을 읽을 수 있는지 확인해 주세요. 데스크톱 앱의 [연결 방법](docs/DEPLOYMENT.md#codex-데스크톱)은 배포 가이드에 있어요.
+빈 목록도 연결에 성공한 결과예요. 기존 Bearer 연결을 사용했다면 해당 연결의 토큰 설정을 지우고 다시 등록해 주세요. [사용자 관리와 연결 설정](docs/DEPLOYMENT.md#운영-사용자-추가)
 
 ## 사용 예시
 
