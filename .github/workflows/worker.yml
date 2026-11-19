@@ -34,6 +34,7 @@ jobs:
       - name: Run authentication and release tests
         run: |
           node --test test/worker-auth.test.mjs
+          npm run test:workflow
           node scripts/verify-release.mjs
       - name: Build and dry-run the Worker
         run: |

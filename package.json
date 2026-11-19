@@ -14,7 +14,9 @@
     "search": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub search",
     "get": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub get",
     "setup": "node scripts/setup-local.mjs",
-    "install:user": "node scripts/install-user.mjs"
+    "install:user": "node scripts/install-user.mjs",
+    "install:workflow": "node scripts/install-workflow.mjs",
+    "test:workflow": "node --test test/workflow-contract.test.mjs test/install-workflow.test.mjs"
   },
   "dependencies": {
     "@aisuite/chub": "0.1.4",
