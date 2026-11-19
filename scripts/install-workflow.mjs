@@ -1,7 +1,8 @@
-import { lstatSync, mkdirSync, realpathSync, symlinkSync, existsSync } from 'node:fs';
+import { lstatSync, realpathSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { applyPlannedSkillLinks } from './install-workflow-links.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const source = join(root, 'skills/development-workflow');
@@ -13,8 +14,7 @@ if (!existsSync(join(source, 'SKILL.md'))) {
   throw new Error('Missing development-workflow/SKILL.md');
 }
 
-// Codex and Pi read ~/.agents/skills; Claude Code reads ~/.claude/skills.
-// Preflight BOTH destinations, then mutate. Never replace unrelated content.
+// 기존 개인 Skill은 덮어쓰지 않는다. 모든 대상의 충돌을 확인한 뒤에만 설치한다.
 const destinations = [
   join(homedir(), '.agents/skills/development-workflow'),
   join(homedir(), '.claude/skills/development-workflow'),
@@ -28,7 +28,8 @@ function inspect(destination) {
     if (error.code === 'ENOENT') return { path: destination, action: 'link' };
     throw error;
   }
-  // A dangling symlink is an existing conflict, not a free destination.
+
+  // 깨진 심볼릭 링크도 비어 있는 경로가 아니라 기존 사용자 파일로 취급한다.
   let resolved;
   try {
     resolved = realpathSync(destination);
@@ -42,12 +43,6 @@ function inspect(destination) {
 }
 
 const plan = destinations.map(inspect);
-if (!args.includes('--check')) {
-  for (const { path, action } of plan) {
-    if (action === 'link') {
-      mkdirSync(dirname(path), { recursive: true });
-      symlinkSync(source, path, 'dir');
-    }
-  }
-}
+if (!args.includes('--check')) applyPlannedSkillLinks(plan, source);
+
 console.log(JSON.stringify({ mode: args.includes('--check') ? 'check' : 'install', skills: plan }, null, 2));
