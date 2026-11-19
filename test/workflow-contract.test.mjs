@@ -24,8 +24,8 @@ test('methodology contracts define all six gates and preserve knowledge opt-in',
     assert.match(skill, new RegExp('\\b' + gate + '\\b'));
     assert.match(contracts, new RegExp('\\b' + gate + '\\b'));
   }
-  assert.match(skill, /do not search or modify my-context personal knowledge/i);
-  assert.match(contracts, /unknown.*never implicitly pass/i);
+  assert.match(skill, /사용자가 명시적으로 요청하지 않았다면.*개인 지식을 조회하거나 수정하지 않는다/);
+  assert.match(contracts, /unknown\(미확인\).*암묵적으로 통과로 취급하지 않는다/);
 });
 
 test('behavior evaluation scenarios are well formed; this does NOT run a model', () => {
