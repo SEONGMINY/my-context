@@ -1,0 +1,104 @@
+name: Worker CI and deploy
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: Deploy the validated master commit to production
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  validate:
+    name: Validate Worker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --engine-strict --no-audit --no-fund
+      - name: Run authentication and release tests
+        run: |
+          node --test test/worker-auth.test.mjs
+          node scripts/verify-release.mjs
+      - name: Build and dry-run the Worker
+        run: |
+          npm run worker:build -- "$GITHUB_SHA"
+          npm run worker -- deploy --dry-run --config wrangler.jsonc
+
+  deploy:
+    name: Deploy production Worker
+    needs: validate
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.deploy_production &&
+      github.ref == 'refs/heads/master' && vars.MY_CONTEXT_PRODUCTION_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    concurrency:
+      group: my-context-cloudflare-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Check production OAuth configuration
+        env:
+          MY_CONTEXT_ACCESS_TEAM_DOMAIN: ${{ vars.MY_CONTEXT_ACCESS_TEAM_DOMAIN }}
+          MY_CONTEXT_ACCESS_AUD: ${{ vars.MY_CONTEXT_ACCESS_AUD }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+
+          const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
+          assert.equal(config.name, 'my-context', 'Expected the production Worker');
+          assert.equal(config.vars?.MY_CONTEXT_AUTH_MODE, 'cloudflare-access', 'Production OAuth must be configured in Wrangler');
+
+          const issuer = process.env.MY_CONTEXT_ACCESS_TEAM_DOMAIN;
+          const audience = process.env.MY_CONTEXT_ACCESS_AUD;
+          assert.ok(/^https:\/\/[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.cloudflareaccess\.com$/.test(issuer), 'Set the production Access team URL');
+          assert.ok(/^[a-f0-9]{64}$/i.test(audience), 'Set the production Access audience tag');
+
+          const resource = 'https://my-context.my-context.workers.dev';
+          const response = await fetch(`${resource}/.well-known/cloudflare-access-protected-resource/mcp`, {
+            redirect: 'error', signal: AbortSignal.timeout(10_000),
+          });
+          assert.ok(response.ok, 'Production Access metadata is unavailable');
+          const metadata = await response.json();
+          assert.equal(metadata.protected, true, 'Production Access must protect this endpoint');
+          assert.equal(metadata.resource, `${resource}/mcp`, 'Production Access must protect the MCP endpoint');
+          assert.ok(metadata.authorization_servers?.includes(issuer), 'Production Access issuer must match');
+          NODE
+      - run: npm ci --ignore-scripts --engine-strict --no-audit --no-fund
+      - run: npm run worker:build -- "$GITHUB_SHA"
+      - name: Deploy to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          MY_CONTEXT_ACCESS_TEAM_DOMAIN: ${{ vars.MY_CONTEXT_ACCESS_TEAM_DOMAIN }}
+          MY_CONTEXT_ACCESS_AUD: ${{ vars.MY_CONTEXT_ACCESS_AUD }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Set the production CLOUDFLARE_API_TOKEN secret'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Set the production CLOUDFLARE_ACCOUNT_ID variable'; exit 1; }
+          npm run worker -- deploy --config wrangler.jsonc \
+            --var "MY_CONTEXT_ACCESS_TEAM_DOMAIN:$MY_CONTEXT_ACCESS_TEAM_DOMAIN" \
+                  "MY_CONTEXT_ACCESS_AUD:$MY_CONTEXT_ACCESS_AUD"
