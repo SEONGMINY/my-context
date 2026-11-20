@@ -39,6 +39,7 @@ jobs:
       - name: Build and dry-run the Worker
         run: |
           npm run worker:build -- "$GITHUB_SHA"
+          node --test test/worker-mcp-use.test.mjs
           npm run worker -- deploy --dry-run --config wrangler.jsonc
 
   deploy:

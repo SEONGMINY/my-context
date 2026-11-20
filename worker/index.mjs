@@ -84,7 +84,7 @@ function createServer() {
     annotations,
   }, ({ limit = 20, ...filters }) => {
     const matching = matchingEntries(filters);
-    return textResult({ results: matching.slice(0, limit).map(summary), total: matching.length });
+    return textResult({ revision: release.sha, results: matching.slice(0, limit).map(summary), total: matching.length });
   });
   server.registerTool('chub_get', {
     description: 'Read a published principle, workflow, template, or script source by entry ID and optional file name.',
@@ -98,7 +98,7 @@ function createServer() {
   }, ({ limit = 50, ...filters }) => {
     const matching = matchingEntries(filters);
     const listed = matching.slice(0, limit).map(summary);
-    return textResult({ entries: listed, total: matching.length, showing: listed.length });
+    return textResult({ revision: release.sha, entries: listed, total: matching.length, showing: listed.length });
   });
   return server;
 }
