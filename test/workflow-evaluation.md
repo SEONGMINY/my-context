@@ -10,7 +10,7 @@
 - 실행 전후 Git 상태와 생성 파일을 확인한다. 외부 배포, 개인 지식 조회, 개인 데이터 접근은 실험 범위에 넣지 않는다.
 - 에이전트마다 독립 세션과 별도 테스트 작업 디렉터리를 사용해 앞선 실험의 대화·파일 변경이 결과에 영향을 주지 않게 한다.
 
-## 설치 없이 MCP로 사용하기 — 신규 사용 경로
+## 2. 설치 없이 MCP로 사용하기 — 신규 사용 경로
 
 MCP를 연결한 에이전트에서 Skill 설치 없이 `chub_search` → `chub_get`으로 `workflows/development-workflow` 본문을 조회하고, 구조화된 작업에서만 `references/contracts.md`를 조회하는지 확인한다.
 
@@ -32,7 +32,7 @@ MCP를 연결한 에이전트에서 Skill 설치 없이 `chub_search` → `chub_
 
 현재 대화에서 제공된 이전 E2E 보고서의 Codex·Pi **각 12/12 통과**는 기존 Skill 방법론의 기준선이다. 위 **신규 MCP 사용 경로의 모델 행동 E2E 성공 증거로 재사용하지 않는다.** Claude Code 인증이 없는 환경에서는 기존과 동일하게 `NOT_RUN`으로 기록한다.
 
-## 2. 설치·검색 경로 확인 — N7
+## 3. 설치·검색 경로 확인 — N7
 
 저장소 루트에서 다음을 실행한다.
 
@@ -61,7 +61,7 @@ test -f "$HOME/.claude/skills/development-workflow/references/contracts.md"
 
 로그에서 호출 시 본문이 컨텍스트에 포함된 것을 확인할 수 있으면, 이후 같은 `SKILL.md`를 다시 읽는 도구 호출을 별도로 센다. 이름과 설명만 제공된 환경에서 최초로 본문을 읽는 호출은 여기에 포함하지 않는다.
 
-## 3. 실제 행동 평가 — N8·N10
+## 4. 실제 행동 평가 — N8·N10
 
 `test/fixtures/workflow-scenarios.json`의 12개 사례를 사용한다. 각 사례의 `request`를 실험용 Product에 전달하고, 해당 사례의 `expected`와 `forbidden`을 실제 응답·도구 호출·변경 파일·테스트 증거로 판단한다.
 
@@ -78,7 +78,7 @@ test -f "$HOME/.claude/skills/development-workflow/references/contracts.md"
 
 **주의:** JSON Fixture의 구조가 유효하다는 테스트는 모델 행동 평가가 아니다. 응답에 문구가 등장한 것만으로 통과하지 않는다. 실제 수행 내용과 결과를 확인한다.
 
-## 4. 인계 E2E — N13
+## 5. 인계 E2E — N13
 
 같은 테스트 Product에 대해 에이전트 A가 목표·범위·완료 조건과 작업 현황을 정리하고, 다른 에이전트 B가 기존 대화를 보지 않은 상태에서 인계 문서를 받는다.
 
@@ -89,7 +89,7 @@ test -f "$HOME/.claude/skills/development-workflow/references/contracts.md"
 
 Codex→Claude Code, Claude Code→Pi 등의 교차 인계를 수행할 수 없으면 해당 조합을 `NOT_RUN`으로 남긴다. 한 환경의 통과를 다른 환경으로 확장하지 않는다.
 
-## 5. 결과 기록 형식
+## 6. 결과 기록 형식
 
 검증할 때마다 다음 표를 실제 결과로 채운다. 빈 항목을 성공으로 간주하지 않는다.
 
