@@ -5,7 +5,7 @@
 1. Cloudflare Zero Trust에서 **Access controls → Applications → my-context**를 열어 주세요.
 2. 운영 전용 **Allow** 정책의 **Include → Emails**에 사용자의 로그인 이메일을 추가해 주세요.
 3. 해당 정책을 운영 Access 앱에 연결해 주세요.
-4. 사용자에게 [Codex 연결 방법](../README.md#codex에-연결하기)을 안내해 주세요.
+4. 사용자에게 [Codex 연결 방법](../README.md#my-context-mcp-연결하기)을 안내해 주세요.
 
 허용된 사용자는 운영 MCP의 모든 자산을 조회할 수 있어요. 저장소 초대와 Worker 재배포는 필요 없어요.
 
@@ -63,7 +63,7 @@ GitHub Actions를 사용할 수 없으면 Wrangler로 배포해 주세요.
 
 이전 주소 `my-context.my-context.workers.dev`는 기존 연결을 지원해요. 이후 배포는 현재 운영 주소에만 적용돼요.
 
-1. 이전 주소를 사용 중이면 [Codex 연결](../README.md#codex에-연결하기)을 갱신해 주세요.
+1. 이전 주소를 사용 중이면 [Codex 연결](../README.md#my-context-mcp-연결하기)을 갱신해 주세요.
 2. 새 연결에서 `chub_list`를 호출해 주세요.
 3. 이전 연결 이름이 `my-context-cloudflare`라면 `codex mcp remove my-context-cloudflare`를 실행해 주세요.
 
