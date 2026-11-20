@@ -16,7 +16,7 @@
     "setup": "node scripts/setup-local.mjs",
     "install:user": "node scripts/install-user.mjs",
     "install:workflow": "node scripts/install-workflow.mjs",
-    "test:workflow": "node --test test/workflow-contract.test.mjs test/install-workflow.test.mjs"
+    "test:workflow": "node --test test/workflow-contract.test.mjs test/install-workflow.test.mjs test/insight-contract.test.mjs"
   },
   "dependencies": {
     "@aisuite/chub": "0.1.4",

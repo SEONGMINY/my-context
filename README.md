@@ -8,6 +8,8 @@ my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업
 | --- | --- | --- |
 | [`development-workflow`](skills/development-workflow/SKILL.md) | 요구사항을 정리하고 작업을 나눌 때. 변경을 검증하거나 작업을 인계할 때. | [MCP로 사용](#개발-workflow-사용하기) · [선택적 설치](#자주-사용한다면-설치하기) |
 | [`domain-storytelling`](skills/domain-storytelling/SKILL.md) | 인터뷰로 현재 업무를 파악하고 개선 범위와 요구사항을 정리할 때. | [워크숍 양식](skills/domain-storytelling/templates/workshop-documents.md) · MCP 배포 대상 |
+| [`extract-development-insights`](skills/extract-development-insights/SKILL.md) | 개발 대화의 사용자 발언·결정·대안을 분석해 재사용할 원칙 후보를 찾을 때. | MCP 배포 대상 · 읽기 전용 |
+| [개발 판단 원칙](content/personal/lookup-development-principles/knowledge.md) | 구현·실행·로드맵·상황별 판단 기준이 필요할 때. | 명시적 요청으로 조회 · MCP 배포 대상 |
 | [테스트 작성 원칙](content/personal/lookup-testing-principles/knowledge.md) | 무엇을 테스트할지 정하고 테스트 결과가 실제 동작을 보여주는지 검토할 때. | GitHub에서 읽기 · MCP 배포 대상 |
 | [`manage-dev-knowledge`](skills/manage-dev-knowledge/SKILL.md) | 이 저장소에 지식을 추가하거나 수정할 때. | 저장소 내 관리 Skill |
 
@@ -87,6 +89,21 @@ my-context에서 도메인 스토리텔링 절차를 찾아줘.
 ```
 
 필요한 자산만 현재 프로젝트의 규칙에 맞춰 적용해 주세요. 한글 검색 결과가 없으면 `domain storytelling`처럼 영문 키워드로도 검색할 수 있어요.
+
+## 개발 경험에서 인사이트 찾기
+
+개발 대화나 구현 이력을 검토하고 싶다면 운영 MCP에 새 자산이 배포된 상태에서 다음처럼 요청할 수 있어요.
+
+```text
+my-context에서 extract-development-insights를 찾아 읽고,
+이번 개발 대화에서 내가 제기한 문제·검토한 대안·실제 결정을 구분해줘.
+다른 프로젝트에서도 쓸 원칙 후보와 기존 원칙의 중복을 확인해줘.
+파일이나 지식은 수정하지 마.
+```
+
+추출 Skill은 **분석만** 수행해요. 사용자 발언과 AI의 제안, 실제 결과를 구분하고 근거가 부족하면 미확인으로 남겨요. 원칙을 실제로 저장·변경할 때는 별도 `manage-dev-knowledge` 절차와 승인이 필요해요.
+
+개인 개발 원칙을 활용하려면 `personal/lookup-development-principles`를 명시적으로 조회해 현재 프로젝트에 필요한 항목만 적용해 주세요. 일반 개발 요청에서 개인 지식을 자동으로 읽지 않아요. 두 자산 모두 **운영 배포 전에는 MCP에서 조회되지 않을 수 있어요.**
 
 ## 조회와 배포
 
