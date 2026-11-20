@@ -15,7 +15,7 @@ const getInput = {
   lang: language,
   version: z.string().max(80).optional(),
   file: z.string().max(512).optional().describe('Exact relative path to an attachment, such as templates/output.md'),
-  full: z.boolean().optional(),
+  full: z.boolean().optional().describe('Defaults to false. Use only when all files are explicitly needed; for routine workflow use, first read the main SKILL.md (or DOC.md) without full, then fetch a specific attachment with file if required.'),
 };
 
 function textResult(value) {
@@ -87,7 +87,7 @@ function createServer() {
     return textResult({ revision: release.sha, results: matching.slice(0, limit).map(summary), total: matching.length });
   });
   server.registerTool('chub_get', {
-    description: 'Read a published principle, workflow, template, or script source by entry ID and optional file name.',
+    description: 'Read a published asset. Default: only SKILL.md or DOC.md, without attachments. For complex workflows, request a required attachment with file (e.g. references/contracts.md). Use full:true only when every file is explicitly needed; it increases context size.',
     inputSchema: getInput,
     annotations,
   }, getAsset);
