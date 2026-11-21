@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, mkdirSync, lstatSync, renameSync, rmSync, chmodSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
@@ -7,12 +8,12 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const POLICY = readFileSync(join(ROOT, 'policies/asset-usage.md'), 'utf8').trimEnd();
 const START = '<!-- my-context:asset-usage:start -->';
 const END = '<!-- my-context:asset-usage:end -->';
-const args = process.argv.slice(2);
-if (args.length !== 1 || !['--check', '--enable', '--disable'].includes(args[0])) {
+const META = /^<!-- my-context:asset-usage:meta created=([01]) gap=([012]) sha256=([a-f0-9]{64}) -->$/;
+const action = process.argv[2];
+if (process.argv.length !== 3 || !['--check', '--enable', '--disable'].includes(action)) {
   console.error('Usage: node scripts/install-asset-usage.mjs --check|--enable|--disable');
   process.exit(2);
 }
-const action = args[0];
 const home = homedir();
 const targets = [
   ['codex', join(process.env.CODEX_HOME || join(home, '.codex'), 'AGENTS.md')],
@@ -20,70 +21,126 @@ const targets = [
   ['claude', join(process.env.CLAUDE_CONFIG_DIR || join(home, '.claude'), 'CLAUDE.md')],
 ];
 
+function digest(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
 function inspect(path) {
   const stat = lstatSync(path, { throwIfNoEntry: false });
   if (!stat) return { existed: false, source: '', mode: 0o644 };
   if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Refusing to change a non-regular file: ' + path);
   return { existed: true, source: readFileSync(path, 'utf8'), mode: stat.mode & 0o777 };
 }
-function locate(source, path) {
-  const start = source.indexOf(START), end = source.indexOf(END);
-  if ((start === -1) !== (end === -1) || (start !== -1 && (end < start || source.indexOf(START, start + 1) !== -1 || source.indexOf(END, end + 1) !== -1))) {
+function managed(source, path) {
+  const start = source.indexOf(START);
+  const end = source.indexOf(END);
+  if (start === -1 && end === -1) {
+    if (source.includes('my-context:asset-usage:meta')) throw new Error('Orphaned my-context metadata: ' + path);
+    return null;
+  }
+  if (start === -1 || end < start || source.indexOf(START, start + START.length) !== -1 || source.indexOf(END, end + END.length) !== -1) {
     throw new Error('Malformed my-context section: ' + path);
   }
-  return start === -1 ? null : { start, end: end + END.length };
-}
-function nextContent(source, path) {
-  const block = START + '\n' + POLICY + '\n' + END;
-  const section = locate(source, path);
-  if (action === '--disable') {
-    if (!section) return source;
-    const start = section.start > 0 && source[section.start - 1] === '\n' ? section.start - 1 : section.start;
-    const end = source[section.end] === '\n' ? section.end + 1 : section.end;
-    return source.slice(0, start) + source.slice(end);
+  const raw = source.slice(start + START.length, end);
+  const match = raw.match(/^\n(<!-- my-context:asset-usage:meta[^\n]* -->)\n([\s\S]*)\n$/);
+  const metadata = match?.[1].match(META);
+  if (!metadata || digest(match[2]) !== metadata[3]) {
+    throw new Error('Modified or unrecognized managed policy section; refusing to overwrite: ' + path);
   }
-  if (action === '--check') return source;
-  if (section) return source.slice(0, section.start) + block + source.slice(section.end);
-  return source ? source + '\n' + block + '\n' : block + '\n';
+  return {
+    start,
+    end: end + END.length,
+    created: metadata[1] === '1',
+    gap: Number(metadata[2]),
+    body: match[2],
+  };
+}
+function block(created, gap) {
+  const meta = '<!-- my-context:asset-usage:meta created=' + (created ? '1' : '0') +
+    ' gap=' + gap + ' sha256=' + digest(POLICY) + ' -->';
+  return START + '\n' + meta + '\n' + POLICY + '\n' + END;
+}
+function plan(path, old) {
+  const section = managed(old.source, path);
+  if (action === '--check') {
+    return { next: old.source, remove: false, status: !section ? 'disabled' : section.body === POLICY ? 'enabled' : 'outdated' };
+  }
+  if (action === '--enable') {
+    if (section) {
+      return {
+        next: old.source.slice(0, section.start) + block(section.created, section.gap) + old.source.slice(section.end),
+        remove: false,
+      };
+    }
+    // Remember the exact separator and whether the file existed, without a separate state database.
+    const gap = !old.source ? 0 : old.source.endsWith('\n') ? 1 : 2;
+    return { next: old.source + '\n'.repeat(gap) + block(!old.existed, gap) + '\n', remove: false };
+  }
+  if (!section) return { next: old.source, remove: false };
+  const prefix = '\n'.repeat(section.gap);
+  if (section.start < prefix.length ||
+      old.source.slice(section.start - prefix.length, section.start) !== prefix ||
+      old.source[section.end] !== '\n') {
+    throw new Error('Managed policy boundary was changed; refusing to remove: ' + path);
+  }
+  const next = old.source.slice(0, section.start - prefix.length) + old.source.slice(section.end + 1);
+  return { next, remove: section.created && next === '' };
 }
 function atomicWrite(path, content, mode) {
   mkdirSync(dirname(path), { recursive: true });
-  const temporary = join(dirname(path), '.my-context-' + process.pid + '-' + Math.random().toString(16).slice(2));
+  const tmp = join(dirname(path), '.my-context-' + process.pid + '-' + Math.random().toString(16).slice(2));
   try {
-    writeFileSync(temporary, content, { mode, flag: 'wx' });
-    chmodSync(temporary, mode);
-    renameSync(temporary, path);
+    writeFileSync(tmp, content, { mode, flag: 'wx' });
+    chmodSync(tmp, mode);
+    renameSync(tmp, path);
   } finally {
-    rmSync(temporary, { force: true });
+    rmSync(tmp, { force: true });
   }
 }
+function sameFile(actual, expected) {
+  return actual.existed === expected.existed &&
+    actual.source === expected.source && actual.mode === expected.mode;
+}
+function restore(path, previous, written) {
+  if (!sameFile(inspect(path), written)) {
+    throw new Error('Rollback blocked by a concurrent file change: ' + path);
+  }
+  if (previous.existed) atomicWrite(path, previous.source, previous.mode);
+  else rmSync(path, { force: true });
+}
+
 try {
-  // Validate every target before mutating any target.
+  // Validate all three targets before writing any of them.
   const planned = targets.map(([agent, path]) => {
-    const old = inspect(path);
-    const section = locate(old.source, path);
-    return { agent, path, ...old, installed: !!section, next: nextContent(old.source, path) };
+    const before = inspect(path);
+    return { agent, path, before, ...plan(path, before) };
   });
   if (action === '--check') {
-    const results = planned.map(({ agent, path, source, installed }) => ({
-      agent, path, status: !installed ? 'disabled' : source.includes(POLICY) ? 'enabled' : 'outdated',
-    }));
-    console.log(JSON.stringify({ action, results }, null, 2));
+    console.log(JSON.stringify({ action, results: planned.map(({ agent, path, status }) => ({ agent, path, status })) }, null, 2));
   } else {
     const changed = [];
     try {
       for (const item of planned) {
-        if (item.source === item.next) continue;
-        if (!item.existed && action === '--disable') continue;
-        atomicWrite(item.path, item.next, item.mode);
-        changed.push(item);
+        if ((item.before.source === item.next && !item.remove) ||
+            (!item.before.existed && action === '--disable')) continue;
+        if (!sameFile(inspect(item.path), item.before)) {
+          throw new Error('File changed after preflight: ' + item.path);
+        }
+        if (item.remove) rmSync(item.path);
+        else atomicWrite(item.path, item.next, item.before.mode);
+        changed.push({
+          ...item,
+          written: item.remove
+            ? { existed: false, source: '', mode: 0o644 }
+            : { existed: true, source: item.next, mode: item.before.mode },
+        });
       }
     } catch (error) {
+      const rollbackErrors = [];
       for (const item of changed.reverse()) {
-        if (item.existed) atomicWrite(item.path, item.source, item.mode);
-        else rmSync(item.path, { force: true });
+        try { restore(item.path, item.before, item.written); }
+        catch (rollbackError) { rollbackErrors.push(rollbackError.message); }
       }
-      throw error;
+      throw new Error(error.message + (rollbackErrors.length ? '\nRollback incomplete:\n' + rollbackErrors.join('\n') : ''));
     }
     console.log(JSON.stringify({ action, changed: changed.map(({ agent, path }) => ({ agent, path })) }, null, 2));
   }
