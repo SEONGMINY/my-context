@@ -57,7 +57,7 @@ test('명시적 활성화 시 세 환경에 같은 공통 정책을 추가하고
   for (const target of targets) {
     assert.doesNotMatch(read(home, target), /my-context:asset-usage:start/);
   }
-  assert.equal(read(home, targets[0]), '# Existing user instructions\\n\\nKeep this.\\n'.replace(/\\\\n/g, '\\n'));
+  assert.equal(read(home, targets[0]), ['# Existing user instructions', '', 'Keep this.', ''].join(String.fromCharCode(10)));
 }));
 
 test('손상된 마커를 발견하면 다른 환경도 일부 활성화하지 않는다', () => fixture((home) => {
