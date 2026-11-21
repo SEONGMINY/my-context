@@ -94,6 +94,7 @@ test('손상된 마커와 심볼릭 링크는 다른 파일을 수정하기 전�
   assert.equal(existsSync(join(home, targets[0])), false);
   assert.equal(existsSync(join(home, targets[2])), false);
   rmSync(join(home, targets[1]));
+  mkdirSync(join(home, '.codex'), { recursive: true });
   symlinkSync(join(home, 'missing'), join(home, targets[0]));
   const symlink = run('--enable', home);
   assert.equal(symlink.status, 1, symlink.stdout + symlink.stderr);
