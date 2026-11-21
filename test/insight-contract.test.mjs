@@ -17,16 +17,27 @@ test('인사이트 추출 Skill을 게시하면 > 독립적인 진입점과 읽�
   assert.match(skill, /사용자의.*발언|사용자.*원문/);
 });
 
-test('개인 개발 원칙을 조회하면 > 본문과 전용 진입점이 존재하고 자동 조회를 강제하지 않는다', () => {
-  const entry = read('content/personal/lookup-development-principles/SKILL.md');
-  const knowledge = read('content/personal/lookup-development-principles/knowledge.md');
-  const workflow = read('skills/development-workflow/SKILL.md');
-  assert.match(entry, /^---\n[\s\S]*?name: lookup-development-principles\n/);
-  assert.match(entry, /명시적으로 요청한 경우에만/);
-  for (const section of ['Implementation Strategy', 'Execution Strategy', 'Roadmap Planning', 'Context-aware Reasoning']) {
-    assert.ok(knowledge.includes(section), section + ' 판단 원칙이 없음');
+test('네 가지 원칙은 > 독립적으로 조회되며 특정 개발 Skill과 결합하지 않는다', () => {
+  const cases = [
+    ['implementation-strategy', 'Implementation Strategy'],
+    ['execution-strategy', 'Execution Strategy'],
+    ['roadmap-planning', 'Roadmap Planning'],
+    ['context-aware-reasoning', 'Context-aware Reasoning'],
+  ];
+  for (const [slug, title] of cases) {
+    const dir = 'content/personal/lookup-' + slug;
+    const entry = read(dir + '/SKILL.md');
+    const knowledge = read(dir + '/knowledge.md');
+    assert.match(entry, new RegExp('name: lookup-' + slug + '\\n'));
+    assert.match(entry, /description: /);
+    assert.match(entry, /knowledge.md/);
+    assert.match(knowledge, new RegExp('# ' + title));
+    assert.match(knowledge, /판단 원칙/);
   }
-  assert.match(workflow, /개인 지식을 조회하거나 수정하지 않는다/);
+  const workflow = read('skills/development-workflow/SKILL.md');
+  assert.doesNotMatch(workflow, /lookup-development-principles/);
+  assert.match(read('policies/asset-usage.md'), /특정 Skill의 호출을 전제로 하지 않는다/);
+  assert.match(workflow, /사용자가 별도로 활성화한/);
 });
 
 test('인사이트 평가 사례를 유지하면 > 발언 오인·불완전한 이력·중복·무단 저장 위험을 다룬다', () => {

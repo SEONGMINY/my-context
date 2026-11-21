@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync, lstatSync, mkdtempSync, renameSync, rmSync, chmodSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { homedir, tmpdir } from 'node:os';
+import { readFileSync, writeFileSync, mkdirSync, lstatSync, renameSync, rmSync, chmodSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -21,8 +21,8 @@ const targets = [
 ];
 
 function inspect(path) {
-  if (!existsSync(path)) return { existed: false, source: '', mode: 0o644 };
-  const stat = lstatSync(path);
+  const stat = lstatSync(path, { throwIfNoEntry: false });
+  if (!stat) return { existed: false, source: '', mode: 0o644 };
   if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('Refusing to change a non-regular file: ' + path);
   return { existed: true, source: readFileSync(path, 'utf8'), mode: stat.mode & 0o777 };
 }
@@ -38,13 +38,13 @@ function nextContent(source, path) {
   const section = locate(source, path);
   if (action === '--disable') {
     if (!section) return source;
-    const prefix = source.slice(0, section.start).replace(/\n{1,2}$/, '');
-    const suffix = source.slice(section.end).replace(/^\n{1,2}/, '');
-    return prefix && suffix ? prefix + '\n\n' + suffix : prefix || suffix;
+    const start = section.start > 0 && source[section.start - 1] === '\n' ? section.start - 1 : section.start;
+    const end = source[section.end] === '\n' ? section.end + 1 : section.end;
+    return source.slice(0, start) + source.slice(end);
   }
   if (action === '--check') return source;
   if (section) return source.slice(0, section.start) + block + source.slice(section.end);
-  return source.trimEnd() ? source.trimEnd() + '\n\n' + block + '\n' : block + '\n';
+  return source ? source + '\n' + block + '\n' : block + '\n';
 }
 function atomicWrite(path, content, mode) {
   mkdirSync(dirname(path), { recursive: true });
