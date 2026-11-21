@@ -9,7 +9,9 @@ description: "Use only when the user explicitly requests Context Hub/personal de
 
 이 파일의 실제 경로를 확인한다. `skills/manage-dev-knowledge` 디렉터리에서 두 단계 위를 저장소 루트로 사용한다. 연결 설정은 [README](../../README.md)를 참고한다.
 
-사용자가 지식 활용을 명시적으로 요청했을 때 연결된 MCP를 사용한다. 기본 원격 연결은 `my-context`다. 로컬 Context Hub를 선택한 환경에서는 `personal-knowledge`를 사용한다.
+이 관리 Skill은 사용자가 지식의 조회나 변경 관리를 명시적으로 요청한 경우에 사용한다. **일반 작업에서 개인 자산을 읽는 행위는 이 Skill의 호출을 요구하지 않는다.** 읽기 권한은 사용자 요청 또는 별도로 활성화한 [선택적 자산 조회 정책](../../policies/asset-usage.md)에 의해 결정되며, 변경 권한은 별도로 승인받는다.
+
+이 Skill이 조회를 수행할 때 연결된 MCP를 사용한다. 기본 원격 연결은 `my-context`다. 로컬 Context Hub를 선택한 환경에서는 `personal-knowledge`를 사용한다.
 
 1. `chub_search`로 자산을 찾는다. 한국어 요청에는 의미가 같은 영문 키워드를 사용한다. 결과가 없으면 유사 키워드나 목록 조회로 확인한다.
 2. `chub_get`으로 진입 파일을 읽는다.

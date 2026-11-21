@@ -75,7 +75,7 @@ function getAsset({ id, lang, version, file, full }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: 'Use only when the user requests their personal principles or workflows. Apply retrieved assets in the current project and respect its rules. Fetch attachments as needed.',
+    instructions: 'Read personal assets only on an explicit user request or when the user has enabled an opt-in read-only asset-usage policy in this agent environment. Never infer consent from MCP access alone. Respect current user and project rules; fetching assets does not grant write permission. Fetch only needed attachments.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
