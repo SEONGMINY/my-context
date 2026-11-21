@@ -105,7 +105,7 @@ test('정책 내용 변경은 정상 설치본만 갱신하고 불명확한 메�
   assert.equal(run('--enable', home).status, 0);
   const p = targets[0], current = read(home, p);
   // The hash protects previous contents. A different valid hash with older body can be updated.
-  const oldBody = policy.replace('조건부', '조건적인');
+  const oldBody = policy.replace('선택적', '조건적인');
   const hash = requireDigest(oldBody);
   const older = current.replace(policy, oldBody).replace(/sha256=[a-f0-9]{64}/, 'sha256=' + hash);
   writeFileSync(join(home, p), older);
