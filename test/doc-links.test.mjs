@@ -4,11 +4,15 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { checkMarkdownLinks } from '../scripts/check-doc-links.mjs';
+import { checkMarkdownLinks, listMarkdownDocuments } from '../scripts/check-doc-links.mjs';
 
-test('현재 사용 안내 문서의 상대 링크를 확인하면 > 파일·한글 앵커가 모두 유효하다', () => {
+test('현재 유지보수 Markdown 문서의 상대 링크를 확인하면 > 파일·한글 앵커가 모두 유효하다', () => {
   const root = fileURLToPath(new URL('..', import.meta.url));
-  assert.deepEqual(checkMarkdownLinks([join(root, 'README.md'), join(root, 'docs/DEPLOYMENT.md')]), []);
+  const docs = listMarkdownDocuments(root);
+  assert.ok(docs.includes(join(root, 'AGENTS.md')));
+  assert.ok(docs.includes(join(root, 'skills/development-workflow/SKILL.md')));
+  assert.ok(docs.includes(join(root, 'docs/DEPLOYMENT.md')));
+  assert.deepEqual(checkMarkdownLinks(docs), []);
 });
 
 test('상대 문서 링크를 검사하면 > 누락 파일·한글 앵커와 중복 제목을 구분한다', () => {

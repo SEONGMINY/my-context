@@ -9,7 +9,7 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 - `policies/` — 특정 Skill과 독립적인 사용자 선택형 자산 활용 정책
 - `worker/` — 운영 MCP의 인증과 읽기 전용 조회
 - `scripts/` — 빌드, 릴리스 검증, 로컬 연결
-- `test/` — Worker 인증 테스트
+- `test/` — 인증·자산·설치·Workflow·MCP 검증 및 실사용 E2E 가이드
 - `docs/`, `README.md` — 제품·운영 문서와 사용 안내
 
 ## 작업 기준

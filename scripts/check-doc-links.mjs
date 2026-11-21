@@ -1,11 +1,27 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const defaultDocuments = [resolve(root, 'README.md'), resolve(root, 'docs/DEPLOYMENT.md')];
+// Discover maintained Markdown sources instead of hardcoding a short entry-doc list.
+export function listMarkdownDocuments(base = root) {
+  function walk(directory) {
+    if (!existsSync(directory)) return [];
+    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) return walk(path);
+      return entry.isFile() && entry.name.endsWith('.md') ? [path] : [];
+    });
+  }
+  return [
+    ...['README.md', 'AGENTS.md'].map((name) => resolve(base, name)).filter(existsSync),
+    ...['docs', 'policies', 'skills', 'content', 'test'].flatMap((name) => walk(resolve(base, name))),
+  ];
+}
 
-// Check local links in entry docs, without fetching remote URLs or parsing external files.
+const defaultDocuments = listMarkdownDocuments();
+
+// Check local links in maintained Markdown docs, without fetching remote URLs.
 function withoutFences(source) {
   let fence = null;
   return source.split('\n').map((line) => {
@@ -80,6 +96,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     for (const error of failures) console.error(error);
     process.exitCode = 1;
   } else {
-    console.log('Verified local Markdown links and anchors in README.md and docs/DEPLOYMENT.md');
+    console.log('Verified local Markdown links and anchors in ' + defaultDocuments.length + ' maintained documents');
   }
 }

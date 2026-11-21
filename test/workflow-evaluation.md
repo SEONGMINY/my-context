@@ -6,7 +6,7 @@
 
 - 동일한 `my-context` 커밋을 기준으로 실행하고 커밋 SHA와 각 에이전트 버전을 기록한다.
 - 각 에이전트는 실제 로그인·모델 사용이 가능한 환경에서 실행해야 한다. 미설치·미인증·실행 불가인 경우 `NOT_RUN`과 사유를 기록한다.
-- 실제 Product를 변경하지 말고, 새로운 임시 Git 저장소나 버려도 되는 테스트 프로젝트에서 실험한다.
+- 실제 Product를 변경하지 말고, 새로운 임시 Git 저장소나 버려도 되는 테스트 프로젝트에서 실험한다. 설치기는 사용자 HOME에도 파일을 만들 수 있으므로 **임시 프로젝트만으로는 사용자 설정이 격리되지 않는다**.
 - 실행 전후 Git 상태와 생성 파일을 확인한다. **기존 Workflow 동작 평가(2~5절)**는 개인 지식 조회·개인 데이터 접근과 외부 배포를 제외한다. **선택적 자산 활용 평가(6~7절)**는 통제된 임시 HOME과 테스트 MCP를 사용해 허용된 개인 원칙만 조회하며, 실제 개인 데이터나 운영 배포는 사용하지 않는다.
 - 에이전트마다 독립 세션과 별도 테스트 작업 디렉터리를 사용해 앞선 실험의 대화·파일 변경이 결과에 영향을 주지 않게 한다.
 
@@ -31,26 +31,29 @@ MCP를 연결한 에이전트에서 Skill 설치 없이 `chub_search` → `chub_
 
 `revision` 필드가 포함된 Worker 버전에서 `chub_search`·`chub_list` 응답의 리비전을 기록하고, 이전 배포에 필드가 없으면 `unknown`으로 둔다. 로컬 Skill은 체크아웃한 Git 커밋을 기록한다. 버전이 다른 상태에서 동일하게 동작했다고 추측하지 않는다. 운영 배포를 자동 실행하지 않는다.
 
-현재 대화에서 제공된 이전 E2E 보고서의 Codex·Pi **각 12/12 통과**는 기존 Skill 방법론의 기준선이다. 위 **신규 MCP 사용 경로의 모델 행동 E2E 성공 증거로 재사용하지 않는다.** Claude Code 인증이 없는 환경에서는 기존과 동일하게 `NOT_RUN`으로 기록한다.
+이전 E2E의 통과 수치는 실행 환경·기준 리비전·로그와 연결된 증거가 없으면 현재 버전의 검증 근거로 재사용하지 않는다. **신규 MCP 사용 경로와 에이전트 행동은 별도로 검증한다.** 인증·실행이 불가능한 환경은 `NOT_RUN`으로 기록한다.
 
-## 3. 설치·검색 경로 확인 — N7
+## 3. 설치·검색 경로 확인
 
-저장소 루트에서 다음을 실행한다.
+저장소 루트에서 먼저 `npm ci`를 실행한다. 설치 안전성 검증은 별도의 **임시 HOME**에서 수행한다. 아래 명령은 실제 사용자 홈의 Skill 경로를 변경하지 않는다.
 
 ```bash
-npm run install:workflow -- --check
-npm run install:workflow
 npm run test:workflow
 
-test -f "$HOME/.agents/skills/development-workflow/SKILL.md"
-test -f "$HOME/.agents/skills/development-workflow/references/contracts.md"
-test -f "$HOME/.claude/skills/development-workflow/SKILL.md"
-test -f "$HOME/.claude/skills/development-workflow/references/contracts.md"
+TEST_HOME="$(mktemp -d "${TMPDIR:-/tmp}/my-context-e2e.XXXXXX")"
+trap 'test -n "$TEST_HOME" && rm -rf -- "$TEST_HOME"' EXIT
+HOME="$TEST_HOME" npm run install:workflow -- --check
+HOME="$TEST_HOME" npm run install:workflow
+
+test -f "$TEST_HOME/.agents/skills/development-workflow/SKILL.md"
+test -f "$TEST_HOME/.agents/skills/development-workflow/references/contracts.md"
+test -f "$TEST_HOME/.claude/skills/development-workflow/SKILL.md"
+test -f "$TEST_HOME/.claude/skills/development-workflow/references/contracts.md"
 ```
 
-이 검사는 파일 설치와 상대 경로 해석만 검증한다. **에이전트가 발견·로드했다고 주장할 수 없다.** Git 저장소를 이동하거나 삭제하면 기존 심볼릭 링크가 깨질 수 있으므로 다시 확인한다.
+`HOME` 격리는 Node 설치기의 사용자 경로를 제한한다. **실제 에이전트 발견·호출 E2E는 별도 새 세션**에서 수행한다. 그 환경에서 Skill 설치가 필요하다면 실제 사용자 설정 변경 여부를 먼저 확인하고 승인된 경로만 사용한다. 이 검사는 파일 설치와 상대 경로 해석만 검증하며 **에이전트가 발견·로드했다고 주장할 수 없다.** 저장소 이동 시 심볼릭 링크가 깨질 수 있으므로 확인한다.
 
-에이전트별로 실제 실행 파일이 있는지 확인한 후 **새 세션**을 실행한다.
+에이전트별 실제 실행 파일과 사용할 Skill 경로, 인증 상태를 확인한 뒤 **새 세션**을 실행한다. 임시 HOME에서 설치한 결과를 실제 사용자 HOME의 Skill 설치 결과로 간주하지 않는다.
 
 | 실행 환경 | 새 세션에서 확인할 것 | 주의 |
 | --- | --- | --- |
@@ -62,7 +65,7 @@ test -f "$HOME/.claude/skills/development-workflow/references/contracts.md"
 
 로그에서 호출 시 본문이 컨텍스트에 포함된 것을 확인할 수 있으면, 이후 같은 `SKILL.md`를 다시 읽는 도구 호출을 별도로 센다. 이름과 설명만 제공된 환경에서 최초로 본문을 읽는 호출은 여기에 포함하지 않는다.
 
-## 4. 실제 행동 평가 — N8·N10
+## 4. 실제 행동 평가
 
 `test/fixtures/workflow-scenarios.json`의 12개 사례를 사용한다. 각 사례의 `request`를 실험용 Product에 전달하고, 해당 사례의 `expected`와 `forbidden`을 실제 응답·도구 호출·변경 파일·테스트 증거로 판단한다.
 
@@ -79,7 +82,7 @@ test -f "$HOME/.claude/skills/development-workflow/references/contracts.md"
 
 **주의:** JSON Fixture의 구조가 유효하다는 테스트는 모델 행동 평가가 아니다. 응답에 문구가 등장한 것만으로 통과하지 않는다. 실제 수행 내용과 결과를 확인한다.
 
-## 5. 인계 E2E — N13
+## 5. 인계 E2E
 
 같은 테스트 Product에 대해 에이전트 A가 목표·범위·완료 조건과 작업 현황을 정리하고, 다른 에이전트 B가 기존 대화를 보지 않은 상태에서 인계 문서를 받는다.
 
