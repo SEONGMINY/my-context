@@ -6,6 +6,7 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 
 - `content/` — 개인 지식 원본과 검색 진입 파일
 - `skills/` — 공통 Skill 원본과 첨부 파일
+- `policies/` — 특정 Skill과 독립적인 사용자 선택형 자산 활용 정책
 - `worker/` — 운영 MCP의 인증과 읽기 전용 조회
 - `scripts/` — 빌드, 릴리스 검증, 로컬 연결
 - `test/` — Worker 인증 테스트
@@ -13,6 +14,6 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 
 ## 작업 기준
 
-- 사용자가 요청할 때만 개인 지식을 조회하거나 변경한다. 지식을 적용할 때는 대상 프로젝트의 규칙을 우선한다. 원본을 변경할 때는 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
+- 개인 지식 조회는 명시적 요청이 기본이다. 사용자가 개인 범위에서 [선택적 조회 정책](policies/asset-usage.md)을 활성화한 경우에만 관련 자산을 조건부로 조회할 수 있다. 조회 권한과 지식 변경 승인은 별도이며, 대상 프로젝트의 계약을 우선한다. 지식 변경은 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
 - 검색 인덱스와 Worker 번들은 커밋하지 않는다.
 - 코드 변경은 [CI](.github/workflows/worker.yml)의 관련 검사로 검증한다. 운영에 반영할 때는 [배포 가이드](docs/DEPLOYMENT.md)를 따른다.

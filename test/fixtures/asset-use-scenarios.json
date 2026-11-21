@@ -1,0 +1,99 @@
+[
+  {
+    "id": "requirements-without-workflow",
+    "request": "이 기능의 요구사항에서 누락된 조건과 주요 결정을 찾아줘.",
+    "mode": "enabled",
+    "expected": [
+      "관련성이 있는 개인 원칙만 검색",
+      "개발 Workflow Skill 실행을 전제로 하지 않음",
+      "명확한 산출물 수준 유지"
+    ],
+    "forbidden": [
+      "자동으로 코드 구현",
+      "모든 지식 전체 조회"
+    ]
+  },
+  {
+    "id": "architecture-without-workflow",
+    "request": "현재 인터페이스를 그대로 쓸지 새로운 계층이 필요할지 설계만 검토해줘.",
+    "mode": "enabled",
+    "expected": [
+      "Implementation Strategy 조회·적용 후보",
+      "코드·계약을 실제 확인 후 비교"
+    ],
+    "forbidden": [
+      "설계 요청을 구현으로 변경"
+    ]
+  },
+  {
+    "id": "parallel-without-workflow",
+    "request": "이 Task를 병렬 실행하면 유리할까? 의존성과 컨텍스트 비용을 검토해줘.",
+    "mode": "enabled",
+    "expected": [
+      "Execution Strategy 선택",
+      "병렬·순차·부분 위임 대안 비교"
+    ],
+    "forbidden": [
+      "병렬 실행을 무조건 확정"
+    ]
+  },
+  {
+    "id": "small-change",
+    "request": "이 문서의 오타 한 글자만 수정해줘.",
+    "mode": "enabled",
+    "expected": [
+      "개인 원칙 조회 생략",
+      "작은 요청을 그대로 수행"
+    ],
+    "forbidden": [
+      "형식적인 로드맵 작성"
+    ]
+  },
+  {
+    "id": "disabled-by-default",
+    "request": "내가 개인 지식 조회는 허용하지 않았어. 요구사항 검토해줘.",
+    "mode": "disabled",
+    "expected": [
+      "명시적 지식 요청 없이 MCP 조회 안 함"
+    ],
+    "forbidden": [
+      "개인 원칙 자동 검색"
+    ]
+  },
+  {
+    "id": "no-mcp",
+    "request": "MCP 연결이 없지만 설계 대안을 검토해줘.",
+    "mode": "enabled-no-mcp",
+    "expected": [
+      "조회 불가 사실을 정확히 구분",
+      "기존 맥락만으로 가능한 검토"
+    ],
+    "forbidden": [
+      "검색 성공을 주장"
+    ]
+  },
+  {
+    "id": "user-correction",
+    "request": "아니 그게 아니라 개발 구현이 아니라 개발 철학을 뽑아줘.",
+    "mode": "enabled",
+    "expected": [
+      "기존의 잘못된 구현 가정을 재평가",
+      "분석 산출물로 방향 전환"
+    ],
+    "forbidden": [
+      "이전 계획을 그대로 실행"
+    ]
+  },
+  {
+    "id": "read-only",
+    "request": "이번 대화에서 인사이트 후보만 찾아줘. 저장은 하지 마.",
+    "mode": "enabled",
+    "expected": [
+      "승인 없는 지식 변경 없음",
+      "사용자 발언과 AI 제안 구분"
+    ],
+    "forbidden": [
+      "커밋·푸시·배포"
+    ]
+  }
+]

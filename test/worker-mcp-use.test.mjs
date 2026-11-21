@@ -97,6 +97,54 @@ test('읽기 전용 MCP로 공개되지 않은 항목을 요청하면 > 오류�
   assert.equal(parent.isError, true);
 });
 
+test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Skill 호출 없이 MCP로 조회된다', async () => {
+  const insightId = 'workflows/extract-development-insights';
+  const insight = await callTool('chub_get', { id: insightId });
+  assert.equal(insight.isError, undefined);
+  assert.match(insight.content[0].text, /# 개발 경험에서 판단 원칙 추출/);
+  const slugs = [
+    'implementation-strategy', 'execution-strategy',
+    'roadmap-planning', 'context-aware-reasoning',
+  ];
+  for (const slug of slugs) {
+    const id = 'personal/lookup-' + slug;
+    const found = parsed(await callTool('chub_search', { query: id }));
+    assert.ok(found.results.some((item) => item.id === id), id);
+    const entry = await callTool('chub_get', { id });
+    const knowledge = await callTool('chub_get', { id, file: 'knowledge.md' });
+    assert.equal(entry.isError, undefined);
+    assert.equal(knowledge.isError, undefined);
+    assert.match(entry.content[0].text, new RegExp('name: lookup-' + slug));
+    assert.match(knowledge.content[0].text, /판단 원칙/);
+  }
+  const exploratoryQueries = [
+    ['implementation-strategy', 'implementation interface architecture'],
+    ['execution-strategy', 'parallelism subagents dependencies'],
+    ['roadmap-planning', 'roadmap phased long term'],
+    ['context-aware-reasoning', 'requirements decision context'],
+  ];
+  for (const [slug, query] of exploratoryQueries) {
+    const id = 'personal/lookup-' + slug;
+    const results = parsed(await callTool('chub_search', { query }));
+    assert.ok(results.results.some((item) => item.id === id), 'Natural language search: ' + query);
+  }
+  const koreanQueries = [
+    ['implementation-strategy', '기존 인터페이스를 재사용하는 게 좋을까?'],
+    ['execution-strategy', '이 작업을 병렬로 진행하는 게 좋을까?'],
+    ['roadmap-planning', '단기 목표와 장기 로드맵은 어떻게 계획하지?'],
+    ['context-aware-reasoning', '사용자 요구사항과 의도를 먼저 어떻게 파악할까?'],
+  ];
+  for (const [slug, query] of koreanQueries) {
+    const id = 'personal/lookup-' + slug;
+    const results = parsed(await callTool('chub_search', { query }));
+    assert.ok(results.results.slice(0, 3).some((item) => item.id === id), 'Korean top-3 search: ' + query);
+  }
+  const unrelated = parsed(await callTool('chub_search', { query: '고양이 모래 추천해줘' }));
+  assert.equal(unrelated.total, 0, 'Unrelated Korean queries should not return every asset');
+  const removed = await callTool('chub_get', { id: 'personal/lookup-development-principles' });
+  assert.equal(removed.isError, true);
+});
+
 test('MCP 인증 없이 지침을 요청하면 > Skill 본문이 노출되지 않는다', async () => {
   // given: 인증된 클라이언트만 접근할 수 있는 MCP
   // when: 인증 정보 없이 조회 요청

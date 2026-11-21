@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { search } from '@aisuite/chub/src/lib/bm25.js';
+import { searchKorean } from './korean-search.mjs';
 import { normalizeLanguage } from '@aisuite/chub/src/lib/normalize.js';
 import { z } from 'zod';
 import release from '../.generated/worker/release.json' with { type: 'json' };
@@ -42,6 +43,7 @@ function matchingEntries({ query, tags, lang }) {
     const ids = new Set();
     if (entries.has(term)) ids.add(term);
     for (const { id } of search(term, release.searchIndex)) ids.add(id);
+    if (/[가-힣]/.test(term)) for (const id of searchKorean(term, release.entries)) ids.add(id);
     matching = [...ids].map((id) => entries.get(id)).filter(Boolean);
   }
   const requestedTags = tags?.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean) || [];
@@ -75,7 +77,7 @@ function getAsset({ id, lang, version, file, full }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: 'Use only when the user requests their personal principles or workflows. Apply retrieved assets in the current project and respect its rules. Fetch attachments as needed.',
+    instructions: 'Read personal assets only on an explicit user request or when the user has enabled an opt-in read-only asset-usage policy in this agent environment. Never infer consent from MCP access alone. Respect current user and project rules; fetching assets does not grant write permission. Fetch only needed attachments.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
