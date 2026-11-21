@@ -131,7 +131,7 @@ test('사용자가 마커 외부의 구분 문자를 바꾸면 확인·수정·�
   set(home, targets[0], '# Existing\n');
   assert.equal(run('--enable', home).status, 0);
   const file = targets[0];
-  const modified = read(home, file).replace('\n<!-- my-context:asset-usage:start -->', '<!-- my-context:asset-usage:start -->');
+  const modified = read(home, file).replace('\n\n<!-- my-context:asset-usage:start -->', '<!-- my-context:asset-usage:start -->');
   writeFileSync(join(home, file), modified);
   for (const action of ['--check', '--enable', '--disable']) {
     const result = run(action, home);
