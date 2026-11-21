@@ -36,7 +36,6 @@ jobs:
           node --test test/worker-auth.test.mjs
           npm run test:workflow
           node --test test/doc-links.test.mjs
-          node scripts/check-doc-links.mjs
           node scripts/verify-release.mjs
       - name: Asset Integrity Gate
         run: npm run test:integrity
