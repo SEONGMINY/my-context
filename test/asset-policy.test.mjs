@@ -126,3 +126,16 @@ test('Skill 독립 행동 평가 자료는 비활성·활성·정정·MCP 누락
   assert.deepEqual(scenarios.map(({ id }) => id).sort(), expected.sort());
   assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
 });
+
+test('사용자가 마커 외부의 구분 문자를 바꾸면 확인·수정·제거 모두 중단한다', () => fixture((home) => {
+  set(home, targets[0], '# Existing\n');
+  assert.equal(run('--enable', home).status, 0);
+  const file = targets[0];
+  const modified = read(home, file).replace('\n<!-- my-context:asset-usage:start -->', '<!-- my-context:asset-usage:start -->');
+  writeFileSync(join(home, file), modified);
+  for (const action of ['--check', '--enable', '--disable']) {
+    const result = run(action, home);
+    assert.equal(result.status, 1, action + ' ' + result.stdout + result.stderr);
+    assert.equal(read(home, file), modified);
+  }
+});

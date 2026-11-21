@@ -59,8 +59,18 @@ function block(created, gap) {
     ' gap=' + gap + ' sha256=' + digest(POLICY) + ' -->';
   return START + '\n' + meta + '\n' + POLICY + '\n' + END;
 }
+function verifyPlacement(source, section, path) {
+  if (!section) return;
+  const prefix = '\n'.repeat(section.gap);
+  if (section.start < prefix.length ||
+      source.slice(section.start - prefix.length, section.start) !== prefix ||
+      source[section.end] !== '\n') {
+    throw new Error('Managed policy boundary was changed; refusing to modify: ' + path);
+  }
+}
 function plan(path, old) {
   const section = managed(old.source, path);
+  verifyPlacement(old.source, section, path);
   if (action === '--check') {
     return { next: old.source, remove: false, status: !section ? 'disabled' : section.body === POLICY ? 'enabled' : 'outdated' };
   }
@@ -76,13 +86,7 @@ function plan(path, old) {
     return { next: old.source + '\n'.repeat(gap) + block(!old.existed, gap) + '\n', remove: false };
   }
   if (!section) return { next: old.source, remove: false };
-  const prefix = '\n'.repeat(section.gap);
-  if (section.start < prefix.length ||
-      old.source.slice(section.start - prefix.length, section.start) !== prefix ||
-      old.source[section.end] !== '\n') {
-    throw new Error('Managed policy boundary was changed; refusing to remove: ' + path);
-  }
-  const next = old.source.slice(0, section.start - prefix.length) + old.source.slice(section.end + 1);
+  const next = old.source.slice(0, section.start - section.gap) + old.source.slice(section.end + 1);
   return { next, remove: section.created && next === '' };
 }
 function atomicWrite(path, content, mode) {
