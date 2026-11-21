@@ -138,4 +138,4 @@ test('사용자가 마커 외부의 구분 문자를 바꾸면 확인·수정·�
     assert.equal(result.status, 1, action + ' ' + result.stdout + result.stderr);
     assert.equal(read(home, file), modified);
   }
-});
+}));
