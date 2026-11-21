@@ -94,6 +94,17 @@ test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Sk
     assert.match(entry.content[0].text, new RegExp('name: lookup-' + slug));
     assert.match(knowledge.content[0].text, /판단 원칙/);
   }
+  const exploratoryQueries = [
+    ['implementation-strategy', 'implementation interface architecture'],
+    ['execution-strategy', 'parallelism subagents dependencies'],
+    ['roadmap-planning', 'roadmap phased long term'],
+    ['context-aware-reasoning', 'requirements decision context'],
+  ];
+  for (const [slug, query] of exploratoryQueries) {
+    const id = 'personal/lookup-' + slug;
+    const results = parsed(await callTool('chub_search', { query }));
+    assert.ok(results.results.some((item) => item.id === id), 'Natural language search: ' + query);
+  }
   const removed = await callTool('chub_get', { id: 'personal/lookup-development-principles' });
   assert.equal(removed.isError, true);
 });

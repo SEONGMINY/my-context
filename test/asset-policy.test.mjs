@@ -57,7 +57,7 @@ test('명시적 활성화 시 세 환경에 같은 공통 정책을 추가하고
   for (const target of targets) {
     assert.doesNotMatch(read(home, target), /my-context:asset-usage:start/);
   }
-  assert.match(read(home, targets[0]), /Keep this/);
+  assert.equal(read(home, targets[0]), '# Existing user instructions\\n\\nKeep this.\\n'.replace(/\\\\n/g, '\\n'));
 }));
 
 test('손상된 마커를 발견하면 다른 환경도 일부 활성화하지 않는다', () => fixture((home) => {
@@ -78,3 +78,14 @@ test('기존 파일의 심볼릭 링크는 안전하게 거부한다', () => fix
   assert.ok(lstatSync(join(home, targets[0])).isSymbolicLink());
   assert.throws(() => read(home, targets[2]), { code: 'ENOENT' });
 }));
+
+test('Skill 독립 평가 자료는 비활성·활성·정정·MCP 누락 시나리오를 모두 포함한다', () => {
+  const cases = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
+  const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only'];
+  assert.deepEqual(cases.map((x) => x.id).sort(), expected.sort());
+  for (const scenario of cases) {
+    assert.ok(typeof scenario.mode === 'string' && scenario.mode);
+    assert.ok(scenario.request && scenario.expected.length && scenario.forbidden.length);
+  }
+  // Fixture 유효성과 실제 모델 행동은 다른 검증 단계다.
+});
