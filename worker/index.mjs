@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { search } from '@aisuite/chub/src/lib/bm25.js';
+import { searchKorean } from './korean-search.mjs';
 import { normalizeLanguage } from '@aisuite/chub/src/lib/normalize.js';
 import { z } from 'zod';
 import release from '../.generated/worker/release.json' with { type: 'json' };
@@ -42,6 +43,7 @@ function matchingEntries({ query, tags, lang }) {
     const ids = new Set();
     if (entries.has(term)) ids.add(term);
     for (const { id } of search(term, release.searchIndex)) ids.add(id);
+    if (/[가-힣]/.test(term)) for (const id of searchKorean(term, release.entries)) ids.add(id);
     matching = [...ids].map((id) => entries.get(id)).filter(Boolean);
   }
   const requestedTags = tags?.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean) || [];
