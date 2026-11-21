@@ -53,7 +53,7 @@ node scripts/install-asset-usage.mjs --enable
 node scripts/install-asset-usage.mjs --disable
 ```
 
-이 스크립트는 `policies/asset-usage.md`의 **한 가지 공통 정책**을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 표시된 구간으로 추가·갱신해요. 기존 지침은 덮어쓰지 않으며, 원본에 마커 오류나 심볼릭 링크가 있으면 중단해요. 사용자 범위 설정 디렉터리를 변경한 환경은 `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`을 따릅니다.
+이 스크립트는 `policies/asset-usage.md`의 **한 가지 공통 정책**을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 표시된 구간으로 추가·갱신해요. 기존 지침은 보존하고, 비활성화하면 설치할 때 새로 만든 **수정되지 않은 파일만 삭제**해요. 사용자가 별도로 추가한 내용은 남겨요. 관리 구간 내부가 수정됐거나 마커·심볼릭 링크가 예상과 다르면 **덮어쓰거나 삭제하지 않고 중단**해요. 사용자 지침의 우선순위는 에이전트마다 다를 수 있으므로 새 세션에서 실제 로딩도 확인해 주세요. 사용자 범위 설정 디렉터리를 변경한 환경은 `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`을 따릅니다.
 
 활성화 후에는 **새 에이전트 세션**을 열고 해당 환경에 `my-context` MCP가 연결·인증돼 있는지 확인해 주세요. 지침 파일이 존재해도 실제 MCP 조회와 모델 적용은 자동으로 보장되지 않아요. 프로젝트의 기존 지침·권한과 충돌하면 그 정책을 우선해요. 사용자가 조회를 금지하면 호출하지 않아요.
 
