@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, lstatSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,27 +58,74 @@ test('이전의 명시적 요청 전용 계약과 무단 쓰기 확대를 다시
   assert.ok(issues.includes('read does not grant write'));
 });
 
-test('새 원칙 자산을 관리하면 > 독립 진입 파일과 본문 및 메타데이터를 보존한다', () => {
-  const slugs = [
-    'implementation-strategy', 'execution-strategy',
-    'roadmap-planning', 'context-aware-reasoning',
-  ];
-  const names = new Set();
-  for (const slug of slugs) {
-    const path = 'content/personal/lookup-' + slug;
-    const entry = read(path + '/SKILL.md');
-    const body = read(path + '/knowledge.md');
-    assert.match(entry, new RegExp('^name: lookup-' + slug + '$', 'm'));
-    assert.match(entry, /^description: "[^\n]+"/m);
-    assert.match(entry, /source: community/);
-    assert.match(entry, /tags: "/);
-    assert.match(entry, /knowledge.md/);
-    assert.match(body, /판단 원칙/);
-    names.add(slug);
+function discoverPersonalAssets(personalRoot) {
+  const names = readdirSync(personalRoot);
+  assert.ok(names.length > 0, 'Personal asset registry must not be empty');
+  const seen = new Set();
+  for (const slug of names) {
+    const dir = join(personalRoot, slug);
+    const stat = lstatSync(dir);
+    assert.ok(stat.isDirectory() && !stat.isSymbolicLink(), 'Asset must be a real directory: ' + slug);
+    assert.match(slug, /^lookup-[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid personal asset slug: ' + slug);
+    assert.ok(!seen.has(slug), 'Duplicate personal asset: ' + slug);
+    seen.add(slug);
+    const entryPath = join(dir, 'SKILL.md');
+    const bodyPath = join(dir, 'knowledge.md');
+    for (const file of [entryPath, bodyPath]) {
+      assert.ok(existsSync(file), 'Missing required asset file: ' + file);
+      const mode = lstatSync(file);
+      assert.ok(mode.isFile() && !mode.isSymbolicLink(), 'Asset must be a regular file: ' + file);
+    }
+    const entry = readFileSync(entryPath, 'utf8');
+    const body = readFileSync(bodyPath, 'utf8');
+    const frontmatter = entry.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+    assert.ok(frontmatter, 'Missing YAML frontmatter: ' + slug);
+    const lines = frontmatter[1];
+    assert.match(lines, new RegExp('^name: ' + slug + '$', 'm'), 'Incorrect asset name: ' + slug);
+    assert.match(lines, /^description:\s*"?[A-Za-z][^\n]+"?$/m, 'Missing English description: ' + slug);
+    assert.match(lines, /^metadata:\s*$/m, 'Missing metadata: ' + slug);
+    assert.match(lines, /^\s+source:\s+community\s*$/m, 'Missing source metadata: ' + slug);
+    assert.match(lines, /^\s+tags:\s*"?[a-z][^\n]+"?$/m, 'Missing English tags: ' + slug);
+    assert.match(entry, /knowledge\.md/, 'Missing knowledge.md reference: ' + slug);
+    assert.match(body.trim(), /^#\s+.+/m, 'Missing knowledge heading: ' + slug);
+    assert.ok(body.trim().length >= 50, 'Empty or trivial knowledge body: ' + slug);
   }
-  assert.equal(names.size, slugs.length);
+  return names;
+}
+
+test('개인 지식 자산 전체를 자동 탐색해 새 원칙도 구조·메타데이터를 검사한다', () => {
+  const slugs = discoverPersonalAssets(join(root, 'content/personal'));
+  for (const expected of [
+    'lookup-testing-principles',
+    'lookup-implementation-strategy',
+    'lookup-execution-strategy',
+    'lookup-roadmap-planning',
+    'lookup-context-aware-reasoning',
+  ]) assert.ok(slugs.includes(expected), 'Existing asset must remain available: ' + expected);
   assert.equal(existsSync(join(root, 'content/personal/lookup-development-principles')), false);
-  assert.ok(readdirSync(join(root, 'content/personal')).some((name) => name === 'lookup-testing-principles'));
+});
+
+test('다섯 번째 이후 원칙을 추가하더라도 누락·잘못된 메타데이터가 자동으로 거부된다', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'my-context-assets-'));
+  try {
+    const asset = join(dir, 'lookup-future-principle');
+    mkdirSync(asset);
+    const entry = ['---', 'name: lookup-future-principle',
+      'description: "Guidance for testing a future principle."',
+      'metadata:', '  source: community',
+      '  tags: "principles, testing"', '---', '',
+      '# Future principle', '', 'Read knowledge.md as a reference.', ''].join('\n');
+    writeFileSync(join(asset, 'SKILL.md'), entry);
+    writeFileSync(join(asset, 'knowledge.md'), '# Future\n\nThis example is a sufficiently detailed future principle for validation.\n');
+    assert.deepEqual(discoverPersonalAssets(dir), ['lookup-future-principle']);
+    rmSync(join(asset, 'knowledge.md'));
+    assert.throws(() => discoverPersonalAssets(dir), /Missing required asset file/);
+    writeFileSync(join(asset, 'knowledge.md'), '# Future\n\nThis example is a sufficiently detailed future principle for validation.\n');
+    writeFileSync(join(asset, 'SKILL.md'), entry.replace('name: lookup-future-principle', 'name: lookup-other'));
+    assert.throws(() => discoverPersonalAssets(dir), /Incorrect asset name/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('CI가 설치 안전성·한국어 검색·정책 계약을 함께 검사하도록 연결한다', () => {

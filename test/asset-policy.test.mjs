@@ -12,12 +12,15 @@ const entry = join(root, 'scripts/install-asset-usage.mjs');
 const targets = ['.codex/AGENTS.md', '.pi/agent/AGENTS.md', '.claude/CLAUDE.md'];
 const policy = readFileSync(join(root, 'policies/asset-usage.md'), 'utf8').trimEnd();
 
-function run(arg, home) {
+function run(arg, home, injectSecondWriteFailure = false) {
   const env = { ...process.env, HOME: home };
   delete env.CODEX_HOME;
   delete env.PI_CODING_AGENT_DIR;
   delete env.CLAUDE_CONFIG_DIR;
-  return spawnSync(process.execPath, [entry, arg], { env, cwd: root, encoding: 'utf8' });
+  const args = injectSecondWriteFailure
+    ? ['--require', join(root, 'test/fixtures/fail-second-policy-write.cjs'), entry, arg]
+    : [entry, arg];
+  return spawnSync(process.execPath, args, { env, cwd: root, encoding: 'utf8' });
 }
 function fixture(fn) {
   const home = mkdtempSync(join(tmpdir(), 'my-context-policy-'));
@@ -138,4 +141,27 @@ test('사용자가 마커 외부의 구분 문자를 바꾸면 확인·수정·�
     assert.equal(result.status, 1, action + ' ' + result.stdout + result.stderr);
     assert.equal(read(home, file), modified);
   }
+}));
+
+test('두 번째 대상에 쓰기 오류가 발생하면 먼저 수정된 사용자 지침을 복원한다', () => fixture((home) => {
+  const originals = [
+    '# User Codex instructions\n\nPreserve exactly.\n',
+    '# User Pi instructions\n\nMust remain untouched.\n',
+    '# User Claude instructions\n\nMust remain untouched.\n',
+  ];
+  originals.forEach((source, index) => set(home, targets[index], source));
+  const failed = run('--enable', home, true);
+  assert.equal(failed.status, 1, 'Injected failure should stop installation');
+  assert.match(failed.stderr, /Injected second-target write failure/);
+  targets.forEach((path, index) => {
+    assert.equal(read(home, path), originals[index], 'Rollback or preservation failed: ' + path);
+  });
+  assert.equal(JSON.parse(run('--check', home).stdout).results.every((x) => x.status === 'disabled'), true);
+}));
+
+test('두 번째 대상에서 쓰기 오류가 발생하면 최초 대상에 새로 만든 파일도 삭제한다', () => fixture((home) => {
+  const failed = run('--enable', home, true);
+  assert.equal(failed.status, 1, 'Injected failure should stop installation');
+  assert.match(failed.stderr, /Injected second-target write failure/);
+  targets.forEach((path) => assert.equal(existsSync(join(home, path)), false, 'Partial installation: ' + path));
 }));
