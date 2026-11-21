@@ -128,6 +128,17 @@ test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Sk
     const results = parsed(await callTool('chub_search', { query }));
     assert.ok(results.results.some((item) => item.id === id), 'Natural language search: ' + query);
   }
+  const koreanQueries = [
+    ['implementation-strategy', '기존 인터페이스를 재사용하는 게 좋을까?'],
+    ['execution-strategy', '이 작업을 병렬로 진행하는 게 좋을까?'],
+    ['roadmap-planning', '단기 목표와 장기 로드맵은 어떻게 계획하지?'],
+    ['context-aware-reasoning', '사용자 요구사항과 의도를 먼저 어떻게 파악할까?'],
+  ];
+  for (const [slug, query] of koreanQueries) {
+    const id = 'personal/lookup-' + slug;
+    const results = parsed(await callTool('chub_search', { query }));
+    assert.ok(results.results.some((item) => item.id === id), 'Korean natural-language search: ' + query);
+  }
   const removed = await callTool('chub_get', { id: 'personal/lookup-development-principles' });
   assert.equal(removed.isError, true);
 });
