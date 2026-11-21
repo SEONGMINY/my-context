@@ -137,8 +137,10 @@ test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Sk
   for (const [slug, query] of koreanQueries) {
     const id = 'personal/lookup-' + slug;
     const results = parsed(await callTool('chub_search', { query }));
-    assert.ok(results.results.some((item) => item.id === id), 'Korean natural-language search: ' + query);
+    assert.ok(results.results.slice(0, 3).some((item) => item.id === id), 'Korean top-3 search: ' + query);
   }
+  const unrelated = parsed(await callTool('chub_search', { query: '고양이 모래 추천해줘' }));
+  assert.equal(unrelated.total, 0, 'Unrelated Korean queries should not return every asset');
   const removed = await callTool('chub_get', { id: 'personal/lookup-development-principles' });
   assert.equal(removed.isError, true);
 });
