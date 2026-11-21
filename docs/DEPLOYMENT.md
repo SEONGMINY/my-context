@@ -7,15 +7,19 @@
 3. 해당 정책을 운영 Access 앱에 연결해 주세요.
 4. 사용자에게 [Codex 연결 방법](../README.md#my-context-mcp-연결하기)을 안내해 주세요.
 
-허용된 사용자는 운영 MCP의 모든 자산을 조회할 수 있어요. 저장소 초대와 Worker 재배포는 필요 없어요.
+허용된 사용자는 운영 MCP의 모든 게시 자산을 조회할 수 있어요. 저장소 초대와 Worker 재배포는 필요 없어요.
+
+**공개 범위:** 현재 GitHub 저장소는 공개(`public`) 상태예요. 커밋된 Markdown 원본은 MCP 인증과 관계없이 GitHub에서 볼 수 있어요. Cloudflare Access는 **운영 MCP 요청**을 제한할 뿐 GitHub 원본을 비공개로 만들지 않아요. 비공개 정보를 게시해야 한다면 저장소 가시성과 게시 정책부터 별도로 검토해 주세요.
 
 소유자 정책은 운영 Access 앱과 파일럿 Access 앱에 모두 적용돼요. [Access 정책 관리](https://developers.cloudflare.com/cloudflare-one/access-controls/policies/policy-management/)
 
 ## 운영 배포
 
-워크플로는 배포할 커밋에서 자산을 읽어요. `content/`의 지식과 [배포 목록](../publish-skills.json)에 지정한 `skills/` 항목을 포함해요. 각 항목의 첨부 파일도 포함해요.
+워크플로는 배포할 **Git 커밋**에서 자산을 읽어요. `content/`에서는 `SKILL.md` 또는 `DOC.md` 진입 파일이 있는 자산을 게시하고, `skills/`에서는 [배포 목록](../publish-skills.json)에 지정한 Skill만 게시해요. 각 게시 자산의 첨부 파일도 함께 포함해요. 파일을 저장소에 추가하는 것만으로 MCP에 게시되지는 않아요.
 
 배포 전에 `npm run worker -- deployments list --config wrangler.jsonc`로 정상 버전 ID를 기록해 주세요.
+
+운영 배포 Job은 **수동 실행(`workflow_dispatch`)**, `master` 선택, `deploy_production=true`, GitHub Actions 변수 `MY_CONTEXT_PRODUCTION_DEPLOY_ENABLED=true`가 모두 충족될 때만 실행돼요. `true`가 아니면 검증이 성공해도 운영 배포는 `skipped`예요. 운영 환경에는 `CLOUDFLARE_API_TOKEN`(secret), `CLOUDFLARE_ACCOUNT_ID`, `MY_CONTEXT_ACCESS_TEAM_DOMAIN`, `MY_CONTEXT_ACCESS_AUD`(variables)도 올바르게 설정돼 있어야 해요.
 
 1. [관리 절차](../skills/manage-dev-knowledge/SKILL.md)에 따라 배포할 자산과 첨부 파일을 검토해 주세요.
 2. 승인받은 변경을 `master`에 반영해 주세요.
@@ -24,14 +28,14 @@
 5. `deploy_production`을 선택해 주세요.
 6. **Run workflow**를 눌러 주세요.
 
-검증을 통과하면 [워크플로](../.github/workflows/worker.yml)가 선택한 커밋을 배포해요.
+조건이 충족되고 검증을 통과하면 [워크플로](../.github/workflows/worker.yml)가 선택한 커밋을 배포해요. **Validate Worker 성공만으로 운영 배포를 완료했다고 판단하지 마세요.**
 
 ### 배포 확인
 
-1. 운영 MCP에 로그인해 주세요.
-2. `chub_list`를 호출해 주세요.
-3. 새 자산을 배포했다면 해당 자산을 검색해 주세요.
-4. 새 자산의 본문이나 첨부 파일을 조회해 주세요.
+1. GitHub Actions에서 **Deploy production Worker** Job이 `success`인지 확인해 주세요. `skipped`는 배포 완료가 아니에요.
+2. 운영 MCP에 로그인해 `chub_list`를 호출해 주세요.
+3. 응답에 `revision`이 있다면 **의도한 배포 커밋 SHA와 일치**하는지 확인해 주세요. 값이 없으면 이전 Worker일 수 있으므로 최신 버전 반영을 확인했다고 주장하지 마세요.
+4. 새 자산을 게시했다면 `chub_search`로 검색하고 `chub_get`으로 본문 및 필요한 첨부 파일을 조회해 주세요.
 
 ### 배포 자격 증명 교체
 

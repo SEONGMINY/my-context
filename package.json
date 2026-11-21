@@ -2,7 +2,7 @@
   "name": "my-context",
   "version": "0.1.0",
   "private": true,
-  "description": "Private Markdown knowledge served through Context Hub MCP",
+  "description": "Git-backed personal development principles and reusable agent workflows served through read-only MCP",
   "engines": {
     "node": "^20.20.0 || >=22.22.0"
   },

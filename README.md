@@ -2,6 +2,8 @@
 
 my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업 절차를 모아 둔 저장소예요. 자산 원본은 GitHub에서 관리하고, **MCP에서 필요한 내용을 조회하거나** 자주 쓰는 Skill을 로컬에 설치할 수 있어요.
 
+> **공개 범위:** 이 GitHub 저장소는 현재 공개(`public`) 상태예요. 커밋된 개인 지식은 GitHub에서 누구나 읽을 수 있고, Cloudflare Access 인증은 **운영 MCP 접속**에 적용돼요. 비공개 정보는 원본에 커밋하기 전에 공개 범위를 확인해 주세요.
+
 ## 포함된 항목
 
 | 항목 | 언제 쓰나요? | 사용 경로 |
@@ -34,7 +36,7 @@ MCP를 통한 사용에는 **Skill 설치나 저장소 클론이 필요하지 �
    - 로그인 안내가 없으면 `codex mcp login my-context`를 실행해 주세요.
 3. 새 에이전트 세션을 열고 "my-context의 `chub_list`를 호출해줘"라고 요청해 연결을 확인해 주세요.
 
-Pi나 Claude Code에서는 각 에이전트가 지원하는 MCP 연결·인증 방법을 사용해야 해요. **로컬 Skill 설치만으로 MCP까지 연결되지는 않아요.**
+Pi나 Claude Code에서는 해당 버전의 MCP 연결·인증 절차를 따라야 해요. 연결 후 `chub_list` 호출로 실제 사용 가능 여부를 확인해 주세요. **로컬 Skill 설치만으로 MCP까지 연결되지는 않아요.** 에이전트별 발견·실제 적용 검증은 [E2E 가이드](test/workflow-evaluation.md)를 참고해 주세요.
 
 ### 원칙을 Skill과 독립적으로 활용하기
 
@@ -101,7 +103,7 @@ MCP로 읽은 지침을 **현재 작업에 적용하는 것**과 네이티브 Sk
 
 설치기는 Codex·Pi용 `~/.agents/skills/`와 Claude Code용 `~/.claude/skills/`에 **같은 로컬 원본을 가리키는 심볼릭 링크**를 생성해요. 기존 파일이 있으면 덮어쓰지 않고 중단하고, 부분 설치가 실패하면 이번 설치에서 만든 항목만 복구해요.
 
-로컬 Skill은 **로컬 Git 체크아웃**의 내용을, MCP는 **배포된 릴리스**를 사용해요. 두 경로의 버전이 다를 수 있으니 결과를 검증할 때 사용한 경로·리비전을 구분해 주세요. 로컬 저장소 위치를 옮기면 심볼릭 링크가 깨질 수도 있어요.
+로컬 Skill은 **로컬 Git 체크아웃**의 내용을, MCP는 **배포된 릴리스**를 사용해요. 두 경로의 버전이 다를 수 있으니 결과를 검증할 때 사용한 경로·리비전을 구분해 주세요. 로컬 Skill을 갱신하려면 원본 저장소의 변경 내용을 검토한 뒤 체크아웃을 갱신하고, `ls -l ~/.agents/skills/development-workflow ~/.claude/skills/development-workflow`로 링크가 유효한지 확인해 주세요. 저장소를 이동하거나 Skill을 제거하려면 두 링크가 **이 저장소의 Skill 디렉터리를 가리키는 심볼릭 링크인지** 먼저 확인하고 해당 링크만 해제해 주세요. 기존 사용자 파일을 지우지 마세요.
 
 일반 개발 요청에서 설치된 Skill을 자동으로 선택할지는 에이전트의 판단에 달려 있어요. 확실하게 적용하려면 명시적으로 호출해 주세요. [설치와 동작 검증](test/workflow-evaluation.md)
 
@@ -129,7 +131,23 @@ my-context에서 extract-development-insights를 찾아 읽고,
 
 추출 Skill은 **분석만** 수행해요. 사용자 발언과 AI의 제안, 실제 결과를 구분하고 근거가 부족하면 미확인으로 남겨요. 원칙을 실제로 저장·변경할 때는 별도 `manage-dev-knowledge` 절차와 승인이 필요해요.
 
-개인 개발 원칙은 네 개의 독립 조회 자산으로 분리돼 있어요. 명시적 요청 또는 사용자 수준에서 활성화한 공통 정책에 따라 필요한 것만 조회해 주세요. 신규 자산과 인사이트 추출 Skill은 **운영 배포 전에는 MCP에서 조회되지 않을 수 있어요.**
+개인 개발 원칙은 Skill과 독립적인 조회 자산으로 관리돼요. 명시적 요청 또는 사용자 수준에서 활성화한 공통 정책에 따라 필요한 것만 조회해 주세요. GitHub의 최신 자산도 **운영 배포 전에는 MCP에서 조회되지 않을 수 있어요.**
+
+## 개인 개발 지식 관리
+
+원격 MCP의 `chub_search`·`chub_get`·`chub_list`는 **읽기 전용**이에요. 지식을 등록·수정·삭제하려면 저장소 원본을 확인하고 사용자 승인을 거치는 [`manage-dev-knowledge`](skills/manage-dev-knowledge/SKILL.md)를 사용해 주세요. 이 관리 Skill은 운영 MCP 게시 목록에 포함되지 않아요.
+
+Codex에서 **로컬 관리 환경**을 사용할 경우 저장소 루트에서 다음 순서로 준비할 수 있어요. 이 경로는 원격 MCP 연결과 별개로 `personal-knowledge` 로컬 MCP와 관리 Skill을 사용자 범위에 설치해요. 기존 설정이 있다면 `--check` 결과를 먼저 검토해 주세요.
+
+```bash
+npm ci
+npm run setup
+npm run build
+npm run install:user -- --check
+npm run install:user
+```
+
+새 Codex 세션에서 실제 MCP 연결과 Skill 로딩을 각각 확인해 주세요. 파일을 변경할 때는 [관리 Skill의 승인 절차](skills/manage-dev-knowledge/SKILL.md)를 따라야 하며, 변경 사항을 운영 MCP에 반영하려면 별도 배포 검증이 필요해요.
 
 ## 조회와 배포
 
