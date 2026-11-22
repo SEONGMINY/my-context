@@ -214,3 +214,19 @@ test('게시 참조 검사는 누락·자산 외부 경로를 탐지하고 외�
     'SKILL.md: missing.md', 'SKILL.md: ../policy.md',
   ]);
 });
+
+
+test('discovery distinguishes judgment from procedure and guards release consistency', async () => {
+  const found = parsed(await callTool('chub_search', { query: 'parallelism subagents dependencies', limit: 5 }));
+  assert.ok(found.results.length <= 5);
+  const principle = found.results.find(({ id }) => id === 'personal/lookup-execution-strategy');
+  assert.equal(principle?.role, 'knowledge');
+  const workflow = parsed(await callTool('chub_search', { query: skillId, limit: 1 })).results[0];
+  assert.equal(workflow.id, skillId);
+  assert.equal(workflow.role, 'procedure');
+  const current = await callTool('chub_get', { id: principle.id, file: 'knowledge.md', revision: found.revision });
+  assert.equal(current.isError, undefined);
+  const stale = await callTool('chub_get', { id: principle.id, revision: '0'.repeat(40) });
+  assert.equal(stale.isError, true);
+  assert.equal(parsed(stale).available, release.sha);
+});
