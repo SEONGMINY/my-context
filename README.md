@@ -22,6 +22,7 @@ my-context는 원칙과 절차를 제공하고, 실제 개발과 검증은 각 �
 | [구현 방법이 고민될 때](content/personal/lookup-implementation-strategy/knowledge.md) | 기존 코드와 계약을 확인하고 구현 대안을 비교해요. |
 | [작업이 복잡해졌을 때](skills/development-workflow/SKILL.md) | 작업 의존성, 검증 및 인계 방식을 정리해요. |
 | [코드 구조가 복잡할 때](content/personal/lookup-responsibility-driven-design/knowledge.md) | 구성 요소의 책임과 협력 관계를 검토해요. |
+| [복잡한 내용을 쉽게 설명할 때](content/personal/lookup-clear-explanation-visualization/knowledge.md) | 핵심과 관계를 이해하기 쉽게 설명하고 필요한 경우 도식화해요. |
 | [테스트를 정리할 때](content/personal/lookup-testing-principles/knowledge.md) | 중요한 동작과 검증할 테스트를 선택해요. |
 | [반복되는 문제가 있을 때](content/personal/lookup-preventive-engineering/knowledge.md) | 원인과 재발 방지 필요성을 판단해요. |
 | [개발 경험을 정리할 때](skills/extract-development-insights/SKILL.md) | 다른 프로젝트에도 쓸 수 있는 원칙 후보를 찾아요. |
