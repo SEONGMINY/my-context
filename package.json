@@ -20,7 +20,7 @@
     "policy:enable": "node scripts/install-asset-usage.mjs --enable",
     "policy:disable": "node scripts/install-asset-usage.mjs --disable",
     "test:workflow": "node --test test/install-workflow.test.mjs",
-    "test:integrity": "node --test test/asset-policy.test.mjs test/asset-integrity.test.mjs test/korean-search.test.mjs"
+    "test:integrity": "node --test test/principle-cases.test.mjs test/asset-policy.test.mjs test/asset-integrity.test.mjs test/korean-search.test.mjs"
   },
   "dependencies": {
     "@aisuite/chub": "0.1.4",

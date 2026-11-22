@@ -97,7 +97,7 @@ test('읽기 전용 MCP로 공개되지 않은 항목을 요청하면 > 오류�
   assert.equal(parent.isError, true);
 });
 
-test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Skill 호출 없이 MCP로 조회된다', async () => {
+test('인사이트 Skill과 독립 원칙을 게시하면 > 별도 Skill 호출 없이 MCP로 조회된다', async () => {
   const insightId = 'workflows/extract-development-insights';
   const insight = await callTool('chub_get', { id: insightId });
   assert.equal(insight.isError, undefined);
@@ -105,6 +105,7 @@ test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Sk
   const slugs = [
     'implementation-strategy', 'execution-strategy',
     'roadmap-planning', 'context-aware-reasoning',
+    'risk-management', 'preventive-engineering',
   ];
   for (const slug of slugs) {
     const id = 'personal/lookup-' + slug;
@@ -122,6 +123,8 @@ test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Sk
     ['execution-strategy', 'parallelism subagents dependencies'],
     ['roadmap-planning', 'roadmap phased long term'],
     ['context-aware-reasoning', 'requirements decision context'],
+    ['risk-management', 'risk management residual risk'],
+    ['preventive-engineering', 'preventive engineering quality gates'],
   ];
   for (const [slug, query] of exploratoryQueries) {
     const id = 'personal/lookup-' + slug;
@@ -133,6 +136,8 @@ test('인사이트 Skill과 네 가지 독립 원칙을 게시하면 > 별도 Sk
     ['execution-strategy', '이 작업을 병렬로 진행하는 게 좋을까?'],
     ['roadmap-planning', '단기 목표와 장기 로드맵은 어떻게 계획하지?'],
     ['context-aware-reasoning', '사용자 요구사항과 의도를 먼저 어떻게 파악할까?'],
+    ['risk-management', '위험 관리와 잔여 위험 대응 방안'],
+    ['preventive-engineering', '구조적 예방과 재발 방지 통제'],
   ];
   for (const [slug, query] of koreanQueries) {
     const id = 'personal/lookup-' + slug;
