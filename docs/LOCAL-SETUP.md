@@ -1,33 +1,23 @@
-# 로컬 설정
+# 로컬 Skill 및 선택적 활용 설정
 
-이 문서는 로컬 설치·갱신·제거의 상세 안내다. 원격 MCP만 이용할 때는 저장소 클론이나 Skill 설치가 필요하지 않다. [사용 방법](../README.md)
+개인 원칙·공통 Skill의 **일상적인 검색·조회는 원격 `my-context` MCP 하나를 사용**해요. 원격 조회만 필요하다면 저장소를 클론하거나 Skill을 설치할 필요가 없어요. [원격 연결](../README.md#시작하기)
+
+로컬 환경은 **지식 원본 변경, 로컬 Skill 직접 호출, 변경 전 테스트**에만 필요합니다. 로컬 `personal-knowledge` MCP와 그 전용 지식 인덱스 설치는 더 이상 지원하지 않아요.
+
+## 사용 목적별 선택
+
+| 하고 싶은 일 | 사용 경로 |
+| --- | --- |
+| 게시된 원칙·Skill 검색·조회 | 원격 MCP (로그인 필요) |
+| 원칙 등록·수정·삭제 | 원격 조회 + 로컬 Git 원본 + [관리 Skill](../skills/manage-dev-knowledge/SKILL.md) |
+| 네이티브 Workflow Skill 호출 | 선택적 로컬 Skill 설치 |
+| 배포 전 확인 | 저장소의 릴리스·Worker 검증 ([운영 안내](DEPLOYMENT.md)) |
+
+MCP 연결, Skill 설치, 선택적 자동 활용 동의는 서로 다른 동작이에요. 설치했다고 AI가 자동 활용하는 것은 아닙니다.
 
 ## 환경
 
-지원 Node.js 버전은 [package.json](../package.json)의 `engines`를 기준으로 한다(`^20.20.0 || >=22.22.0`). 로컬 관리 연결은 `/bin/sh`, 설치기는 심볼릭 링크를 사용한다. 이러한 기능이 없는 환경은 별도 확인이 필요하며 Windows 네이티브 지원을 보장하지 않는다. 에이전트의 실제 발견 및 인증 여부는 [E2E 가이드](../test/workflow-evaluation.md)에 따라 검증한다.
-
-## 로컬과 원격 중 무엇을 쓰나요?
-
-| 경로 | 자산 범위와 특징 |
-| --- | --- |
-| 원격 `my-context` MCP | 게시된 개인 원칙과 선택된 공통 Skill. Cloudflare Access 인증, 한국어 보완 검색, 배포 `revision` |
-| 로컬 `personal-knowledge` MCP | 저장소의 `content/`를 로컬 빌드. 운영 Worker의 검색 보완·배포 리비전 계약 없음 |
-| 로컬 Skill 설치 | 설치된 Skill 본문·첨부. MCP 연결 및 자동 활용 동의와 별개 |
-
-원격 조회만 필요하면 로컬 설정은 필요하지 않다. [원격 연결 안내](../README.md#시작하기)
-
-### 경로별 지원 범위
-
-| 기능 | 원격 `my-context` MCP | 로컬 `personal-knowledge` MCP | 로컬 Skill |
-| --- | --- | --- | --- |
-| 개인 원칙 조회 | 게시된 원칙 | `content/`의 로컬 빌드 | 별도 자동 설치 대상 아님 |
-| 공통 Skill | 게시 목록의 Skill | 미포함 | 설치한 Skill만 사용 |
-| 배포 리비전 | `revision` 반환 | 운영 revision 계약 없음 | 현재 Git 원본 확인 |
-| 한국어 보완 검색 | Worker에서 제공 | 동일 보완 기능 없음 | MCP 검색 API 없음 |
-| 지식 변경 | 읽기 전용 | 조회용 | 관리 Skill과 승인 절차로 Git 원본 수정 |
-
-MCP 연결, Skill 설치, 에이전트의 실제 적용은 서로 다른 상태예요. [실사용 E2E](../test/workflow-evaluation.md)에서 구분해 확인해 주세요.
-
+Node.js 버전은 [package.json](../package.json)의 `engines`를 따릅니다(`^20.20.0 || >=22.22.0`). Skill 설치는 심볼릭 링크를 사용하므로 Windows 네이티브 지원은 보장하지 않습니다. 실제 발견·적용은 [E2E 가이드](../test/workflow-evaluation.md)에서 검증합니다.
 
 ## 선택적 조회 정책
 
@@ -55,21 +45,27 @@ MCP 연결, Skill 설치, 에이전트의 실제 적용은 서로 다른 상태�
 
 설치되어 Skill 목록에 표시되는 것은 자동 활용 동의가 아니다. 기존 개인 원칙 전용 동의는 로컬 공통 Skill 자동 사용 권한이 아니며, 현재 작업에서 my-context 사용을 금지하면 동일 저장소의 로컬 Skill도 사용하지 않아야 한다. 이는 Host의 최초 파일 읽기 전에 적용돼야 하는 행동 계약이며, 메타데이터 문구만으로 파일 접근이 강제 차단되지는 않는다. 실제 Pi 등에서는 새 세션의 로컬 파일 읽기 기록으로 확인한다.
 
-## 로컬 관리 환경
+## 개인 지식 관리 Skill (선택)
 
-저장소 루트에서 아래 명령을 실행한다. 기존 설정과 충돌하지 않는지 `--check` 결과를 먼저 확인한다.
+원본을 수정해야 하는 관리자는 저장소를 체크아웃한 다음 다음 명령으로 **Skill 링크만** 설치할 수 있어요. 원격 MCP는 [README](../README.md#시작하기)의 방법으로 별도로 연결합니다.
 
 ```bash
-npm ci
-npm run setup
-npm run build
 npm run install:user -- --check
 npm run install:user
 ```
 
-설치기는 Codex 설정의 `[mcp_servers.personal-knowledge]`와 `~/.agents/skills/manage-dev-knowledge` 링크를 추가한다. 설정 위치는 `CODEX_HOME` 또는 `~/.codex`다. `npm run build`는 로컬 `content/`를 인덱싱하며 공통 Skill 게시 목록이나 Worker 배포를 갱신하지 않는다. 지식 변경 후 로컬 인덱스를 다시 빌드한다. 새 Codex 세션에서 로컬 MCP의 `chub_list`와 관리 Skill 로딩을 각각 확인한다.
+설치 위치는 `~/.agents/skills/manage-dev-knowledge`입니다. 기존 파일·다른 Skill을 덮어쓰지 않으며, 새 Codex 세션에서 실제 발견과 호출을 확인합니다. 자산 변경은 Git에서 검토·승인하고, 게시 후 원격 MCP의 `revision`과 본문을 확인해요.
 
-제거 전 `config.toml`의 해당 섹션과 Skill 링크가 이 저장소를 가리키는지 확인한다. 설정의 다른 부분을 보존하며 해당 서버 항목만 제거하고, 이 저장소의 관리 Skill 링크만 해제한다. 자동 제거 명령은 제공하지 않는다. 설정이나 링크가 예상과 다르면 중단하고 수동으로 확인한다. 새 세션에서 제거 여부를 확인한다. 원격 `my-context` 연결과 별개다.
+## 이전 로컬 MCP 설정에서 전환
+
+기존에 `personal-knowledge`를 설치했다면 먼저 원격 `my-context` MCP가 실제로 조회되는지 확인하세요.
+
+1. Codex `config.toml`에서 **`[mcp_servers.personal-knowledge]` 섹션이 이 저장소의 `scripts/context-hub-mcp.sh`를 실행하는 기존 관리 항목인지** 확인하세요.
+2. 대상이 일치할 때만 해당 섹션과 그에 속한 설정 키를 수동으로 제거하세요. 인접한 다른 MCP 섹션이나 사용자 설정은 유지합니다. 사용자가 수정한 설정이라면 자동 삭제하지 말고 먼저 검토하세요.
+3. 기존 관리 Skill 링크 `~/.agents/skills/manage-dev-knowledge`는 보존하세요. 더 이상 필요하지 않은 로컬 인덱스·설정 생성물(`.local/`, `.generated/context-hub/`)은 소유와 내용을 확인한 후에만 정리하세요.
+4. 새 Codex 세션에서 원격 `my-context`의 `chub_list`·`chub_get`을 호출하고, `personal-knowledge`가 더 이상 연결되지 않았는지 확인하세요.
+
+이 저장소는 사용자의 기존 Codex 설정을 자동으로 변경하거나 삭제하지 않습니다.
 
 ## 문제가 발생했을 때
 
@@ -79,7 +75,7 @@ npm run install:user
 | MCP 호출 실패 | 연결 이름, 인증 상태, `chub_list` 실제 호출 |
 | 정책 `outdated` | 기존 동의 범위와 새 정책을 비교한 뒤 동의할 때만 갱신 |
 | 설치 충돌 | 기존 설정과 심볼릭 링크 소유·대상 확인. 무단 덮어쓰기 금지 |
-| 검색 결과 누락 | 로컬/운영 자산 범위, 게시 목록, 검색어, 운영 `revision` |
+| 검색 결과 누락 | 운영 자산 범위, 게시 목록, 검색어, 운영 `revision` |
 | MCP는 연결되지만 도구가 없음 | 에이전트의 도구 노출, 서버 이름, 새 세션에서 `chub_list` 호출 |
 | 자산 조회 오류 | 검색 ID·`revision`을 확인하고 `chub_get`에 정확한 파일 경로 전달 |
 

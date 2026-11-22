@@ -48,6 +48,6 @@ my-context는 원칙과 절차를 제공하고, 실제 개발과 검증은 각 �
 
 ## 더 알아보기
 
-- [로컬 설정](docs/LOCAL-SETUP.md) — 설치, 다른 에이전트 연결, 선택적 활용 정책
+- [선택적 활용과 Skill 설치](docs/LOCAL-SETUP.md) — 필요한 경우에만 로컬 Skill 설치 및 활용 정책 설정
 - [개발 지식 관리](skills/manage-dev-knowledge/SKILL.md) — 개인 원칙 조회 및 승인된 변경
 - [개발 안내](AGENTS.md) · [운영과 배포](docs/DEPLOYMENT.md) — 유지보수, 배포와 검증
