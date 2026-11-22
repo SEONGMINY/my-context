@@ -50,6 +50,18 @@
 3. 응답에 `revision`이 있다면 **의도한 배포 커밋 SHA와 일치**하는지 확인해 주세요. 값이 없으면 이전 Worker일 수 있으므로 최신 버전 반영을 확인했다고 주장하지 마세요.
 4. 새 자산을 게시했다면 `chub_search`로 검색하고 `chub_get`으로 본문 및 필요한 첨부 파일을 조회해 주세요.
 
+### 배포·조회 문제 진단
+
+| 증상 | 먼저 확인할 것 | 다음 조치 |
+| --- | --- | --- |
+| CI 성공, 운영 반영 안 됨 | `Deploy production Worker` Job이 `success`인지(`skipped`와 구분) | 수동 배포 조건과 선택한 `master` 확인 |
+| 운영 MCP 접근 거부 | Cloudflare Access 허용 사용자와 로그인 상태 | 인증·Access 설정 확인 후 실제 `chub_list` 호출 |
+| 이전 자산이 조회됨 | 운영 `chub_list`의 `revision`과 배포 SHA | 배포 대상 커밋·게시 목록 확인 |
+| 검색은 되지만 파일 조회 실패 | `chub_search`의 ID·`revision`, `chub_get`의 `file` | 같은 리비전의 정확한 첨부 경로로 재조회 |
+| Skill이 실제로 적용되지 않음 | 파일 조회 성공과 에이전트 행동을 분리 | [실사용 E2E](../test/workflow-evaluation.md)로 확인 |
+
+실제 배포 실패 시에는 기존 정상 배포 ID를 확인한 뒤 아래 복구 절차를 사용해요. CI 성공이나 MCP 조회 성공만으로 에이전트의 실제 적용을 확인했다고 말하지 마세요.
+
 ### 배포 자격 증명 교체
 
 1. Cloudflare에서 계정 API 토큰을 발급해 주세요. `minylee` Worker에만 **Individual Workers Editor** 권한을 주세요.
