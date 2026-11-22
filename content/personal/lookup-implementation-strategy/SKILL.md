@@ -1,9 +1,9 @@
 ---
 name: lookup-implementation-strategy
-description: "Personal implementation strategy principles for architecture choices, responsibility boundaries, interfaces, reusing existing code, and avoiding unnecessary abstractions."
+description: "Personal implementation strategy principles for architecture, design patterns, code-level implementation fidelity, language conventions, responsibility boundaries, and avoiding unnecessary abstractions."
 metadata:
   source: community
-  tags: "implementation strategy, architecture, interfaces, code reuse, design patterns"
+  tags: "implementation strategy, architecture, design patterns, code quality, implementation fidelity, interfaces, code reuse"
 ---
 
 # 구현 전략 원칙 조회
