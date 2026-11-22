@@ -58,14 +58,15 @@ npm run install:user
 
 ## 이전 로컬 MCP 설정에서 전환
 
-기존에 `personal-knowledge`를 설치했다면 먼저 원격 `my-context` MCP가 실제로 조회되는지 확인하세요.
+기존에 `personal-knowledge`를 설치했다면 아래 순서로 전환하세요. 이 절차는 **안내**이며 실행 중인 사용자의 컴퓨터 설정을 자동 변경하지 않습니다.
 
-1. Codex `config.toml`에서 **`[mcp_servers.personal-knowledge]` 섹션이 이 저장소의 `scripts/context-hub-mcp.sh`를 실행하는 기존 관리 항목인지** 확인하세요.
-2. 대상이 일치할 때만 해당 섹션과 그에 속한 설정 키를 수동으로 제거하세요. 인접한 다른 MCP 섹션이나 사용자 설정은 유지합니다. 사용자가 수정한 설정이라면 자동 삭제하지 말고 먼저 검토하세요.
-3. 기존 관리 Skill 링크 `~/.agents/skills/manage-dev-knowledge`는 보존하세요. 더 이상 필요하지 않은 로컬 인덱스·설정 생성물(`.local/`, `.generated/context-hub/`)은 소유와 내용을 확인한 후에만 정리하세요.
-4. 새 Codex 세션에서 원격 `my-context`의 `chub_list`·`chub_get`을 호출하고, `personal-knowledge`가 더 이상 연결되지 않았는지 확인하세요.
+1. **먼저 원격 연결을 확인해요.** 기존 로컬 연결은 유지한 채 원격 `my-context`에 로그인하고, `chub_list`의 `revision`과 `chub_get`의 실제 자산 본문을 확인하세요. 원격 조회가 실패하면 전환을 중단합니다.
+2. **기존 설정을 백업하고 소유권을 확인해요.** Codex 설정 파일은 `$CODEX_HOME/config.toml` 또는 `~/.codex/config.toml`입니다. 변경 전 파일을 별도로 복사해 두고, `[mcp_servers.personal-knowledge]` 섹션의 `command`/`args`가 **이 저장소의 이전 `scripts/context-hub-mcp.sh`**를 가리키는지 확인하세요.
+3. **대상이 일치할 때만 해당 섹션을 해제해요.** `[mcp_servers.personal-knowledge]`와 그 섹션에 속하는 항목만 제거하고, 다음 TOML 섹션부터는 그대로 유지하세요. 다른 서버의 설정·사용자가 변경한 항목이거나 소유권이 불확실하면 삭제하지 말고 수동 검토하세요.
+4. **새 세션에서 다시 검증해요.** `my-context`의 `chub_list`·`chub_get`을 다시 호출하고 `personal-knowledge`가 등록 서버 목록에서 사라졌는지 확인하세요. 실패하면 백업한 `config.toml`을 복구하고 원격 인증·연결부터 확인하세요.
+5. **로컬 파일은 별도 판단해요.** 기존 관리 Skill 링크 `~/.agents/skills/manage-dev-knowledge`는 보존합니다. `.local/`, `.generated/context-hub/`의 생성물은 소유·내용 및 다른 작업에서 사용하지 않는지 확인한 후에만 정리할 수 있습니다.
 
-이 저장소는 사용자의 기존 Codex 설정을 자동으로 변경하거나 삭제하지 않습니다.
+이 저장소는 기존 Codex 설정을 자동으로 제거하거나 변경하지 않아요. 전환 성공은 **로컬 서버 삭제 여부가 아니라 새 세션의 실제 원격 조회 결과**로 판단합니다.
 
 ## 문제가 발생했을 때
 
