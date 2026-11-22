@@ -1,6 +1,6 @@
 ---
 name: extract-development-insights
-description: "Explicit request for insight extraction is required; generic my-context use or automatic asset opt-in is not sufficient. Use when a user explicitly asks to analyze their development conversations, project decisions, or engineering experience to discover reusable principles, philosophy, or methods. Trace user statements, alternatives, choices, and outcomes to available evidence; suggest insights without storing them."
+description: "Find reusable engineering insights from available development conversations, project decisions, and engineering experience when relevant to the current task. Under an enabled common-Skill opt-in, the agent may select this read-only workflow without a separate explicit Skill invocation. Use only material already provided or independently authorized; do not access additional private history or change stored knowledge without permission."
 metadata:
   source: community
   tags: "development insights, engineering principles, retrospective, decisions, knowledge extraction"
@@ -8,12 +8,12 @@ metadata:
 
 # 개발 경험에서 판단 원칙 추출
 
-사용자가 지정한 개발 대화·작업 경험에서 **재사용 가능한 판단 기준의 후보**를 찾는다. 목표는 모든 대화를 요약하거나 새 Skill을 만드는 것이 아니다. 사용자의 실제 질문과 선택이 어떻게 구현·검증으로 이어졌는지 복원하고, 다른 상황에도 적용 가능한지 검토한다.
+사용자 요청과 현재 접근이 허용된 개발 대화·작업 경험에서 **재사용 가능한 판단 기준의 후보**를 찾는다. 목표는 모든 대화를 요약하거나 새 Skill을 만드는 것이 아니다. 사용자의 실제 질문과 선택이 어떻게 구현·검증으로 이어졌는지 복원하고, 다른 상황에도 적용 가능한지 검토한다.
 
 ## 적용 범위와 권한
 
-- 사용자가 자신의 대화·경험에서 인사이트 도출을 **명시적으로 요청한 경우에만** 적용한다. 다른 개발 작업 중 과거 대화나 개인 지식을 자율적으로 검색하지 않는다.
-- 대상 기간·프로젝트·자료를 확인한다. 현재 제공된 원문과 접근 가능한 원본을 사용한다. 직접 열지 못한 대화·코드·로그를 읽었다고 주장하지 않는다.
+- 사용자가 공통 Skill 자동 활용에 동의한 경우, AI가 현재 작업에 도움이 된다고 판단하면 이 절차를 선택할 수 있다. Skill 선택이 **추가 개인 대화·경험 자료의 열람 동의**를 뜻하지는 않는다. 기존 제공 자료 또는 별도로 접근이 허용된 자료만 사용한다.
+- 분석 범위와 현재 접근 가능한 자료를 확인한다. 현재 제공된 원문과 접근 가능한 원본을 사용한다. 직접 열지 못한 대화·코드·로그를 읽었다고 주장하지 않는다.
 - 분석은 **읽기 전용**이다. Skill 실행 자체는 지식 등록, 파일 생성·수정, 커밋·푸시, 운영 배포를 승인하지 않는다.
 - 사용자의 최신 지시와 해당 프로젝트 계약을 우선한다. 사적인 대화 원문·인증정보·개인 식별 정보는 공개 자산에 옮기지 않는다.
 

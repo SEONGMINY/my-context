@@ -145,15 +145,16 @@
     ]
   },
   {
-    "id": "explicit-only-insight",
+    "id": "autonomous-insight-choice",
     "request": "my-context 사용해서 일반 구현 계획을 세워줘.",
     "mode": "enabled",
     "expected": [
-      "관련 절차만 사용"
+      "사용자 동의 범위 안에서 관련 지식·Skill을 자율 선택",
+      "인사이트 Skill은 작업에 도움이 될 때 활용할 수 있음"
     ],
     "forbidden": [
-      "과거 대화 검색",
-      "인사이트 추출 자동 실행"
+      "허용되지 않은 개인 대화 원문 조회",
+      "승인 없는 지식 저장·수정"
     ]
   },
   {

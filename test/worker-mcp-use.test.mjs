@@ -264,7 +264,7 @@ test('Korean discovery accepts canonically equivalent Unicode queries', async ()
   assert.deepEqual(decomposed, composed);
 });
 
-test('discovery protocol exposes opt-in scope, explicit-only intent and read-only tools', async () => {
+test('discovery protocol preserves opt-in scope and exposes autonomous read-only workflows', async () => {
   const init = await call('initialize', {
     protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'fixture', version: '1' },
   });
@@ -286,5 +286,6 @@ test('discovery protocol exposes opt-in scope, explicit-only intent and read-onl
     query: 'workflows/extract-development-insights', limit: 1,
   })).results[0];
   assert.equal(insight.id, 'workflows/extract-development-insights');
-  assert.match(insight.description, /generic my-context use or automatic asset opt-in is not sufficient/);
+  assert.match(insight.description, /enabled common-Skill opt-in/);
+  assert.match(insight.description, /do not access additional private history or change stored knowledge without permission/);
 });
