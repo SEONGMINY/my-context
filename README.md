@@ -11,6 +11,8 @@ my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업
 | [`development-workflow`](skills/development-workflow/SKILL.md) | 요구사항을 정리하고 작업을 나눌 때. 변경을 검증하거나 작업을 인계할 때. | [MCP로 사용](#개발-workflow-사용하기) · [선택적 설치](#자주-사용한다면-설치하기) |
 | [`domain-storytelling`](skills/domain-storytelling/SKILL.md) | 인터뷰로 현재 업무를 파악하고 개선 범위와 요구사항을 정리할 때. | [워크숍 양식](skills/domain-storytelling/templates/workshop-documents.md) · MCP 배포 대상 |
 | [`extract-development-insights`](skills/extract-development-insights/SKILL.md) | 개발 대화의 사용자 발언·결정·대안을 분석해 재사용할 원칙 후보를 찾을 때. | MCP 배포 대상 · 읽기 전용 |
+| [Responsibility-driven Design](content/personal/lookup-responsibility-driven-design/knowledge.md) | 구성 요소의 책임 소유권·자율성·협력·규칙 소유자를 판단할 때 | 독립 지식 · MCP 조회 |
+| [Code Clarity](content/personal/lookup-code-clarity/knowledge.md) | 이름·함수 책임·입출력·부작용의 명료함을 검토할 때 | 독립 지식 · MCP 조회 |
 | [Implementation Strategy](content/personal/lookup-implementation-strategy/knowledge.md) | 구현 방향과 실제 코드의 책임·의존성·동작이 적절한지 판단할 때 | 독립 지식 · MCP 조회 |
 | [Evidence-driven Improvement](content/personal/lookup-evidence-driven-improvement/knowledge.md) | 무엇을 개선할 가치가 있고 변경이 실제 효과를 냈는지 판단할 때 | 독립 지식 · MCP 조회 |
 | [Execution Strategy](content/personal/lookup-execution-strategy/knowledge.md) | 작업·맥락 의존성, 실행 방식과 정보 공유의 적합성을 판단할 때 | 독립 지식 · MCP 조회 |
