@@ -10,8 +10,8 @@ const START = '<!-- my-context:asset-usage:start -->';
 const END = '<!-- my-context:asset-usage:end -->';
 const META = /^<!-- my-context:asset-usage:meta created=([01]) gap=([012]) sha256=([a-f0-9]{64}) -->$/;
 const action = process.argv[2];
-if (process.argv.length !== 3 || !['--check', '--enable', '--disable'].includes(action)) {
-  console.error('Usage: node scripts/install-asset-usage.mjs --check|--enable|--disable');
+if (process.argv.length !== 3 || !['--check', '--install'].includes(action)) {
+  console.error('Usage: node scripts/install-asset-usage.mjs --check|--install');
   process.exit(2);
 }
 const home = homedir();
@@ -72,22 +72,15 @@ function plan(path, old) {
   const section = managed(old.source, path);
   verifyPlacement(old.source, section, path);
   if (action === '--check') {
-    return { next: old.source, remove: false, status: !section ? 'disabled' : section.body === POLICY ? 'enabled' : 'outdated' };
+    return { next: old.source, status: !section ? 'missing' : section.body === POLICY ? 'current' : 'outdated' };
   }
-  if (action === '--enable') {
-    if (section) {
-      return {
-        next: old.source.slice(0, section.start) + block(section.created, section.gap) + old.source.slice(section.end),
-        remove: false,
-      };
-    }
-    // Remember the exact separator and whether the file existed, without a separate state database.
-    const gap = !old.source ? 0 : old.source.endsWith('\n') ? 1 : 2;
-    return { next: old.source + '\n'.repeat(gap) + block(!old.existed, gap) + '\n', remove: false };
+  if (section) {
+    return { next: old.source.slice(0, section.start) + block(section.created, section.gap) + old.source.slice(section.end) };
   }
-  if (!section) return { next: old.source, remove: false };
-  const next = old.source.slice(0, section.start - section.gap) + old.source.slice(section.end + 1);
-  return { next, remove: section.created && next === '' };
+  // Retain the exact separator and previous-file metadata to upgrade existing policy blocks safely.
+  const gap = !old.source ? 0 : old.source.endsWith('\n') ? 1 : 2;
+  return { next: old.source + '\n'.repeat(gap) + block(!old.existed, gap) + '\n' };
+
 }
 function atomicWrite(path, content, mode) {
   mkdirSync(dirname(path), { recursive: true });
@@ -124,18 +117,14 @@ try {
     const changed = [];
     try {
       for (const item of planned) {
-        if ((item.before.source === item.next && !item.remove) ||
-            (!item.before.existed && action === '--disable')) continue;
+        if (item.before.source === item.next) continue;
         if (!sameFile(inspect(item.path), item.before)) {
           throw new Error('File changed after preflight: ' + item.path);
         }
-        if (item.remove) rmSync(item.path);
-        else atomicWrite(item.path, item.next, item.before.mode);
+        atomicWrite(item.path, item.next, item.before.mode);
         changed.push({
           ...item,
-          written: item.remove
-            ? { existed: false, source: '', mode: 0o644 }
-            : { existed: true, source: item.next, mode: item.before.mode },
+          written: { existed: true, source: item.next, mode: item.before.mode },
         });
       }
     } catch (error) {

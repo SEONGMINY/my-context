@@ -1,192 +1,153 @@
 import test from 'node:test';
-import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, lstatSync, symlinkSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const entry = join(root, 'scripts/install-asset-usage.mjs');
 const targets = ['.codex/AGENTS.md', '.pi/agent/AGENTS.md', '.claude/CLAUDE.md'];
 const policy = readFileSync(join(root, 'policies/asset-usage.md'), 'utf8').trimEnd();
-
-function run(arg, home, injectSecondWriteFailure = false) {
+function run(arg, home, injectFailure = false) {
   const env = { ...process.env, HOME: home };
-  delete env.CODEX_HOME;
-  delete env.PI_CODING_AGENT_DIR;
-  delete env.CLAUDE_CONFIG_DIR;
-  const args = injectSecondWriteFailure
+  delete env.CODEX_HOME; delete env.PI_CODING_AGENT_DIR; delete env.CLAUDE_CONFIG_DIR;
+  const args = injectFailure
     ? ['--require', join(root, 'test/fixtures/fail-second-policy-write.cjs'), entry, arg]
     : [entry, arg];
   return spawnSync(process.execPath, args, { env, cwd: root, encoding: 'utf8' });
 }
-function fixture(fn) {
+function fixture(callback) {
   const home = mkdtempSync(join(tmpdir(), 'my-context-policy-'));
-  try { fn(home); } finally { rmSync(home, { recursive: true, force: true }); }
+  try { callback(home); } finally { rmSync(home, { recursive: true, force: true }); }
 }
-function read(home, path) { return readFileSync(join(home, path), 'utf8'); }
 function set(home, path, value) {
   mkdirSync(join(home, path, '..'), { recursive: true });
   writeFileSync(join(home, path), value);
 }
+function read(home, path) { return readFileSync(join(home, path), 'utf8'); }
 
-test('기본 조회는 비활성이고 상태 확인은 지침을 만들지 않는다', () => fixture((home) => {
-  const r = run('--check', home);
-  assert.equal(r.status, 0, r.stderr);
-  assert.ok(JSON.parse(r.stdout).results.every((x) => x.status === 'disabled'));
-  for (const path of targets) assert.equal(existsSync(join(home, path)), false);
+test('새 환경은 설치 전 검사를 하더라도 사용자 지침이 변경되지 않는다', () => fixture((home) => {
+  const result = run('--check', home);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(JSON.parse(result.stdout).results.every(({ status }) => status === 'missing'));
+  assert.ok(targets.every((path) => !existsSync(join(home, path))));
 }));
 
-test('활성화·재활성화·비활성화는 기존 파일을 정확히 복원하고 생성한 파일은 제거한다', () => fixture((home) => {
-  const originals = [
-    '# Existing instructions\n\nKeep this.\n',
-    'Original without a trailing newline',
-    '',
-  ];
+test('자동 참고 초기 설정은 기존 지침을 유지하고 재실행해도 중복되지 않는다', () => fixture((home) => {
+  const originals = ['# Existing instructions\n\nKeep this.\n', 'Original without newline', ''];
   originals.forEach((source, i) => set(home, targets[i], source));
-  const first = run('--enable', home);
-  assert.equal(first.status, 0, first.stderr);
-  for (const path of targets) {
+  assert.equal(run('--install', home).status, 0);
+  targets.forEach((path, i) => {
+    assert.ok(read(home, path).startsWith(originals[i]));
     assert.ok(read(home, path).includes(policy));
     assert.equal(read(home, path).split('<!-- my-context:asset-usage:start -->').length, 2);
-  }
-  assert.ok(JSON.parse(run('--check', home).stdout).results.every((x) => x.status === 'enabled'));
-  const before = targets.map((path) => read(home, path));
-  const repeated = run('--enable', home);
+  });
+  assert.ok(JSON.parse(run('--check', home).stdout).results.every(({ status }) => status === 'current'));
+  const first = targets.map((path) => read(home, path));
+  const repeated = run('--install', home);
   assert.equal(repeated.status, 0, repeated.stderr);
-  assert.deepEqual(targets.map((path) => read(home, path)), before);
   assert.deepEqual(JSON.parse(repeated.stdout).changed, []);
-  const disabled = run('--disable', home);
-  assert.equal(disabled.status, 0, disabled.stderr);
-  targets.forEach((path, i) => assert.equal(read(home, path), originals[i], path));
+  assert.deepEqual(targets.map((path) => read(home, path)), first);
+  assert.notEqual(run('--enable', home).status, 0);
+  assert.notEqual(run('--disable', home).status, 0);
 }));
 
-test('새로 만든 파일만 삭제하고, 사용자가 밖에 내용을 추가했다면 남긴다', () => fixture((home) => {
-  assert.equal(run('--enable', home).status, 0);
-  assert.equal(run('--disable', home).status, 0);
-  for (const path of targets) assert.equal(existsSync(join(home, path)), false, path);
-
-  assert.equal(run('--enable', home).status, 0);
-  const codex = join(home, targets[0]);
-  writeFileSync(codex, read(home, targets[0]) + 'My new instructions\n');
-  assert.equal(run('--disable', home).status, 0);
-  assert.equal(read(home, targets[0]), 'My new instructions\n');
-  assert.equal(existsSync(join(home, targets[1])), false);
-  assert.equal(existsSync(join(home, targets[2])), false);
+test('설치 뒤 관리 구간 외부에 작성한 사용자 지침도 유지된다', () => fixture((home) => {
+  assert.equal(run('--install', home).status, 0);
+  const path = targets[0];
+  writeFileSync(join(home, path), read(home, path) + 'Extra user instructions\n');
+  assert.equal(run('--install', home).status, 0);
+  assert.match(read(home, path), /Extra user instructions\n$/);
 }));
 
-test('정책 내부를 수정하면 활성화·비활성화를 거부하고 다른 파일도 보존한다', () => fixture((home) => {
-  assert.equal(run('--enable', home).status, 0);
-  const first = targets[0], second = targets[1];
-  const before = read(home, second);
-  writeFileSync(join(home, first), read(home, first).replace('선택적', '강제적'));
-  for (const operation of ['--enable', '--disable']) {
-    const r = run(operation, home);
-    assert.equal(r.status, 1, r.stdout + r.stderr);
-    assert.match(r.stderr, /Modified or unrecognized/);
-    assert.equal(read(home, second), before);
+test('이전 정상 관리 구간은 갱신하지만 잘못된 메타데이터는 보존하며 거부한다', () => fixture((home) => {
+  assert.equal(run('--install', home).status, 0);
+  const path = targets[0], current = read(home, path);
+  const oldBody = policy.replace('자율적으로', '조건부로');
+  const older = current.replace(policy, oldBody).replace(/sha256=[a-f0-9]{64}/,
+    'sha256=' + createHash('sha256').update(oldBody).digest('hex'));
+  writeFileSync(join(home, path), older);
+  assert.equal(JSON.parse(run('--check', home).stdout).results[0].status, 'outdated');
+  assert.equal(read(home, path), older);
+  assert.equal(run('--install', home).status, 0);
+  assert.equal(read(home, path), current);
+  writeFileSync(join(home, path), current.replace('created=1', 'created=invalid'));
+  assert.notEqual(run('--install', home).status, 0);
+}));
+
+test('관리 구간을 사용자가 변경했다면 다른 파일도 수정하지 않는다', () => fixture((home) => {
+  assert.equal(run('--install', home).status, 0);
+  const second = read(home, targets[1]);
+  writeFileSync(join(home, targets[0]), read(home, targets[0]).replace('자동 참고', '수동 참고'));
+  for (const arg of ['--check', '--install']) {
+    const result = run(arg, home);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Modified or unrecognized/);
+    assert.equal(read(home, targets[1]), second);
   }
 }));
 
-test('손상된 마커와 심볼릭 링크는 다른 파일을 수정하기 전에 거부한다', () => fixture((home) => {
+test('손상된 마커나 기존 심볼릭 링크는 다른 대상 설치 전에 거부한다', () => fixture((home) => {
   set(home, targets[1], 'original\n<!-- my-context:asset-usage:start -->');
-  const r = run('--enable', home);
-  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.notEqual(run('--install', home).status, 0);
   assert.equal(existsSync(join(home, targets[0])), false);
   assert.equal(existsSync(join(home, targets[2])), false);
   rmSync(join(home, targets[1]));
   mkdirSync(join(home, '.codex'), { recursive: true });
   symlinkSync(join(home, 'missing'), join(home, targets[0]));
-  const symlink = run('--enable', home);
-  assert.equal(symlink.status, 1, symlink.stdout + symlink.stderr);
+  assert.notEqual(run('--install', home).status, 0);
   assert.ok(lstatSync(join(home, targets[0])).isSymbolicLink());
-  assert.equal(existsSync(join(home, targets[2])), false);
 }));
 
-test('정책 내용 변경은 정상 설치본만 갱신하고 불명확한 메타데이터는 중단한다', () => fixture((home) => {
-  assert.equal(run('--enable', home).status, 0);
-  const p = targets[0], current = read(home, p);
-  // The hash protects previous contents. A different valid hash with older body can be updated.
-  const oldBody = policy.replace('선택적', '조건적인');
-  const hash = requireDigest(oldBody);
-  const older = current.replace(policy, oldBody).replace(/sha256=[a-f0-9]{64}/, 'sha256=' + hash);
-  writeFileSync(join(home, p), older);
-  assert.equal(JSON.parse(run('--check', home).stdout).results[0].status, 'outdated');
-  assert.equal(read(home, p), older, 'Checking an earlier opt-in must not install expanded permissions');
-  assert.equal(run('--enable', home).status, 0);
-  assert.equal(read(home, p), current);
-  writeFileSync(join(home, p), read(home, p).replace('created=1', 'created=invalid'));
-  assert.equal(run('--enable', home).status, 1);
-}));
-function requireDigest(value) {
-  return createHash('sha256').update(value).digest('hex');
-}
-
-test('Skill 독립 행동 평가 자료는 비활성·활성·정정·MCP 누락을 포함한다', () => {
-  const scenarios = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
-  const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only', 'mcp-name-only', 'implicit-workflow', 'adaptive-retrieval', 'explicit-exclusion', 'autonomous-insight-choice', 'no-relevant-asset', 'legacy-policy', 'sensitive-context'];
-  assert.ok(expected.every((id) => scenarios.some((scenario) => scenario.id === id)));
-  assert.equal(new Set(scenarios.map(({ id }) => id)).size, scenarios.length);
-  assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
-});
-
-test('사용자가 마커 외부의 구분 문자를 바꾸면 확인·수정·제거 모두 중단한다', () => fixture((home) => {
+test('구분 문자 훼손을 확인 및 설치에서 모두 거부한다', () => fixture((home) => {
   set(home, targets[0], '# Existing\n');
-  assert.equal(run('--enable', home).status, 0);
+  assert.equal(run('--install', home).status, 0);
   const file = targets[0];
-  const modified = read(home, file).replace('\n\n<!-- my-context:asset-usage:start -->', '<!-- my-context:asset-usage:start -->');
+  const modified = read(home, file).replace('\n\n<!-- my-context:asset-usage:start -->',
+    '<!-- my-context:asset-usage:start -->');
   writeFileSync(join(home, file), modified);
-  for (const action of ['--check', '--enable', '--disable']) {
-    const result = run(action, home);
-    assert.equal(result.status, 1, action + ' ' + result.stdout + result.stderr);
+  for (const arg of ['--check', '--install']) {
+    assert.notEqual(run(arg, home).status, 0);
     assert.equal(read(home, file), modified);
   }
 }));
 
-test('두 번째 대상에 쓰기 오류가 발생하면 먼저 수정된 사용자 지침을 복원한다', () => fixture((home) => {
-  const originals = [
-    '# User Codex instructions\n\nPreserve exactly.\n',
-    '# User Pi instructions\n\nMust remain untouched.\n',
-    '# User Claude instructions\n\nMust remain untouched.\n',
-  ];
-  originals.forEach((source, index) => set(home, targets[index], source));
-  const failed = run('--enable', home, true);
-  assert.equal(failed.status, 1, 'Injected failure should stop installation');
+test('중간 쓰기 실패는 기존 사용자 파일을 복구한다', () => fixture((home) => {
+  const originals = ['# Codex\n', '# Pi\n', '# Claude\n'];
+  originals.forEach((source, i) => set(home, targets[i], source));
+  const failed = run('--install', home, true);
+  assert.notEqual(failed.status, 0);
   assert.match(failed.stderr, /Injected second-target write failure/);
-  targets.forEach((path, index) => {
-    assert.equal(read(home, path), originals[index], 'Rollback or preservation failed: ' + path);
-  });
-  assert.equal(JSON.parse(run('--check', home).stdout).results.every((x) => x.status === 'disabled'), true);
+  targets.forEach((path, i) => assert.equal(read(home, path), originals[i]));
+  assert.ok(JSON.parse(run('--check', home).stdout).results.every(({ status }) => status === 'missing'));
 }));
 
-test('두 번째 대상에서 쓰기 오류가 발생하면 최초 대상에 새로 만든 파일도 삭제한다', () => fixture((home) => {
-  const failed = run('--enable', home, true);
-  assert.equal(failed.status, 1, 'Injected failure should stop installation');
+test('중간 쓰기 실패는 새로 생성한 사용자 파일도 정리한다', () => fixture((home) => {
+  const failed = run('--install', home, true);
+  assert.notEqual(failed.status, 0);
   assert.match(failed.stderr, /Injected second-target write failure/);
-  targets.forEach((path) => assert.equal(existsSync(join(home, path)), false, 'Partial installation: ' + path));
+  assert.ok(targets.every((path) => !existsSync(join(home, path))));
 }));
 
-
-test('로컬 Skill 메타데이터가 최초 읽기 전 동의 범위를 설명하고 설치 정책이 자동 발견과 활용을 구분한다', () => {
-  const skill = readFileSync(join(root, 'skills/development-workflow/SKILL.md'), 'utf8');
-  const header = skill.split('---', 3)[1];
-  assert.match(header, /기존 개인 원칙 전용 동의/);
-  assert.match(header, /본문·첨부를 읽어 적용/);
-  assert.match(header, /로컬·원격 모두 사용하지 않는다/);
-  assert.match(policy, /설치나 MCP 연결만으로 자동 활용에 동의한 것은 아니다/);
-  assert.match(skill, /첫 로딩 전 판단/);
+test('Workflow와 인사이트 Skill은 기본 자율 선택과 읽기 권한 경계를 명시한다', () => {
+  const workflow = readFileSync(join(root, 'skills/development-workflow/SKILL.md'), 'utf8');
+  const insights = readFileSync(join(root, 'skills/extract-development-insights/SKILL.md'), 'utf8');
+  assert.match(workflow.split('---', 3)[1], /별도의 자동 활용 ON\/OFF 동의/);
+  assert.match(workflow, /현재 작업에서 my-context 활용을 금지/);
+  assert.match(insights, /추가 개인 대화·경험 자료의 열람 동의/);
+  assert.match(policy, /별도의 ON\/OFF 활성화/);
+  assert.match(policy, /변경은 별도 사용자 승인/);
 });
 
-
-test('인사이트 Skill은 자율 선택 가능하지만 추가 개인 자료 접근과 변경 권한을 확대하지 않는다', () => {
-  const skill = readFileSync(join(root, 'skills/extract-development-insights/SKILL.md'), 'utf8');
-  const header = skill.split('---', 3)[1];
-  assert.doesNotMatch(header, /Explicit request for insight extraction is required/);
-  assert.match(header, /enabled common-Skill opt-in/);
-  assert.match(header, /do not access additional private history or change stored knowledge without permission/);
-  assert.match(skill, /추가 개인 대화·경험 자료의 열람 동의/);
-  assert.match(policy, /기존 개인 원칙 전용 동의는 공통 Skill 자동 활용 동의가 아니다/);
-  assert.match(policy, /지식 등록·수정·삭제/);
+test('에이전트 자동 참고 행동 평가 시나리오는 필요한 경계를 포함한다', () => {
+  const scenarios = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
+  const expected = ['automatic-by-default', 'small-change', 'explicit-exclusion',
+    'legacy-policy-upgrade', 'no-mcp', 'sensitive-context', 'read-only',
+    'unprompted-codebase-architecture', 'host-metadata-unavailable', 'unrelated-quick-task'];
+  assert.ok(expected.every((id) => scenarios.some((scenario) => scenario.id === id)));
+  assert.equal(new Set(scenarios.map(({ id }) => id)).size, scenarios.length);
+  assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
 });

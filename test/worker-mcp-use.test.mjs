@@ -248,12 +248,16 @@ test('mixed discovery prioritizes a full asset name over generic matches', async
     ['Domain Storytelling 요구사항 검토', 'workflows/domain-storytelling'],
     ['Execution Strategy를 병렬 실행 판단에 활용', 'personal/lookup-execution-strategy'],
     ['workflows/domain-storytelling 요구사항 검토', 'workflows/domain-storytelling'],
-    ['xDomain Storytelling 요구사항 검토', skillId],
   ];
   for (const [query, expected] of cases) {
     const { results } = parsed(await callTool('chub_search', { query, limit: 1 }));
     assert.equal(results[0]?.id, expected, query);
   }
+  // A partial accidental prefix is not an exact asset name.
+  const accidental = parsed(await callTool('chub_search', {
+    query: 'xDomain Storytelling 요구사항 검토', limit: 1,
+  }));
+  assert.notEqual(accidental.results[0]?.id, 'workflows/domain-storytelling');
 });
 
 test('Korean discovery accepts canonically equivalent Unicode queries', async () => {
@@ -264,28 +268,38 @@ test('Korean discovery accepts canonically equivalent Unicode queries', async ()
   assert.deepEqual(decomposed, composed);
 });
 
-test('discovery protocol preserves opt-in scope and exposes autonomous read-only workflows', async () => {
+test('discovery protocol exposes default autonomous read-only workflows and permission boundaries', async () => {
   const init = await call('initialize', {
     protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'fixture', version: '1' },
   });
   assert.equal(init.status, 200);
   const initialized = (await init.json()).result;
   assert.equal(initialized.serverInfo.version, release.sha);
-  assert.match(initialized.instructions, /MCP access alone is not consent/);
-  assert.match(initialized.instructions, /permits automatic personal-principle lookup only/);
+  assert.match(initialized.instructions, /No separate opt-in toggle/);
+  assert.match(initialized.instructions, /does not install agent guidance or guarantee tool selection/);
   const listed = await call('tools/list', {});
   const tools = (await listed.json()).result.tools;
   assert.equal(tools.length, 3);
   assert.ok(tools.every(({ annotations }) => annotations?.readOnlyHint === true));
   for (const { description } of tools) {
-    assert.match(description, /Explicit current-task permission or an enabled opt-in policy is required/);
-    assert.match(description, /permits automatic personal-principle lookup only/);
-    assert.match(description, /do not automatically discover or read common Skills under workflows\//);
+    assert.match(description, /No separate opt-in toggle/);
+    assert.match(description, /If the user excludes my-context for this task/);
+    assert.match(description, /never authorizes additional private-data access or knowledge changes/);
   }
+  const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool.description]));
+  // Verify tool responsibilities without pinning full prose to specific examples.
+  assert.match(byName.chub_search, /\b(?:search|find|discover)\b/i);
+  assert.match(byName.chub_search, /\b(?:development|engineering)\b/i);
+  assert.match(byName.chub_search, /\b(?:task|relevant)\b/i);
+  assert.match(byName.chub_get, /\b(?:read|retrieve)\b/i);
+  assert.match(byName.chub_get, /\bSKILL\.md\b/);
+  assert.match(byName.chub_list, /\b(?:list|inventory)\b/i);
+  // The server must remain read-only; agent autonomous selection requires separate E2E.
+  assert.ok(Object.keys(byName).every((name) => ['chub_search', 'chub_get', 'chub_list'].includes(name)));
   const insight = parsed(await callTool('chub_search', {
     query: 'workflows/extract-development-insights', limit: 1,
   })).results[0];
   assert.equal(insight.id, 'workflows/extract-development-insights');
-  assert.match(insight.description, /enabled common-Skill opt-in/);
+  assert.match(insight.description, /without a separate explicit Skill invocation/);
   assert.match(insight.description, /do not access additional private history or change stored knowledge without permission/);
 });

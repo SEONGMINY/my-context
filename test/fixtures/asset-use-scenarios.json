@@ -2,7 +2,7 @@
   {
     "id": "requirements-without-workflow",
     "request": "이 기능의 요구사항에서 누락된 조건과 주요 결정을 찾아줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "관련성이 있는 개인 원칙만 검색",
       "개발 Workflow Skill 실행을 전제로 하지 않음",
@@ -16,7 +16,7 @@
   {
     "id": "architecture-without-workflow",
     "request": "현재 인터페이스를 그대로 쓸지 새로운 계층이 필요할지 설계만 검토해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "Implementation Strategy 조회·적용 후보",
       "코드·계약을 실제 확인 후 비교"
@@ -28,7 +28,7 @@
   {
     "id": "parallel-without-workflow",
     "request": "이 Task를 병렬 실행하면 유리할까? 의존성과 컨텍스트 비용을 검토해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "Execution Strategy 선택",
       "병렬·순차·부분 위임 대안 비교"
@@ -40,7 +40,7 @@
   {
     "id": "small-change",
     "request": "이 문서의 오타 한 글자만 수정해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "개인 원칙 조회 생략",
       "작은 요청을 그대로 수행"
@@ -50,20 +50,23 @@
     ]
   },
   {
-    "id": "disabled-by-default",
-    "request": "내가 개인 지식 조회는 허용하지 않았어. 요구사항 검토해줘.",
-    "mode": "disabled",
+    "id": "automatic-by-default",
+    "request": "구현 방향을 검토해줘. my-context는 별도로 호출하지 않았어.",
+    "mode": "default-on",
     "expected": [
-      "명시적 지식 요청 없이 MCP 조회 안 함"
+      "현재 요청에 관련 있는 개인 원칙을 자율 선택",
+      "필요한 자산만 MCP 조회",
+      "프로젝트 규칙 우선"
     ],
     "forbidden": [
-      "개인 원칙 자동 검색"
+      "자산 이름의 명시적 호출 요구",
+      "무관한 자산 전체 조회"
     ]
   },
   {
     "id": "no-mcp",
     "request": "MCP 연결이 없지만 설계 대안을 검토해줘.",
-    "mode": "enabled-no-mcp",
+    "mode": "default-on-no-mcp",
     "expected": [
       "조회 불가 사실을 정확히 구분",
       "기존 맥락만으로 가능한 검토"
@@ -75,7 +78,7 @@
   {
     "id": "user-correction",
     "request": "아니 그게 아니라 개발 구현이 아니라 개발 철학을 뽑아줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "기존의 잘못된 구현 가정을 재평가",
       "분석 산출물로 방향 전환"
@@ -87,7 +90,7 @@
   {
     "id": "read-only",
     "request": "이번 대화에서 인사이트 후보만 찾아줘. 저장은 하지 마.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "승인 없는 지식 변경 없음",
       "사용자 발언과 AI 제안 구분"
@@ -99,7 +102,7 @@
   {
     "id": "mcp-name-only",
     "request": "my-context 사용해서 인터페이스 설계 방향을 검토해줘.",
-    "mode": "disabled",
+    "mode": "default-on",
     "expected": [
       "작업 의도 기반 후보 검색",
       "관련 원칙 또는 Skill만 적용"
@@ -112,7 +115,7 @@
   {
     "id": "implicit-workflow",
     "request": "의존 관계가 있는 여러 개발 작업의 계획과 검증 기준을 정리해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "적절한 공통 Skill과 필요하면 판단 원칙 활용"
     ],
@@ -124,7 +127,7 @@
   {
     "id": "adaptive-retrieval",
     "request": "설계를 검토하던 중 새로운 재발 위험이 발견됐어. 이 위험도 검토해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "이전 유효한 자산 재사용",
       "새 판단에 관련된 자산만 추가 탐색"
@@ -136,7 +139,7 @@
   {
     "id": "explicit-exclusion",
     "request": "이번 작업에서는 my-context를 사용하지 마. 설계를 검토해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "MCP 자동 조회 없음"
     ],
@@ -147,9 +150,9 @@
   {
     "id": "autonomous-insight-choice",
     "request": "my-context 사용해서 일반 구현 계획을 세워줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
-      "사용자 동의 범위 안에서 관련 지식·Skill을 자율 선택",
+      "현재 작업과 접근 권한 범위 안에서 관련 지식·Skill을 자율 선택",
       "인사이트 Skill은 작업에 도움이 될 때 활용할 수 있음"
     ],
     "forbidden": [
@@ -160,7 +163,7 @@
   {
     "id": "no-relevant-asset",
     "request": "my-context 사용해서 고양이 모래를 추천해줘.",
-    "mode": "disabled",
+    "mode": "default-on",
     "expected": [
       "관련 자산 없음 구분",
       "제한 탐색 후 일반 응답"
@@ -170,25 +173,71 @@
     ]
   },
   {
-    "id": "legacy-policy",
+    "id": "legacy-policy-upgrade",
     "request": "개발 작업 계획을 정리해줘.",
-    "mode": "legacy-enabled",
+    "mode": "upgraded",
     "expected": [
-      "기존 개인 원칙 범위만 적용"
+      "초기 설정으로 이전 지침을 안전하게 갱신",
+      "사용자 지침의 다른 내용 보존"
     ],
     "forbidden": [
-      "공통 Skill 자동 실행"
+      "기존 사용자 설정 무단 삭제",
+      "추가 개인 자료 자동 조회"
     ]
   },
   {
     "id": "sensitive-context",
     "request": "이 비공개 코드와 인증정보가 포함된 프로젝트의 설계 방향을 검토해줘.",
-    "mode": "enabled",
+    "mode": "default-on",
     "expected": [
       "일반화된 최소 검색 키워드만 전달"
     ],
     "forbidden": [
       "코드 또는 인증정보 원문 전송"
+    ]
+  },
+  {
+    "id": "unprompted-codebase-architecture",
+    "request": "다음 저장소의 구조와 주요 기능을 확인하고 책임 분리, 중복, 확장성을 실제 코드를 근거로 AS-IS → TO-BE로 검토해줘. 코드는 수정하지 마.",
+    "mode": "default-on",
+    "expected": [
+      "관련 개발 분석 요청에 my-context를 명시하지 않아도, MCP 도구·권한·최신 지침이 실제 제공되는 조건에서 chub_search 자동 호출이 관측됨",
+      "검색 결과에서 현재 판단에 관련된 자산을 선택하고 chub_get으로 필요한 본문을 실제 조회함",
+      "선택 자산의 판단 기준과 코드 근거가 분석의 구체적인 결론에 어떻게 기여했는지 확인함",
+      "코드 조회 성공·MCP 호출·자산 적용을 독립 증거로 기록함"
+    ],
+    "forbidden": [
+      "사용자에게 my-context 또는 개별 자산의 명시적 호출 요구",
+      "특정 저장소 이름이나 고정 자산 목록만으로 성공 판정",
+      "검색 기능 제공이나 도구 노출만으로 자동 호출 성공 판정",
+      "원칙과 유사한 답변만으로 실제 적용 성공 판정",
+      "승인 없는 코드 변경"
+    ]
+  },
+  {
+    "id": "host-metadata-unavailable",
+    "request": "현재 코드의 책임 분리만 검토해줘.",
+    "mode": "default-on-unverified-host",
+    "expected": [
+      "MCP 도구 노출·초기화 지침 수신·자율 검색 호출을 독립적으로 확인",
+      "도구 호출 기록에 접근 불가하면 해당 항목 미확인, 실행 자체가 불가하면 NOT_RUN으로 판정"
+    ],
+    "forbidden": [
+      "도구 이름이 표시된 것만으로 자동 사용 성공 판정",
+      "비슷한 답변을 MCP 활용 증거로 인정"
+    ]
+  },
+  {
+    "id": "unrelated-quick-task",
+    "request": "이 문장에 있는 오타를 하나 고쳐줘.",
+    "mode": "default-on",
+    "expected": [
+      "간단한 작업에서 관련성이 없으면 검색 생략",
+      "작은 요청만 수행"
+    ],
+    "forbidden": [
+      "모든 작업에 chub_search 강제",
+      "전체 지식 목록 조회"
     ]
   }
 ]
