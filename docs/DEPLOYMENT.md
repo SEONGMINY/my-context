@@ -26,7 +26,7 @@
 
 ## 운영 배포
 
-운영 배포 대상은 Cloudflare Worker예요. `publish-release.mjs`·`serve-release.mjs`·`serve.mjs`의 로컬 HTTP 릴리스 경로는 `verify-release.mjs`에서 검증하는 별도 경로이며 운영 배포 절차가 아니에요.
+운영 배포 대상은 Cloudflare Worker예요. 로컬 개인 지식 MCP는 일반 조회에서 제거됐지만, 아래의 격리된 HTTP 릴리스 검증 경로는 운영 배포 검증을 위해 유지해요. `publish-release.mjs`·`serve-release.mjs`·`serve.mjs`의 로컬 HTTP 릴리스 경로는 `verify-release.mjs`에서 검증하는 별도 경로이며 운영 배포 절차가 아니에요.
 
 워크플로는 배포할 **Git 커밋**에서 자산을 읽어요. `content/`에서는 `SKILL.md` 또는 `DOC.md` 진입 파일이 있는 자산을, `skills/`에서는 [게시 목록](../publish-skills.json)에 지정한 Skill만 첨부와 함께 게시해요. 공통 Skill을 추가할 때 원격 게시를 의도한 경우에만 목록에 이름을 추가해 주세요. 필수 첨부 참조는 해당 자산 내부에서 조회할 수 있어야 해요. 외부 출처는 명시적인 URL로 구분해 주세요.
 

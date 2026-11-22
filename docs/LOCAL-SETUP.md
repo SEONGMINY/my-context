@@ -1,49 +1,40 @@
-# 로컬 설정
+# 에이전트 자동 참고 및 로컬 Skill 설정
 
-이 문서는 로컬 설치·갱신·제거의 상세 안내다. 원격 MCP만 이용할 때는 저장소 클론이나 Skill 설치가 필요하지 않다. [사용 방법](../README.md)
+개인 원칙·공통 Skill의 **일상적인 검색·조회는 원격 `my-context` MCP 하나를 사용**해요. 원격 조회만 필요하다면 저장소를 클론하거나 Skill을 설치할 필요가 없어요. [원격 연결](../README.md#시작하기)
+
+로컬 환경은 **지식 원본 변경, 로컬 Skill 직접 호출, 변경 전 테스트**에만 필요합니다. 로컬 `personal-knowledge` MCP와 그 전용 지식 인덱스 설치는 더 이상 지원하지 않아요.
+
+## 사용 목적별 선택
+
+| 하고 싶은 일 | 사용 경로 |
+| --- | --- |
+| 게시된 원칙·Skill 검색·조회 | 원격 MCP (로그인 필요) |
+| 원칙 등록·수정·삭제 | 원격 조회 + 로컬 Git 원본 + [관리 Skill](../skills/manage-dev-knowledge/SKILL.md) |
+| 네이티브 Workflow Skill 호출 | 선택적 로컬 Skill 설치 |
+| 배포 전 확인 | 저장소의 릴리스·Worker 검증 ([운영 안내](DEPLOYMENT.md)) |
+
+MCP 연결, 사용자 지침 설치, Skill 설치는 서로 다른 동작이에요. 자동 참고는 기본 동작이지만 지침 로딩과 실제 활용은 에이전트별 새 세션에서 확인해야 합니다.
 
 ## 환경
 
-지원 Node.js 버전은 [package.json](../package.json)의 `engines`를 기준으로 한다(`^20.20.0 || >=22.22.0`). 로컬 관리 연결은 `/bin/sh`, 설치기는 심볼릭 링크를 사용한다. 이러한 기능이 없는 환경은 별도 확인이 필요하며 Windows 네이티브 지원을 보장하지 않는다. 에이전트의 실제 발견 및 인증 여부는 [E2E 가이드](../test/workflow-evaluation.md)에 따라 검증한다.
+Node.js 버전은 [package.json](../package.json)의 `engines`를 따릅니다(`^20.20.0 || >=22.22.0`). Skill 설치는 심볼릭 링크를 사용하므로 Windows 네이티브 지원은 보장하지 않습니다. 실제 발견·적용은 [E2E 가이드](../test/workflow-evaluation.md)에서 검증합니다.
 
-## 로컬과 원격 중 무엇을 쓰나요?
+## 자동 참고 초기 설정
 
-| 경로 | 자산 범위와 특징 |
-| --- | --- |
-| 원격 `my-context` MCP | 게시된 개인 원칙과 선택된 공통 Skill. Cloudflare Access 인증, 한국어 보완 검색, 배포 `revision` |
-| 로컬 `personal-knowledge` MCP | 저장소의 `content/`를 로컬 빌드. 운영 Worker의 검색 보완·배포 리비전 계약 없음 |
-| 로컬 Skill 설치 | 설치된 Skill 본문·첨부. MCP 연결 및 자동 활용 동의와 별개 |
+자동 참고는 기본 ON이에요. 별도의 ON/OFF 선택은 제공하지 않습니다. 원격 MCP를 연결한 뒤 저장소에서 다음 명령을 **한 번** 실행해 에이전트 사용자 지침을 설치하세요.
 
-원격 조회만 필요하면 로컬 설정은 필요하지 않다. [원격 연결 안내](../README.md#시작하기)
+```bash
+npm run setup:agent:check  # 기존 설정 확인만 수행
+npm run setup:agent        # Codex · Pi · Claude Code 사용자 지침에 설치
+```
 
-### 경로별 지원 범위
+사용자 지침 대상은 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`입니다. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`가 설정된 경우 해당 경로를 사용합니다.
 
-| 기능 | 원격 `my-context` MCP | 로컬 `personal-knowledge` MCP | 로컬 Skill |
-| --- | --- | --- | --- |
-| 개인 원칙 조회 | 게시된 원칙 | `content/`의 로컬 빌드 | 별도 자동 설치 대상 아님 |
-| 공통 Skill | 게시 목록의 Skill | 미포함 | 설치한 Skill만 사용 |
-| 배포 리비전 | `revision` 반환 | 운영 revision 계약 없음 | 현재 Git 원본 확인 |
-| 한국어 보완 검색 | Worker에서 제공 | 동일 보완 기능 없음 | MCP 검색 API 없음 |
-| 지식 변경 | 읽기 전용 | 조회용 | 관리 Skill과 승인 절차로 Git 원본 수정 |
+이 설치기는 기존 파일을 보존하고 관리 구간만 추가·갱신하며 세 대상의 충돌을 미리 확인해요. 변경된 관리 구간, 깨진 마커, 심볼릭 링크 등이 있으면 안전하게 중단하며, 부분 실패 시 이번 변경을 복구하려고 시도합니다.
 
-MCP 연결, Skill 설치, 에이전트의 실제 적용은 서로 다른 상태예요. [실사용 E2E](../test/workflow-evaluation.md)에서 구분해 확인해 주세요.
+이전 선택적 정책이 설치된 환경에서는 `setup:agent:check`에 `outdated`가 표시될 수 있어요. 새 지침 설치 시 관리 구간을 최신화하지만 사용자가 직접 수정한 내용은 무단으로 덮어쓰지 않습니다. 다른 사람의 환경은 저장소 업데이트만으로 바뀌지 않으며, 초기 설정 실행과 사용자가 승인한 범위 내에서만 변경돼요.
 
-
-## 선택적 조회 정책
-
-`policies/asset-usage.md`의 공통 정책을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 관리 구간으로 추가해요. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`이 설정되면 해당 위치를 사용해요.
-
-| 목적 | 명령 |
-| --- | --- |
-| 기존 정책 확인(쓰기 없음) | `npm run policy:check` |
-| 동의한 정책 설치·갱신 | `npm run policy:enable` |
-| 관리 구간 제거 | `npm run policy:disable` |
-
-확인 결과는 `disabled`(미설치), `enabled`(현재 정책), `outdated`(이전 정책)로 표시돼요. **기존 개인 원칙 전용 동의를 공통 Skill 자동 활용 동의로 확대하지 않아요.** `outdated`라면 변경된 범위를 검토하고 동의하는 경우에만 다시 활성화해 주세요. 새 정책은 관련 개인 원칙과 공통 Skill(인사이트 추출 포함)의 선택적 활용을 허용하지만, 추가 개인 자료 접근이나 지식 변경 권한을 부여하지 않아요.
-
-설치기는 **세 대상 파일을 먼저 확인**하고 기존 내용을 보존해요. 관리 구간만 변경·제거하며, 예상과 다른 마커·수정된 관리 구간·심볼릭 링크·설치 충돌을 발견하면 덮어쓰지 않고 중단해요. 변경 중 실패하면 이번에 변경한 항목의 복구를 시도하고 복구 실패도 보고해요. 기존 파일에 다른 내용이 있으면 관리 구간만 제거해요.
-
-활성화 후 새 세션에서 사용자 지침 로딩, MCP 연결·인증, 실제 조회를 각각 확인해 주세요. 정책 설정만으로 MCP가 설치되거나 AI의 실제 적용이 보장되지는 않아요. 상세 행동 조건은 [정책 원본](../policies/asset-usage.md)을 따라요.
+설치 이후 새 에이전트 세션에서 지침 파일 로딩, 원격 MCP 연결·인증, 실제 관련 자산 조회를 각각 확인합니다. 단순한 파일 설치만으로 모든 에이전트의 자동 적용이 보장되는 것은 아닙니다. 이번 작업에서 my-context 사용을 금지한 사용자 지시가 있으면 자산을 참고하지 않아야 합니다. [자동 참고 정책](../policies/asset-usage.md)
 
 ## Workflow Skill
 
@@ -53,23 +44,30 @@ MCP 연결, Skill 설치, 에이전트의 실제 적용은 서로 다른 상태�
 
 갱신은 원본의 Git 체크아웃을 검토 후 갱신하고 새 세션에서 호출을 확인한다. 저장소를 이동하거나 제거하려면 `ls -l ~/.agents/skills/development-workflow ~/.claude/skills/development-workflow`로 대상이 이 저장소를 가리키는 링크인지 확인한 뒤 해당 링크만 해제한다. 기존 파일이나 다른 저장소의 링크를 삭제하지 않는다.
 
-설치되어 Skill 목록에 표시되는 것은 자동 활용 동의가 아니다. 기존 개인 원칙 전용 동의는 로컬 공통 Skill 자동 사용 권한이 아니며, 현재 작업에서 my-context 사용을 금지하면 동일 저장소의 로컬 Skill도 사용하지 않아야 한다. 이는 Host의 최초 파일 읽기 전에 적용돼야 하는 행동 계약이며, 메타데이터 문구만으로 파일 접근이 강제 차단되지는 않는다. 실제 Pi 등에서는 새 세션의 로컬 파일 읽기 기록으로 확인한다.
+설치되어 Skill 목록에 표시되는 것은 실제 본문을 읽거나 적용했다는 증거가 아닙니다. 자동 참고 지침이 적용된 환경에서는 관련 Skill을 자율적으로 선택할 수 있지만, 현재 작업에서 my-context 사용을 금지하면 동일 저장소의 로컬 Skill도 사용하지 않아야 합니다. 이는 Host의 최초 파일 읽기 전에 적용돼야 하는 행동 계약이며, 메타데이터 문구만으로 파일 접근이 강제 차단되지는 않는다. 실제 Pi 등에서는 새 세션의 로컬 파일 읽기 기록으로 확인한다.
 
-## 로컬 관리 환경
+## 개인 지식 관리 Skill (선택)
 
-저장소 루트에서 아래 명령을 실행한다. 기존 설정과 충돌하지 않는지 `--check` 결과를 먼저 확인한다.
+원본을 수정해야 하는 관리자는 저장소를 체크아웃한 다음 명령으로 **Skill 링크만** 설치할 수 있어요. 원격 MCP는 [README](../README.md#시작하기)의 방법으로 별도로 연결합니다.
 
 ```bash
-npm ci
-npm run setup
-npm run build
 npm run install:user -- --check
 npm run install:user
 ```
 
-설치기는 Codex 설정의 `[mcp_servers.personal-knowledge]`와 `~/.agents/skills/manage-dev-knowledge` 링크를 추가한다. 설정 위치는 `CODEX_HOME` 또는 `~/.codex`다. `npm run build`는 로컬 `content/`를 인덱싱하며 공통 Skill 게시 목록이나 Worker 배포를 갱신하지 않는다. 지식 변경 후 로컬 인덱스를 다시 빌드한다. 새 Codex 세션에서 로컬 MCP의 `chub_list`와 관리 Skill 로딩을 각각 확인한다.
+설치 위치는 `~/.agents/skills/manage-dev-knowledge`입니다. 기존 파일·다른 Skill을 덮어쓰지 않으며, 새 Codex 세션에서 실제 발견과 호출을 확인합니다. 자산 변경은 Git에서 검토·승인하고, 게시 후 원격 MCP의 `revision`과 본문을 확인해요.
 
-제거 전 `config.toml`의 해당 섹션과 Skill 링크가 이 저장소를 가리키는지 확인한다. 설정의 다른 부분을 보존하며 해당 서버 항목만 제거하고, 이 저장소의 관리 Skill 링크만 해제한다. 자동 제거 명령은 제공하지 않는다. 설정이나 링크가 예상과 다르면 중단하고 수동으로 확인한다. 새 세션에서 제거 여부를 확인한다. 원격 `my-context` 연결과 별개다.
+## 이전 로컬 MCP 설정에서 전환
+
+기존에 `personal-knowledge`를 설치했다면 아래 순서로 전환하세요. 이 절차는 **안내**이며 실행 중인 사용자의 컴퓨터 설정을 자동 변경하지 않습니다.
+
+1. **먼저 원격 연결을 확인해요.** 기존 로컬 연결은 유지한 채 원격 `my-context`에 로그인하고, `chub_list`의 `revision`과 `chub_get`의 실제 자산 본문을 확인하세요. 원격 조회가 실패하면 전환을 중단합니다.
+2. **기존 설정을 백업하고 소유권을 확인해요.** Codex 설정 파일은 `$CODEX_HOME/config.toml` 또는 `~/.codex/config.toml`입니다. 변경 전 파일을 별도로 복사해 두고, `[mcp_servers.personal-knowledge]` 섹션의 `command`/`args`가 **이 저장소의 이전 `scripts/context-hub-mcp.sh`**를 가리키는지 확인하세요.
+3. **대상이 일치할 때만 해당 섹션을 해제해요.** `[mcp_servers.personal-knowledge]`와 그 섹션에 속하는 항목만 제거하고, 다음 TOML 섹션부터는 그대로 유지하세요. 다른 서버의 설정·사용자가 변경한 항목이거나 소유권이 불확실하면 삭제하지 말고 수동 검토하세요.
+4. **새 세션에서 다시 검증해요.** `my-context`의 `chub_list`·`chub_get`을 다시 호출하고 `personal-knowledge`가 등록 서버 목록에서 사라졌는지 확인하세요. 실패하면 백업한 `config.toml`을 복구하고 원격 인증·연결부터 확인하세요.
+5. **로컬 파일은 별도 판단해요.** 기존 관리 Skill 링크 `~/.agents/skills/manage-dev-knowledge`는 보존합니다. `.local/`, `.generated/context-hub/`의 생성물은 소유·내용 및 다른 작업에서 사용하지 않는지 확인한 후에만 정리할 수 있습니다.
+
+이 저장소는 기존 Codex 설정을 자동으로 제거하거나 변경하지 않아요. 전환 성공은 **로컬 서버 삭제 여부가 아니라 새 세션의 실제 원격 조회 결과**로 판단합니다.
 
 ## 문제가 발생했을 때
 
@@ -77,12 +75,12 @@ npm run install:user
 | --- | --- |
 | Skill을 찾지 못함 | `--check` 결과, 링크 대상, 새로운 에이전트 세션의 실제 로드 |
 | MCP 호출 실패 | 연결 이름, 인증 상태, `chub_list` 실제 호출 |
-| 정책 `outdated` | 기존 동의 범위와 새 정책을 비교한 뒤 동의할 때만 갱신 |
+| 지침 `outdated` | 기존 관리 구간을 확인하고 `npm run setup:agent`로 최신화 |
 | 설치 충돌 | 기존 설정과 심볼릭 링크 소유·대상 확인. 무단 덮어쓰기 금지 |
-| 검색 결과 누락 | 로컬/운영 자산 범위, 게시 목록, 검색어, 운영 `revision` |
+| 검색 결과 누락 | 운영 자산 범위, 게시 목록, 검색어, 운영 `revision` |
 | MCP는 연결되지만 도구가 없음 | 에이전트의 도구 노출, 서버 이름, 새 세션에서 `chub_list` 호출 |
 | 자산 조회 오류 | 검색 ID·`revision`을 확인하고 `chub_get`에 정확한 파일 경로 전달 |
 
-진단은 **연결·인증 → `chub_list` 호출 → 자산 게시·`revision` → `chub_search`·`chub_get` → 실제 에이전트 적용** 순서로 진행해요. 인증 실패, 미게시, 버전 차이와 모델 행동 실패를 구분해야 해요.
+진단은 **연결·인증 → `chub_list` 호출 → 자산 게시·`revision` → `chub_search`·`chub_get` → 실제 에이전트 적용** 순서로 진행해요. 일반 개발 요청에서 MCP가 자동 호출되지 않으면 도구 노출, 실제 초기화 지침 수신, 자율 검색 호출, 조회한 원칙의 결과 반영을 구분해 [행동 평가](../test/workflow-evaluation.md#자율-호출-효과-검증-호스트모델-변경-시-재실행)에서 확인하세요. 도구가 연결됐다는 사실만으로 자동 활용을 보장하지 않아요. 인증 실패, 미게시, 버전 차이와 모델 행동 실패를 구분해야 해요.
 
 설치 성공과 에이전트의 실제 도구 사용은 다르다. [E2E 가이드](../test/workflow-evaluation.md)에서 별도로 확인한다.

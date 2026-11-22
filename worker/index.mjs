@@ -9,7 +9,9 @@ import { createAuthenticator } from './auth.mjs';
 
 const entries = new Map(release.entries.map((entry) => [entry.id, entry]));
 const authenticate = createAuthenticator();
-const assetUsageScope = 'Explicit current-task permission or an enabled opt-in policy is required. An older personal-principles or Playbook policy permits automatic personal-principle lookup only. Under that policy do not automatically discover or read common Skills under workflows/, including their attachments. A request to keep the legacy scope leaves that boundary in place.';
+// One shared boundary for remote tools; descriptions below explain each tool's own job.
+const assetUsageBoundary = 'No separate opt-in toggle or explicit my-context mention is required for relevant development tasks. If the user excludes my-context for this task, do not use it. Prioritize current user instructions and project requirements. Read-only reference access never authorizes additional private-data access or knowledge changes.';
+const discoveryGuidance = 'When working on development requirements, architecture and module responsibilities, implementation trade-offs, task planning, verification, or engineering quality, consider searching this knowledge base for applicable personal principles or reusable workflows, even when the user did not name my-context. Choose based on the task, not a fixed asset list; do not search on every trivial change or repeat a valid earlier search without reason.';
 const language = z.string().max(80).optional();
 const tags = z.string().max(512).optional();
 const getInput = {
@@ -111,11 +113,11 @@ function getAsset({ id, lang, version, file, full, revision }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: assetUsageScope + ' MCP access alone is not consent. Honor explicit exclusions and the scope of the installed policy. Within the allowed scope, choose relevant personal principles and common Skills autonomously; no additional per-Skill invocation is required. Skill use does not authorize new private-data access or knowledge changes. Respect current user and project instructions. Discover and read only what benefits the task; reuse relevant context and report unavailable information accurately.',
+    instructions: assetUsageBoundary + ' ' + discoveryGuidance + ' Discover selectively, read only relevant results, and distinguish search success from applying an asset. An MCP connection does not install agent guidance or guarantee tool selection; report inaccessible content truthfully.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
-    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. ' + assetUsageScope + ' Find relevant assets using focused non-sensitive task keywords; choose and use them within the permitted scope. Use a small limit for discovery.',
+    description: 'Find published engineering judgment principles and reusable development workflows relevant to the task. ' + discoveryGuidance + ' ' + assetUsageBoundary + ' Search using short, non-sensitive task or decision keywords; start with a small result limit and inspect relevant matches before reading.',
     inputSchema: { query: z.string().max(512).optional().describe('Focused task or decision keywords; do not include source code, secrets, private prompts or customer data.'), tags, lang: language, limit: z.number().int().min(1).max(100).optional() },
     annotations,
   }, ({ limit = 20, ...filters }) => {
@@ -123,12 +125,12 @@ function createServer() {
     return textResult({ revision: release.sha, results: matching.slice(0, limit).map(summary), total: matching.length });
   });
   server.registerTool('chub_get', {
-    description: 'Read a published asset. Default: only SKILL.md or DOC.md, without attachments. ' + assetUsageScope + ' Use knowledge.md for personal principles and file for needed attachments. Pass the discovery revision; reuse valid context. Use full:true only when all files are needed.',
+    description: 'Read a relevant published asset selected from discovery. Default: only SKILL.md or DOC.md, without attachments. Use knowledge.md for personal principles and file for needed attachments. Reuse already-read valid context; pass the discovery revision and use full:true only if every file is necessary. ' + assetUsageBoundary,
     inputSchema: getInput,
     annotations,
   }, getAsset);
   server.registerTool('chub_list', {
-    description: 'List published personal principles and workflows for inventory. ' + assetUsageScope + ' Prefer focused search for task discovery.',
+    description: 'List the published asset inventory when an overview is specifically needed; prefer chub_search for task-oriented discovery. ' + assetUsageBoundary,
     inputSchema: { tags, lang: language, limit: z.number().int().min(1).max(500).optional() },
     annotations,
   }, ({ limit = 50, ...filters }) => {

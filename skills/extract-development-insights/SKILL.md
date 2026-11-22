@@ -1,6 +1,6 @@
 ---
 name: extract-development-insights
-description: "Find reusable engineering insights from available development conversations, project decisions, and engineering experience when relevant to the current task. Under an enabled common-Skill opt-in, the agent may select this read-only workflow without a separate explicit Skill invocation. Use only material already provided or independently authorized; do not access additional private history or change stored knowledge without permission."
+description: "Find reusable engineering insights from available development conversations, project decisions, and engineering experience when relevant to the current task. The agent may select this read-only workflow without a separate explicit Skill invocation when relevant, unless the user excludes my-context for this task. Use only material already provided or independently authorized; do not access additional private history or change stored knowledge without permission."
 metadata:
   source: community
   tags: "development insights, engineering principles, retrospective, decisions, knowledge extraction"
@@ -12,7 +12,7 @@ metadata:
 
 ## 적용 범위와 권한
 
-- 사용자가 공통 Skill 자동 활용에 동의한 경우, AI가 현재 작업에 도움이 된다고 판단하면 이 절차를 선택할 수 있다. Skill 선택이 **추가 개인 대화·경험 자료의 열람 동의**를 뜻하지는 않는다. 기존 제공 자료 또는 별도로 접근이 허용된 자료만 사용한다.
+- AI는 현재 작업에 도움이 된다고 판단하면 별도 활성화 없이 이 절차를 선택할 수 있다. 사용자가 이번 작업에서 my-context 활용을 금지하면 선택하지 않는다. Skill 선택이 **추가 개인 대화·경험 자료의 열람 동의**를 뜻하지는 않는다. 기존 제공 자료 또는 별도로 접근이 허용된 자료만 사용한다.
 - 분석 범위와 현재 접근 가능한 자료를 확인한다. 현재 제공된 원문과 접근 가능한 원본을 사용한다. 직접 열지 못한 대화·코드·로그를 읽었다고 주장하지 않는다.
 - 분석은 **읽기 전용**이다. Skill 실행 자체는 지식 등록, 파일 생성·수정, 커밋·푸시, 운영 배포를 승인하지 않는다.
 - 사용자의 최신 지시와 해당 프로젝트 계약을 우선한다. 사적인 대화 원문·인증정보·개인 식별 정보는 공개 자산에 옮기지 않는다.

@@ -37,18 +37,19 @@ my-context는 원칙과 절차를 제공하고, 실제 개발과 검증은 각 �
    ```
 2. 브라우저에서 로그인해 주세요. 필요하면 `codex mcp login my-context`를 실행해 주세요.
 3. 새 세션에서 `my-context의 chub_list를 호출해줘`라고 요청해 연결을 확인해 주세요.
-4. 작업을 요청해 보세요.
-   ```text
-   my-context를 사용해서 지금 구현하려는 기능의 설계를 검토해줘.
-   my-context를 참고해서 이 작업의 구현 계획을 세워줘.
+4. **AI가 작업 중 알아서 참고하도록** 이 저장소를 클론한 환경에서 한 번 설정해 주세요.
+   ```bash
+   npm run setup:agent:check
+   npm run setup:agent
    ```
+5. 새 세션에서 평소처럼 개발 작업을 요청해 보세요. AI는 관련 자산만 참고하고, 간단한 작업에서는 조회를 생략할 수 있어요.
 
-기본적으로 자산은 명시적으로 요청할 때 조회해요. [선택적 자동 활용](docs/LOCAL-SETUP.md#선택적-조회-정책)은 별도 동의가 필요하며, MCP 연결이나 Skill 설치만으로 허용되지 않아요. 지식 변경과 배포에도 별도 승인이 필요해요.
+자동 참고는 기본 동작이며 별도의 ON/OFF 선택이 없어요. 다만 원격 MCP 연결만으로 에이전트의 사용자 지침이 설치되지는 않아요. 위 명령은 지원하는 Codex·Pi·Claude Code의 사용자 지침에 자동 참고 규칙을 설치합니다. 지식 변경과 배포에는 별도 승인이 필요해요. [초기 설정과 이전 안내](docs/LOCAL-SETUP.md)
 
 > **공개 범위:** 이 저장소의 원본은 공개되어 있어요. Cloudflare Access는 운영 MCP 접속만 제한하므로 비공개 정보를 커밋하기 전에 공개 범위를 확인해 주세요.
 
 ## 더 알아보기
 
-- [로컬 설정](docs/LOCAL-SETUP.md) — 설치, 다른 에이전트 연결, 선택적 활용 정책
+- [AI 초기 설정과 Skill 설치](docs/LOCAL-SETUP.md) — 자동 참고 지침 설치 및 필요 시 로컬 Skill 설치
 - [개발 지식 관리](skills/manage-dev-knowledge/SKILL.md) — 개인 원칙 조회 및 승인된 변경
 - [개발 안내](AGENTS.md) · [운영과 배포](docs/DEPLOYMENT.md) — 유지보수, 배포와 검증

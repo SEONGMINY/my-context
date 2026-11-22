@@ -7,20 +7,15 @@
     "node": "^20.20.0 || >=22.22.0"
   },
   "scripts": {
-    "build": "node scripts/build.mjs",
     "serve": "node scripts/serve.mjs",
     "worker:build": "node scripts/build-worker.mjs",
     "worker": "npx --yes wrangler@4.165.0",
-    "search": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub search",
-    "get": "CHUB_DIR=./.local/chub CHUB_TELEMETRY=0 CHUB_FEEDBACK=0 chub get",
-    "setup": "node scripts/setup-local.mjs",
     "install:user": "node scripts/install-user.mjs",
     "install:workflow": "node scripts/install-workflow.mjs",
-    "policy:check": "node scripts/install-asset-usage.mjs --check",
-    "policy:enable": "node scripts/install-asset-usage.mjs --enable",
-    "policy:disable": "node scripts/install-asset-usage.mjs --disable",
-    "test:workflow": "node --test test/install-workflow.test.mjs",
-    "test:integrity": "node --test test/principle-cases.test.mjs test/asset-policy.test.mjs test/asset-integrity.test.mjs test/korean-search.test.mjs"
+    "test:workflow": "node --test test/install-workflow.test.mjs test/install-user.test.mjs",
+    "test:integrity": "node --test test/principle-cases.test.mjs test/asset-policy.test.mjs test/asset-integrity.test.mjs test/korean-search.test.mjs",
+    "setup:agent": "node scripts/install-asset-usage.mjs --install",
+    "setup:agent:check": "node scripts/install-asset-usage.mjs --check"
   },
   "dependencies": {
     "@aisuite/chub": "0.1.4",

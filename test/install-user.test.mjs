@@ -1,0 +1,83 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, mkdirSync, lstatSync, realpathSync, readFileSync, writeFileSync, existsSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const installer = join(root, 'scripts/install-user.mjs');
+const skill = join(root, 'skills/manage-dev-knowledge');
+function run(home, ...args) {
+  return spawnSync(process.execPath, [installer, ...args], {
+    encoding: 'utf8', env: { ...process.env, HOME: home, USERPROFILE: home, CODEX_HOME: join(home, '.codex') },
+  });
+}
+test('관리 Skill 설치는 로컬 MCP 설정 없이 링크만 생성하고 재실행해도 보존한다', () => {
+  const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
+  try {
+    const target = join(home, '.agents/skills/manage-dev-knowledge');
+    assert.equal(run(home, '--check').status, 0);
+    const first = run(home);
+    assert.equal(first.status, 0, first.stderr);
+    assert.equal(lstatSync(target).isSymbolicLink(), true);
+    assert.equal(realpathSync(target), realpathSync(skill));
+    assert.equal(run(home).status, 0);
+    assert.equal(readFileSync(join(target, 'SKILL.md'), 'utf8').includes('개인 개발 지식 관리'), true);
+    assert.notEqual(run(home, '--force').status, 0);
+    assert.equal(run(home, '--check').status, 0);
+    assert.equal(existsSync(join(home, '.codex/config.toml')), false);
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
+test('기존 관리 Skill 경로 충돌 시 사용자 파일을 보존한다', () => {
+  const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
+  try {
+    const target = join(home, '.agents/skills/manage-dev-knowledge');
+    mkdirSync(target, { recursive: true });
+    writeFileSync(join(target, 'SKILL.md'), 'existing user content');
+    const result = run(home);
+    assert.notEqual(result.status, 0);
+    assert.equal(readFileSync(join(target, 'SKILL.md'), 'utf8'), 'existing user content');
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
+
+test('깨진 관리 Skill 링크는 덮어쓰지 않고 설치를 중단한다', () => {
+  const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
+  try {
+    const target = join(home, '.agents/skills/manage-dev-knowledge');
+    mkdirSync(join(home, '.agents/skills'), { recursive: true });
+    const missing = join(home, 'missing-skill');
+    symlinkSync(missing, target, 'dir');
+
+    for (const args of [[], ['--check']]) {
+      const result = run(home, ...args);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Existing skill preserved/);
+      assert.equal(lstatSync(target).isSymbolicLink(), true);
+    }
+    assert.equal(existsSync(missing), false);
+    assert.equal(existsSync(join(home, '.codex/config.toml')), false);
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
+
+test('다른 저장소의 관리 Skill 링크는 변경하지 않는다', () => {
+  const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
+  try {
+    const target = join(home, '.agents/skills/manage-dev-knowledge');
+    const other = join(home, 'other-skill');
+    mkdirSync(join(home, '.agents/skills'), { recursive: true });
+    mkdirSync(other);
+    writeFileSync(join(other, 'SKILL.md'), 'another repository');
+    symlinkSync(other, target, 'dir');
+
+    for (const args of [[], ['--check']]) {
+      const result = run(home, ...args);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Existing skill preserved/);
+      assert.equal(realpathSync(target), realpathSync(other));
+      assert.equal(readFileSync(join(target, 'SKILL.md'), 'utf8'), 'another repository');
+    }
+    assert.equal(existsSync(join(home, '.codex/config.toml')), false);
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
