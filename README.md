@@ -12,9 +12,11 @@ my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업
 | [`domain-storytelling`](skills/domain-storytelling/SKILL.md) | 인터뷰로 현재 업무를 파악하고 개선 범위와 요구사항을 정리할 때. | [워크숍 양식](skills/domain-storytelling/templates/workshop-documents.md) · MCP 배포 대상 |
 | [`extract-development-insights`](skills/extract-development-insights/SKILL.md) | 개발 대화의 사용자 발언·결정·대안을 분석해 재사용할 원칙 후보를 찾을 때. | MCP 배포 대상 · 읽기 전용 |
 | [Implementation Strategy](content/personal/lookup-implementation-strategy/knowledge.md) | 기존 코드·책임·인터페이스를 검토해 구현 방향을 결정할 때 | 독립 지식 · MCP 조회 |
-| [Execution Strategy](content/personal/lookup-execution-strategy/knowledge.md) | 의존성·병렬화·위임 비용을 검토할 때 | 독립 지식 · MCP 조회 |
+| [Execution Strategy](content/personal/lookup-execution-strategy/knowledge.md) | 작업·맥락 의존성, 실행 방식과 정보 공유의 적합성을 판단할 때 | 독립 지식 · MCP 조회 |
 | [Roadmap Planning](content/personal/lookup-roadmap-planning/knowledge.md) | 단기 구현과 이후 확장 조건을 구분할 때 | 독립 지식 · MCP 조회 |
 | [Context-aware Reasoning](content/personal/lookup-context-aware-reasoning/knowledge.md) | 요구사항·설계·계획 등 질문에 적절한 판단 기준을 선택할 때 | 독립 지식 · MCP 조회 |
+| [Risk Management](content/personal/lookup-risk-management/knowledge.md) | 계획의 실패 가능성과 위험 대응을 검토할 때 | 독립 지식 · MCP 조회 |
+| [Preventive Engineering](content/personal/lookup-preventive-engineering/knowledge.md) | 장기적인 재발 방지와 구조적 통제의 필요성을 검토할 때 | 독립 지식 · MCP 조회 |
 | [테스트 작성 원칙](content/personal/lookup-testing-principles/knowledge.md) | 무엇을 테스트할지 정하고 테스트 결과가 실제 동작을 보여주는지 검토할 때. | GitHub에서 읽기 · MCP 배포 대상 |
 | [`manage-dev-knowledge`](skills/manage-dev-knowledge/SKILL.md) | 이 저장소에 지식을 추가하거나 수정할 때. | 저장소 내 관리 Skill |
 
