@@ -1,6 +1,6 @@
 # 개인 판단 원칙 행동 평가
 
-이 문서는 `content/personal/`의 **Context-aware Reasoning(CR), Implementation Strategy(IS), Execution Strategy(ES), Roadmap Planning(RP), Risk Management(RM), Preventive Engineering(PE), Evidence-driven Improvement(EDI), Responsibility-driven Design(RDD), Code Clarity(CC)** 아홉 자산을 평가한다. SDD·Hide 기반 `development-workflow`의 G1~G6, Node/Step, Handoff 실행 절차를 변경하거나 대신하지 않는다.
+이 문서는 `content/personal/`의 **Context-aware Reasoning(CR), Implementation Strategy(IS), Execution Strategy(ES), Roadmap Planning(RP), Risk Management(RM), Preventive Engineering(PE), Evidence-driven Improvement(EDI), Responsibility-driven Design(RDD), Code Clarity(CC)** 아홉 **범용 판단 원칙**의 모델 행동을 평가한다. `lookup-testing-principles`는 테스트 작성 지침으로 이 판단 평가표에 포함하지 않는다. 테스트 지침의 실제 적용은 대상 프로젝트의 테스트·별도 행동 검증에서 확인해야 하며, 여기서 제외된 것이 검증 완료를 뜻하지 않는다. SDD·Hide 기반 `development-workflow`의 G1~G6, Node/Step, Handoff 실행 절차를 변경하거나 대신하지 않는다.
 
 ## 1. 평가 목적과 기본 계약
 

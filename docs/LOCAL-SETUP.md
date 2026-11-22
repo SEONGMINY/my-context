@@ -6,6 +6,16 @@
 
 지원 Node.js 버전은 [package.json](../package.json)의 `engines`를 기준으로 한다(`^20.20.0 || >=22.22.0`). 로컬 관리 연결은 `/bin/sh`, 설치기는 심볼릭 링크를 사용한다. 이러한 기능이 없는 환경은 별도 확인이 필요하며 Windows 네이티브 지원을 보장하지 않는다. 에이전트의 실제 발견 및 인증 여부는 [E2E 가이드](../test/workflow-evaluation.md)에 따라 검증한다.
 
+## 로컬과 원격 중 무엇을 쓰나요?
+
+| 경로 | 자산 범위와 특징 |
+| --- | --- |
+| 원격 `my-context` MCP | 게시된 개인 원칙과 선택된 공통 Skill. Cloudflare Access 인증, 한국어 보완 검색, 배포 `revision` |
+| 로컬 `personal-knowledge` MCP | 저장소의 `content/`를 로컬 빌드. 운영 Worker의 검색 보완·배포 리비전 계약 없음 |
+| 로컬 Skill 설치 | 설치된 Skill 본문·첨부. MCP 연결 및 자동 활용 동의와 별개 |
+
+원격 조회만 필요하면 로컬 설정은 필요하지 않다. [원격 연결 안내](../README.md#my-context-mcp-연결하기)
+
 ## 선택적 조회 정책
 
 `policies/asset-usage.md`의 공통 정책을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 관리 구간으로 추가한다. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`이 설정되면 해당 위치를 사용한다.
@@ -37,3 +47,15 @@ npm run install:user
 설치기는 Codex 설정의 `[mcp_servers.personal-knowledge]`와 `~/.agents/skills/manage-dev-knowledge` 링크를 추가한다. 설정 위치는 `CODEX_HOME` 또는 `~/.codex`다. `npm run build`는 로컬 `content/`를 인덱싱하며 공통 Skill 게시 목록이나 Worker 배포를 갱신하지 않는다. 지식 변경 후 로컬 인덱스를 다시 빌드한다. 새 Codex 세션에서 로컬 MCP의 `chub_list`와 관리 Skill 로딩을 각각 확인한다.
 
 제거 전 `config.toml`의 해당 섹션과 Skill 링크가 이 저장소를 가리키는지 확인한다. 설정의 다른 부분을 보존하며 해당 서버 항목만 제거하고, 이 저장소의 관리 Skill 링크만 해제한다. 자동 제거 명령은 제공하지 않는다. 설정이나 링크가 예상과 다르면 중단하고 수동으로 확인한다. 새 세션에서 제거 여부를 확인한다. 원격 `my-context` 연결과 별개다.
+
+## 문제가 발생했을 때
+
+| 증상 | 먼저 확인할 사항 |
+| --- | --- |
+| Skill을 찾지 못함 | `--check` 결과, 링크 대상, 새로운 에이전트 세션의 실제 로드 |
+| MCP 호출 실패 | 연결 이름, 인증 상태, `chub_list` 실제 호출 |
+| 정책 `outdated` | 기존 동의 범위와 새 정책을 비교한 뒤 동의할 때만 갱신 |
+| 설치 충돌 | 기존 설정과 심볼릭 링크 소유·대상 확인. 무단 덮어쓰기 금지 |
+| 검색 결과 누락 | 로컬/운영 자산 범위, 게시 목록, 검색어, 운영 `revision` |
+
+설치 성공과 에이전트의 실제 도구 사용은 다르다. [E2E 가이드](../test/workflow-evaluation.md)에서 별도로 확인한다.
