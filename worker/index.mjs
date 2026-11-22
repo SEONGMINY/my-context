@@ -9,6 +9,7 @@ import { createAuthenticator } from './auth.mjs';
 
 const entries = new Map(release.entries.map((entry) => [entry.id, entry]));
 const authenticate = createAuthenticator();
+const assetUsageScope = 'Explicit current-task permission or an enabled opt-in policy is required. An older personal-principles or Playbook policy permits automatic personal-principle lookup only. Under that policy do not automatically discover or read common Skills under workflows/, including their attachments. A request to keep the legacy scope leaves that boundary in place.';
 const language = z.string().max(80).optional();
 const tags = z.string().max(512).optional();
 const getInput = {
@@ -80,11 +81,11 @@ function getAsset({ id, lang, version, file, full, revision }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: 'Read personal assets only on an explicit user request (including use my-context without naming an asset) or under an enabled opt-in read-only asset-usage policy in this agent environment. MCP access alone is not consent. Honor explicit exclusions and the scope of the installed policy. An older policy limited to personal principles or playbooks does not authorize automatic common Skill use. An explicit request to use my-context authorizes relevant read-only discovery, not assets requiring a separate explicit task intent. Search for the current decision using minimal non-sensitive keywords, compare candidate descriptions and roles, then read only relevant entries and needed attachments. Knowledge informs judgment; procedures guide authorized work without duplicating overlapping steps. Respect each asset’s own activation conditions, current user and project rules. Do not infer write, installation, deployment or additional personal-data access permission. Reuse valid context; search again only for a new information need, and stop when sufficient or no new relevant results. If unavailable, report the limitation.',
+    instructions: assetUsageScope + ' MCP access alone is not consent. Honor explicit exclusions and the scope of the installed policy. An explicit request to use my-context authorizes relevant read-only discovery, not assets requiring a separate explicit task intent. Search for the current decision using minimal non-sensitive keywords, compare candidate descriptions and roles, then read only relevant entries and needed attachments. Knowledge informs judgment; procedures guide authorized work without duplicating overlapping steps. Respect each asset’s own activation conditions, current user and project rules. Do not infer write, installation, deployment or additional personal-data access permission. Reuse valid context; search again only for a new information need, and stop when sufficient or no new relevant results. If unavailable, report the limitation.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
-    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. With explicit permission or applicable opt-in, search using focused non-sensitive intent keywords, compare candidate descriptions, roles and activation conditions; use a small limit for discovery. Preserve any explicit-request-only conditions. Try alternative English or Korean keywords if relevant candidates are missing. Do not call for unrelated work.',
+    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. ' + assetUsageScope + ' Search using focused non-sensitive intent keywords, compare candidate descriptions, roles and activation conditions; use a small limit for discovery. Preserve any explicit-request-only conditions. Try alternative English or Korean keywords if relevant candidates are missing. Do not call for unrelated work.',
     inputSchema: { query: z.string().max(512).optional().describe('Focused task or decision keywords; do not include source code, secrets, private prompts or customer data.'), tags, lang: language, limit: z.number().int().min(1).max(100).optional() },
     annotations,
   }, ({ limit = 20, ...filters }) => {
@@ -92,12 +93,12 @@ function createServer() {
     return textResult({ revision: release.sha, results: matching.slice(0, limit).map(summary), total: matching.length });
   });
   server.registerTool('chub_get', {
-    description: 'Read a published asset. Default: only SKILL.md or DOC.md, without attachments. For knowledge entries read knowledge.md when applying the principle; for workflows read only required attachments with file. Pass the discovery revision to avoid mixing releases. Reuse already loaded valid content. Use full:true only when every file is explicitly needed; it increases context size.',
+    description: 'Read a published asset. Default: only SKILL.md or DOC.md, without attachments. ' + assetUsageScope + ' For knowledge entries read knowledge.md when applying the principle; for workflows read only required attachments with file. Pass the discovery revision to avoid mixing releases. Reuse already loaded valid content. Use full:true only when every file is explicitly needed; it increases context size.',
     inputSchema: getInput,
     annotations,
   }, getAsset);
   server.registerTool('chub_list', {
-    description: 'List published personal principles and workflows for inventory; prefer focused search for task discovery.',
+    description: 'List published personal principles and workflows for inventory. ' + assetUsageScope + ' Prefer focused search for task discovery.',
     inputSchema: { tags, lang: language, limit: z.number().int().min(1).max(500).optional() },
     annotations,
   }, ({ limit = 50, ...filters }) => {
