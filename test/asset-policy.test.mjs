@@ -167,3 +167,14 @@ test('두 번째 대상에서 쓰기 오류가 발생하면 최초 대상에 새
   assert.match(failed.stderr, /Injected second-target write failure/);
   targets.forEach((path) => assert.equal(existsSync(join(home, path)), false, 'Partial installation: ' + path));
 }));
+
+
+test('로컬 Skill 메타데이터가 최초 읽기 전 동의 범위를 설명하고 설치 정책이 자동 발견과 활용을 구분한다', () => {
+  const skill = readFileSync(join(root, 'skills/development-workflow/SKILL.md'), 'utf8');
+  const header = skill.split('---', 3)[1];
+  assert.match(header, /기존 개인 원칙 전용 동의/);
+  assert.match(header, /본문·첨부를 읽어 적용/);
+  assert.match(header, /로컬·원격 모두 사용하지 않는다/);
+  assert.match(policy, /로컬에 설치된 Skill의 자동 발견은 사용 동의가 아니며/);
+  assert.match(skill, /첫 로딩 전 판단/);
+});
