@@ -6,22 +6,22 @@ my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업
 
 ## 포함된 항목
 
-| 항목 | 언제 쓰나요? | 사용 경로 |
-| --- | --- | --- |
-| [`development-workflow`](skills/development-workflow/SKILL.md) | 요구사항을 정리하고 작업을 나눌 때. 변경을 검증하거나 작업을 인계할 때. | [MCP로 사용](#개발-workflow-사용하기) · [선택적 설치](#자주-사용한다면-설치하기) |
-| [`domain-storytelling`](skills/domain-storytelling/SKILL.md) | 인터뷰로 현재 업무를 파악하고 개선 범위와 요구사항을 정리할 때. | [워크숍 양식](skills/domain-storytelling/templates/workshop-documents.md) · MCP 배포 대상 |
-| [`extract-development-insights`](skills/extract-development-insights/SKILL.md) | 개발 대화의 사용자 발언·결정·대안을 분석해 재사용할 원칙 후보를 찾을 때. | MCP 배포 대상 · 읽기 전용 |
-| [Responsibility-driven Design](content/personal/lookup-responsibility-driven-design/knowledge.md) | 구성 요소의 책임 소유권·자율성·협력·규칙 소유자를 판단할 때 | 독립 지식 · MCP 조회 |
-| [Code Clarity](content/personal/lookup-code-clarity/knowledge.md) | 이름·함수 책임·입출력·부작용의 명료함을 검토할 때 | 독립 지식 · MCP 조회 |
-| [Implementation Strategy](content/personal/lookup-implementation-strategy/knowledge.md) | 구현 방향과 실제 코드의 책임·의존성·동작이 적절한지 판단할 때 | 독립 지식 · MCP 조회 |
-| [Evidence-driven Improvement](content/personal/lookup-evidence-driven-improvement/knowledge.md) | 무엇을 개선할 가치가 있고 변경이 실제 효과를 냈는지 판단할 때 | 독립 지식 · MCP 조회 |
-| [Execution Strategy](content/personal/lookup-execution-strategy/knowledge.md) | 작업·맥락 의존성, 실행 방식과 정보 공유의 적합성을 판단할 때 | 독립 지식 · MCP 조회 |
-| [Roadmap Planning](content/personal/lookup-roadmap-planning/knowledge.md) | 단기 구현과 이후 확장 조건을 구분할 때 | 독립 지식 · MCP 조회 |
-| [Context-aware Reasoning](content/personal/lookup-context-aware-reasoning/knowledge.md) | 요구사항·설계·계획 등 질문에 적절한 판단 기준을 선택할 때 | 독립 지식 · MCP 조회 |
-| [Risk Management](content/personal/lookup-risk-management/knowledge.md) | 계획의 실패 가능성과 위험 대응을 검토할 때 | 독립 지식 · MCP 조회 |
-| [Preventive Engineering](content/personal/lookup-preventive-engineering/knowledge.md) | 장기적인 재발 방지와 구조적 통제의 필요성을 검토할 때 | 독립 지식 · MCP 조회 |
-| [테스트 작성 원칙](content/personal/lookup-testing-principles/knowledge.md) | 무엇을 테스트할지 정하고 테스트 결과가 실제 동작을 보여주는지 검토할 때. | GitHub에서 읽기 · MCP 배포 대상 |
-| [`manage-dev-knowledge`](skills/manage-dev-knowledge/SKILL.md) | 이 저장소에 지식을 추가하거나 수정할 때. | 저장소 내 관리 Skill |
+| 항목 | 언제 쓰나요? |
+| --- | --- |
+| [개발 작업 절차](skills/development-workflow/SKILL.md) | 요구사항 정리, 작업 분해, 검증 및 인계 |
+| [도메인 스토리텔링](skills/domain-storytelling/SKILL.md) | 인터뷰를 통한 현행 업무 파악과 개선 범위·요구사항 정리 |
+| [개발 인사이트 추출](skills/extract-development-insights/SKILL.md) | 개발 대화의 발언·결정·대안을 분석해 재사용 가능한 원칙 후보 발견 |
+| [책임 중심 설계](content/personal/lookup-responsibility-driven-design/knowledge.md) | 구성 요소의 책임 소유권, 자율성, 협력 관계 판단 |
+| [코드 명료성](content/personal/lookup-code-clarity/knowledge.md) | 이름, 함수 책임, 입출력 및 부작용의 명확성 검토 |
+| [구현 전략](content/personal/lookup-implementation-strategy/knowledge.md) | 구현 방향과 코드의 책임·의존성·동작 검토 |
+| [근거 기반 개선](content/personal/lookup-evidence-driven-improvement/knowledge.md) | 개선 필요성과 변경 효과를 근거로 판단 |
+| [실행 전략](content/personal/lookup-execution-strategy/knowledge.md) | 작업·맥락 의존성과 실행·정보 공유 방식 판단 |
+| [로드맵 계획](content/personal/lookup-roadmap-planning/knowledge.md) | 현재 구현 범위와 이후 확장 조건 구분 |
+| [맥락 기반 판단](content/personal/lookup-context-aware-reasoning/knowledge.md) | 질문과 상황에 적절한 판단 기준 선택 |
+| [위험 관리](content/personal/lookup-risk-management/knowledge.md) | 실패 가능성, 대응 방안과 잔여 위험 검토 |
+| [예방적 엔지니어링](content/personal/lookup-preventive-engineering/knowledge.md) | 반복 실패를 막을 구조적 통제의 필요성 판단 |
+| [테스트 작성 원칙](content/personal/lookup-testing-principles/knowledge.md) | 검증할 동작을 선택하고 테스트의 유효성 판단 |
+| [개발 지식 관리](skills/manage-dev-knowledge/SKILL.md) | 저장소의 개인 개발 지식 조회 및 승인된 변경 관리 |
 
 ## 시작하기
 
@@ -69,6 +69,7 @@ my-context에서 Implementation Strategy 원칙을 찾아 적용해줘.
 ```
 
 개인 원칙은 `SKILL.md` 진입 설명을 확인한 다음 `file: knowledge.md`로 본문을 조회해요. 공통 Skill은 `SKILL.md`에서 시작하고 필요한 참조만 `file`로 조회해요. 검색 결과의 `revision`을 조회에 전달하면 배포가 바뀐 경우 오류로 감지할 수 있어요. 자산을 읽은 것만으로 에이전트가 올바르게 적용했다고 판단하지 않아요.
+
 ### 개발 Workflow 사용하기
 
 ```text
