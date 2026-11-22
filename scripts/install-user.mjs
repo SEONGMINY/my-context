@@ -14,7 +14,12 @@ let exists = false;
 try {
   const stat = lstatSync(target);
   exists = true;
-  if (!stat.isSymbolicLink() || realpathSync(target) !== realpathSync(source)) {
+  if (!stat.isSymbolicLink()) {
+    throw new Error('Existing skill preserved; target differs: ' + target);
+  }
+  let resolved;
+  try { resolved = realpathSync(target); } catch { throw new Error('Existing skill preserved; broken link: ' + target); }
+  if (resolved !== realpathSync(source)) {
     throw new Error('Existing skill preserved; target differs: ' + target);
   }
 } catch (error) {
