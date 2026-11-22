@@ -47,7 +47,7 @@ Node.js 버전은 [package.json](../package.json)의 `engines`를 따릅니다(`
 
 ## 개인 지식 관리 Skill (선택)
 
-원본을 수정해야 하는 관리자는 저장소를 체크아웃한 다음 다음 명령으로 **Skill 링크만** 설치할 수 있어요. 원격 MCP는 [README](../README.md#시작하기)의 방법으로 별도로 연결합니다.
+원본을 수정해야 하는 관리자는 저장소를 체크아웃한 다음 명령으로 **Skill 링크만** 설치할 수 있어요. 원격 MCP는 [README](../README.md#시작하기)의 방법으로 별도로 연결합니다.
 
 ```bash
 npm run install:user -- --check
