@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { posix } from 'node:path';
 import { timingSafeEqual } from 'node:crypto';
 import worker from '../worker/index.mjs';
 import release from '../.generated/worker/release.json' with { type: 'json' };
@@ -160,4 +161,56 @@ test('MCP 인증 없이 지침을 요청하면 > Skill 본문이 노출되지 �
 
   // then: 인증 거부
   assert.equal(response.status, 401);
+});
+
+// Relative Markdown file links in a published asset must be readable under the
+// same asset ID. External URLs are source references, not MCP attachments.
+function missingPublishedLinks(files) {
+  const names = new Set(files.map(([name]) => name));
+  const missing = [];
+  for (const [name, body] of files) {
+    if (!name.endsWith('.md')) continue;
+    let fence = null;
+    for (const line of body.split('\n')) {
+      const marker = line.match(/^\s*(`{3,}|~{3,})/);
+      if (marker) {
+        if (!fence) fence = marker[1];
+        else if (marker[1][0] === fence[0] && marker[1].length >= fence.length) fence = null;
+        continue;
+      }
+      if (fence) continue;
+      for (const match of line.matchAll(/\[[^\]\n]*\]\(([^)\n]+)\)/g)) {
+        const destination = match[1].trim().split(/\s+"/)[0];
+        if (/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(destination)) continue;
+        const raw = destination.split('#')[0];
+        let target;
+        try { target = posix.normalize(posix.join(posix.dirname(name), decodeURIComponent(raw))); }
+        catch { missing.push(name + ': ' + destination); continue; }
+        if (raw.startsWith('/') || target.startsWith('../') || !names.has(target)) {
+          missing.push(name + ': ' + destination);
+        }
+      }
+    }
+  }
+  return missing;
+}
+
+test('게시된 자산의 상대 파일 링크는 동일한 MCP 자산 내부에서 조회할 수 있다', () => {
+  for (const entry of release.entries) {
+    const fileSets = entry.type === 'skill' ? [entry.files]
+      : entry.languages.flatMap(({ versions }) => versions.map(({ files }) => files));
+    for (const files of fileSets) {
+      assert.deepEqual(missingPublishedLinks(files), [], entry.id);
+    }
+  }
+});
+
+test('게시 참조 검사는 누락·자산 외부 경로를 탐지하고 외부 출처와 코드 예시를 허용한다', () => {
+  const files = [
+    ['SKILL.md', '[첨부](references/guide.md)\n[누락](missing.md)\n[외부 자산](../policy.md)\n[출처](https://example.org/policy.md)\n~~~md\n[예시](example.md)\n~~~'],
+    ['references/guide.md', '[본문](../SKILL.md#intro)'],
+  ];
+  assert.deepEqual(missingPublishedLinks(files), [
+    'SKILL.md: missing.md', 'SKILL.md: ../policy.md',
+  ]);
 });

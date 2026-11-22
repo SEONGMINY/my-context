@@ -15,7 +15,9 @@
 
 ## 운영 배포
 
-워크플로는 배포할 **Git 커밋**에서 자산을 읽어요. 공통 Skill을 추가할 때는 `skills/<name>/SKILL.md`와 필요한 첨부를 작성하고, 원격 게시를 의도한 경우에만 `publish-skills.json`에 이름을 추가해 주세요. 개인 자산은 관리 Skill의 구조를 따라요. 원격 MCP의 첨부 조회 범위는 해당 자산 내부에 한정돼요. `content/`에서는 `SKILL.md` 또는 `DOC.md` 진입 파일이 있는 자산을 게시하고, `skills/`에서는 [배포 목록](../publish-skills.json)에 지정한 Skill만 게시해요. 각 게시 자산의 첨부 파일도 함께 포함해요. 파일을 저장소에 추가하는 것만으로 MCP에 게시되지는 않아요.
+운영 배포 대상은 Cloudflare Worker예요. `publish-release.mjs`·`serve-release.mjs`·`serve.mjs`의 로컬 HTTP 릴리스 경로는 `verify-release.mjs`에서 검증하는 별도 경로이며 운영 배포 절차가 아니에요.
+
+워크플로는 배포할 **Git 커밋**에서 자산을 읽어요. `content/`에서는 `SKILL.md` 또는 `DOC.md` 진입 파일이 있는 자산을, `skills/`에서는 [게시 목록](../publish-skills.json)에 지정한 Skill만 첨부와 함께 게시해요. 공통 Skill을 추가할 때 원격 게시를 의도한 경우에만 목록에 이름을 추가해 주세요. 필수 첨부 참조는 해당 자산 내부에서 조회할 수 있어야 해요. 외부 출처는 명시적인 URL로 구분해 주세요.
 
 배포 전에 `npm run worker -- deployments list --config wrangler.jsonc`로 정상 버전 ID를 기록해 주세요.
 
@@ -83,21 +85,3 @@ GitHub Actions를 사용할 수 없으면 Wrangler로 배포해 주세요.
 8. 허용 목록에 없는 계정의 로그인이 거부되는지 확인해 주세요.
 
 [Managed OAuth 설정](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/)
-
-## 유지보수 검증
-
-변경 영역에서 보호해야 할 계약을 기준으로 [CI](../.github/workflows/worker.yml)와 [package.json](../package.json)의 검사를 선택한다.
-
-| 변경 영역 | 검증 진입점 |
-| --- | --- |
-| 문서 링크 | `test/doc-links.test.mjs` |
-| 개인 자산·조회 정책·한국어 검색 | `npm run test:integrity` |
-| Workflow 설치 | `npm run test:workflow` |
-| 인증 | `test/worker-auth.test.mjs` |
-| Worker 조회 | Worker 빌드 후 `test/worker-mcp-use.test.mjs` |
-| 릴리스 | `scripts/verify-release.mjs` |
-| 원칙·Skill의 의미적 변경 | [원칙 평가](../test/principle-evaluation.md), [Workflow E2E](../test/workflow-evaluation.md) |
-
-`scripts/publish-release.mjs`, `serve-release.mjs`, `serve.mjs`는 커밋 기반 로컬 HTTP 릴리스 경로를 구성하며 `verify-release.mjs`에서 실제 검증한다. 현재 운영 배포의 진입점은 Cloudflare Worker이며, 이 HTTP 경로를 운영 사용 계약으로 간주하지 않는다. 삭제 여부는 별도 기능 검토 대상이다.
-
-실제 검증 결과는 PR 또는 기존 검증 기록에 대상 SHA, 환경, 명령, 결과, 증거, 미실행 사유를 남긴다. 평가 양식이나 CI 성공만으로 에이전트 행동 또는 운영 배포의 성공을 주장하지 않는다.

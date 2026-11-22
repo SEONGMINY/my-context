@@ -16,9 +16,6 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 
 - 개인 지식 조회는 명시적 요청이 기본이다. 사용자가 개인 범위에서 [선택적 조회 정책](policies/asset-usage.md)을 활성화한 경우에만 관련 자산을 조건부로 조회할 수 있다. 조회 권한과 지식 변경 승인은 별도이며, 대상 프로젝트의 계약을 우선한다. 지식 변경은 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
 - 검색 인덱스와 Worker 번들은 커밋하지 않는다.
-- 코드 변경은 [CI](.github/workflows/worker.yml)의 관련 검사로 검증한다. 운영에 반영할 때는 [배포 가이드](docs/DEPLOYMENT.md)를 따른다.
-
-## 자산 변경과 검증
-
-- 공통 Skill의 원본은 `skills/<name>/SKILL.md`에 둔다. 원격 게시 여부는 [게시 목록](publish-skills.json)과 [배포 계약](docs/DEPLOYMENT.md#운영-배포)을 확인한다. 첨부는 해당 자산 안에서 참조 가능해야 한다.
-- 변경 영역에 맞는 검사 진입점은 [유지보수 검증](docs/DEPLOYMENT.md#유지보수-검증)을 참고한다. 명령의 원본은 CI와 `package.json`이다. 의미적 변경은 관련 행동 평가와 구분하여 확인한다.
+- 자산 변경 시 [관리 Skill](skills/manage-dev-knowledge/SKILL.md) 또는 `skills/` 원본과 [게시 목록](publish-skills.json)을 확인한다. 게시 자산의 필수 첨부는 해당 자산 내부에서 조회 가능해야 하며 외부 출처는 명시적인 URL로 구분한다.
+- 변경 영역에 맞춰 [CI](.github/workflows/worker.yml)와 [package.json](package.json)의 검사를 실행한다. 의미적 변경은 [Workflow E2E](test/workflow-evaluation.md) 또는 [원칙 평가](test/principle-evaluation.md)로 구분한다. 검증 대상 리비전·실행 결과·미실행 사유를 PR에 기록한다.
+- 운영 반영은 [배포 가이드](docs/DEPLOYMENT.md)를 따른다.

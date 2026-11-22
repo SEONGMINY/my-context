@@ -14,7 +14,7 @@
 
 MCP를 연결한 에이전트에서 Skill 설치 없이 `chub_search` → `chub_get`으로 `workflows/development-workflow` 본문을 조회하고, 구조화된 작업에서만 `references/contracts.md`를 조회하는지 확인한다.
 
-운영 MCP는 실제 배포·인증이 필요하다. 사용할 수 없는 경우 운영 E2E는 `NOT_RUN`으로 남긴다. **CI의 Worker 직접 호출 테스트**(`test/worker-mcp-use.test.mjs`)는 빌드된 릴리스에서 본문·참조 파일 조회, `revision`, 인증·비공개 항목 거부, 읽기 전용 Tool 목록을 검사하지만 모델이 지침을 적용했는지는 검사하지 않는다.
+운영 MCP는 실제 배포·인증이 필요하다. 사용할 수 없는 경우 운영 E2E는 `NOT_RUN`으로 남긴다. **CI의 Worker 직접 호출 테스트**(`test/worker-mcp-use.test.mjs`)는 빌드된 릴리스에서 본문·참조 파일 조회, `revision`, 인증·비공개 항목 거부, 읽기 전용 Tool 목록을 검사한다. 게시 자산의 Markdown 상대 파일 링크가 동일 자산에 포함되는지도 확인한다. 외부 URL과 링크가 아닌 자연어 참조의 필수 여부는 의미적 리뷰로 확인한다. 이 검사들은 모델이 지침을 적용했는지는 검사하지 않는다.
 
 | 환경·조건 | 기대 결과 | 종류 |
 | --- | --- | --- |
