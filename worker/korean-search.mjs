@@ -16,12 +16,15 @@ export function koreanTerms(query) {
 export function searchKorean(query, entries) {
   const terms = koreanTerms(query);
   if (terms.length === 0) return [];
-  return entries.map(({ id, files }) => {
+  return entries.map(({ id, name, description, tags, files, languages }) => {
     // Search only the already-published, authorized asset, not local files or user data.
-    const text = (files || []).map(([, body]) => body).join('\n').normalize('NFC');
+    const metadata = [name, description, ...(tags || [])].filter(Boolean).join('\n').normalize('NFC');
+    const publishedFiles = files || (languages || []).flatMap(({ versions, recommendedVersion }) =>
+      versions.filter(({ version }) => version === recommendedVersion).flatMap(({ files }) => files));
+    const text = metadata + '\n' + publishedFiles.map(([, body]) => body).join('\n').normalize('NFC');
     const matched = terms.filter((term) => text.includes(term));
-    return { id, count: matched.length, score: matched.reduce((sum, term) => sum + term.length, 0) };
+    return { id, count: matched.length, metadataCount: matched.filter((term) => metadata.includes(term)).length, score: matched.reduce((sum, term) => sum + term.length, 0) };
   }).filter(({ count }) => count >= Math.min(2, terms.length))
-    .sort((a, b) => b.count - a.count || b.score - a.score || a.id.localeCompare(b.id))
+    .sort((a, b) => b.count - a.count || b.metadataCount - a.metadataCount || b.score - a.score || a.id.localeCompare(b.id))
     .map(({ id }) => id);
 }

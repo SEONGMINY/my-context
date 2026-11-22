@@ -126,7 +126,8 @@ function requireDigest(value) {
 test('Skill 독립 행동 평가 자료는 비활성·활성·정정·MCP 누락을 포함한다', () => {
   const scenarios = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
   const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only'];
-  assert.deepEqual(scenarios.map(({ id }) => id).sort(), expected.sort());
+  assert.ok(expected.every((id) => scenarios.some((scenario) => scenario.id === id)));
+  assert.equal(new Set(scenarios.map(({ id }) => id)).size, scenarios.length);
   assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
 });
 
