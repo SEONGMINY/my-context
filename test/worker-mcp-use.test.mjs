@@ -275,17 +275,27 @@ test('discovery protocol exposes default autonomous read-only workflows and perm
   assert.equal(init.status, 200);
   const initialized = (await init.json()).result;
   assert.equal(initialized.serverInfo.version, release.sha);
-  assert.match(initialized.instructions, /no separate opt-in toggle/);
-  assert.match(initialized.instructions, /MCP connection alone does not install agent guidance/);
+  assert.match(initialized.instructions, /No separate opt-in toggle/);
+  assert.match(initialized.instructions, /architecture and module responsibilities/);
+  assert.match(initialized.instructions, /does not install agent guidance or guarantee tool selection/);
   const listed = await call('tools/list', {});
   const tools = (await listed.json()).result.tools;
   assert.equal(tools.length, 3);
   assert.ok(tools.every(({ annotations }) => annotations?.readOnlyHint === true));
   for (const { description } of tools) {
-    assert.match(description, /no separate opt-in toggle/);
-    assert.match(description, /Honor the current user's explicit exclusion/);
-    assert.match(description, /do not request additional private data/);
+    assert.match(description, /No separate opt-in toggle/);
+    assert.match(description, /If the user excludes my-context for this task/);
+    assert.match(description, /never authorizes additional private-data access or knowledge changes/);
   }
+  const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool.description]));
+  assert.match(byName.chub_search, /requirements, architecture and module responsibilities/);
+  assert.match(byName.chub_search, /even when the user did not name my-context/);
+  assert.match(byName.chub_search, /do not search on every trivial change/);
+  assert.match(byName.chub_get, /selected from discovery/);
+  assert.match(byName.chub_get, /Reuse already-read valid context/);
+  assert.match(byName.chub_list, /prefer chub_search for task-oriented discovery/);
+  assert.doesNotMatch(byName.chub_get, /architecture and module responsibilities/);
+  assert.doesNotMatch(byName.chub_list, /architecture and module responsibilities/);
   const insight = parsed(await callTool('chub_search', {
     query: 'workflows/extract-development-insights', limit: 1,
   })).results[0];

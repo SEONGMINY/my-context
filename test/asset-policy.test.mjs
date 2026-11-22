@@ -145,7 +145,8 @@ test('Workflow와 인사이트 Skill은 기본 자율 선택과 읽기 권한 �
 test('에이전트 자동 참고 행동 평가 시나리오는 필요한 경계를 포함한다', () => {
   const scenarios = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
   const expected = ['automatic-by-default', 'small-change', 'explicit-exclusion',
-    'legacy-policy-upgrade', 'no-mcp', 'sensitive-context', 'read-only'];
+    'legacy-policy-upgrade', 'no-mcp', 'sensitive-context', 'read-only',
+    'unprompted-codebase-architecture', 'host-metadata-unavailable', 'unrelated-quick-task'];
   assert.ok(expected.every((id) => scenarios.some((scenario) => scenario.id === id)));
   assert.equal(new Set(scenarios.map(({ id }) => id)).size, scenarios.length);
   assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
