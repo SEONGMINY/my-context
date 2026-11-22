@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, mkdirSync, lstatSync, realpathSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, mkdirSync, lstatSync, realpathSync, readFileSync, writeFileSync, existsSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,5 +44,45 @@ test('기존 관리 Skill 경로 충돌 시 사용자 파일을 보존한다', (
     const result = run(home);
     assert.notEqual(result.status, 0);
     assert.equal(readFileSync(join(target, 'SKILL.md'), 'utf8'), 'existing user content');
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
+
+test('깨진 관리 Skill 링크는 덮어쓰지 않고 설치를 중단한다', () => {
+  const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
+  try {
+    const target = join(home, '.agents/skills/manage-dev-knowledge');
+    mkdirSync(join(home, '.agents/skills'), { recursive: true });
+    const missing = join(home, 'missing-skill');
+    symlinkSync(missing, target, 'dir');
+
+    for (const args of [[], ['--check']]) {
+      const result = run(home, ...args);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Existing skill preserved/);
+      assert.equal(lstatSync(target).isSymbolicLink(), true);
+    }
+    assert.equal(existsSync(missing), false);
+    assert.equal(existsSync(join(home, '.codex/config.toml')), false);
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
+
+test('다른 저장소의 관리 Skill 링크는 변경하지 않는다', () => {
+  const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
+  try {
+    const target = join(home, '.agents/skills/manage-dev-knowledge');
+    const other = join(home, 'other-skill');
+    mkdirSync(join(home, '.agents/skills'), { recursive: true });
+    mkdirSync(other);
+    writeFileSync(join(other, 'SKILL.md'), 'another repository');
+    symlinkSync(other, target, 'dir');
+
+    for (const args of [[], ['--check']]) {
+      const result = run(home, ...args);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Existing skill preserved/);
+      assert.equal(realpathSync(target), realpathSync(other));
+      assert.equal(readFileSync(join(target, 'SKILL.md'), 'utf8'), 'another repository');
+    }
+    assert.equal(existsSync(join(home, '.codex/config.toml')), false);
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
