@@ -1,6 +1,6 @@
 # 개인 판단 원칙 행동 평가
 
-이 문서는 `content/personal/`의 **Context-aware Reasoning(CR), Implementation Strategy(IS), Execution Strategy(ES), Roadmap Planning(RP), Risk Management(RM), Preventive Engineering(PE), Evidence-driven Improvement(EDI), Responsibility-driven Design(RDD), Code Clarity(CC)** 아홉 **범용 판단 원칙**의 모델 행동을 평가한다. `lookup-testing-principles`는 테스트 작성 지침으로 이 판단 평가표에 포함하지 않는다. 테스트 지침의 실제 적용은 대상 프로젝트의 테스트·별도 행동 검증에서 확인해야 하며, 여기서 제외된 것이 검증 완료를 뜻하지 않는다. SDD·Hide 기반 `development-workflow`의 G1~G6, Node/Step, Handoff 실행 절차를 변경하거나 대신하지 않는다.
+이 문서는 `content/personal/`의 **Context-aware Reasoning(CR), Implementation Strategy(IS), Execution Strategy(ES), Roadmap Planning(RP), Risk Management(RM), Preventive Engineering(PE), Evidence-driven Improvement(EDI), Responsibility-driven Design(RDD), Code Clarity(CC), Clear Explanation & Visualization(CEV)** 열 **범용 판단 원칙**의 모델 행동을 평가한다. `lookup-testing-principles`는 테스트 작성 지침으로 이 판단 평가표에 포함하지 않는다. 테스트 지침의 실제 적용은 대상 프로젝트의 테스트·별도 행동 검증에서 확인해야 하며, 여기서 제외된 것이 검증 완료를 뜻하지 않는다. SDD·Hide 기반 `development-workflow`의 G1~G6, Node/Step, Handoff 실행 절차를 변경하거나 대신하지 않는다.
 
 ## 1. 평가 목적과 기본 계약
 
@@ -34,6 +34,7 @@
 | EDI | 증거에 따라 개선 필요성과 효과 판단 | 관측 범위·인과 가설·결과와 비용 구분·변경 보류 | EDI-01~03 |
 | RDD | 책임 소유권·협력과 규칙 정의 위치의 구분 | 분리 대신 유지·통합을 선택할 수 있는지 | RDD-01~03 |
 | CC | 의미 있는 이름·함수 역할·입출력·부작용 | 불필요한 함수 분리와 의존성 반복 전달을 거부하는지 | CC-01~03 |
+| CEV | 독자 중심·핵심 우선·정확한 전달 | 시각화 선택, 중요 조건 보존, 근거 없는 도식화 방지, 표현 제약 대응 | CEV-01~03 |
 | 교차 | 개별 원칙의 경계를 유지하며 함께 선택 | 여러 원칙의 복합 적용을 검증 | X-01~17 |
 
 시나리오는 **완결된 현실의 모든 경우를 뜻하지 않는다**. 실제 실패가 새로 확인되면 해당 상황을 먼저 분석한 후 관련된 경계 사례를 추가한다. 새 시나리오를 작성한 모델에게 같은 시나리오만 반복해서 맞추게 할 경우 과적합 위험이 있으므로 독립적인 미사용 사례도 확인한다.
@@ -44,7 +45,7 @@
 2. 각 Fixture의 `context`를 프로젝트의 확인 가능한 사실로 제공하고, `request`를 사용자 요청으로 제시한다. 실제 파일 작업이 필요한 사례는 격리된 테스트 프로젝트에서만 실행한다.
 3. **실제로 한 행동**을 기록한다. 질문의 수뿐 아니라 중요한 불확실성의 선택, 잠정 가설과 확정된 요구의 구분, 사용자 정정에 따른 판단 변경을 본다. 강제 인터뷰·불필요한 질문은 성공으로 취급하지 않는다. 문서 속 문구를 복창했는지 대신, 무엇을 조회·질문·결정·변경·거절·보고했는지 본다.
 4. `expected`의 중요한 행동을 충족했는지, `forbidden`을 위반했는지 **각각** 판정한다. 상황에 필요한 근거가 부족해 올바른 선택을 할 수 없으면 누락 사실을 기록하고 조건을 고쳐 재실행한다.
-5. 단일 원칙 CR/IS/ES/RP/RM/PE/EDI/RDD/CC 사례와 교차 X 사례를 분리해 비교한다. 명시적으로 허용되지 않은 개인 지식 조회나 프로젝트 계약 위반은 중대한 실패로 기록한다.
+5. 단일 원칙 CR/IS/ES/RP/RM/PE/EDI/RDD/CC/CEV 사례와 교차 X 사례를 분리해 비교한다. 명시적으로 허용되지 않은 개인 지식 조회나 프로젝트 계약 위반은 중대한 실패로 기록한다.
 6. 실패 원인을 `규칙 누락 / 규칙 간 충돌 / 표현 모호 / 평가 환경·도구 문제 / 모델 행동 오류 / 판정 근거 부족`으로 구분한다. 문서 누락·모호성인 경우에만 해당 원칙을 수정하고 관련 사례를 재평가한다.
 
 새 원칙과 수정된 원칙의 사례는 그 원칙의 고유 판단을 검증해야 한다. EDI 사례에서 무조건 계측·자동화를 제안하거나 관측되지 않은 행동을 단정하지 않는지, IS 사례에서 이름 있는 패턴을 맹목적으로 선택하지 않는지 확인한다. 본문의 특정 기술 사례를 정답으로 암기시키지 않도록 평가 Fixture와 별도로 독립적인 미사용 상황도 점검한다.
