@@ -1,0 +1,25 @@
+# 로컬 설정
+
+이 문서는 로컬 설치·갱신·제거의 상세 안내다. 원격 MCP만 이용할 때는 저장소 클론이나 Skill 설치가 필요하지 않다. [사용 방법](../README.md)
+
+## 환경
+
+지원 Node.js 버전은 [package.json](../package.json)의 `engines`를 기준으로 한다(`^20.20.0 || >=22.22.0`). 로컬 관리 연결은 `/bin/sh`, 설치기는 심볼릭 링크를 사용한다. 이러한 기능이 없는 환경은 별도 확인이 필요하며 Windows 네이티브 지원을 보장하지 않는다. 에이전트의 실제 발견 및 인증 여부는 [E2E 가이드](../test/workflow-evaluation.md)에 따라 검증한다.
+
+## 선택적 조회 정책
+
+`policies/asset-usage.md`의 공통 정책을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 관리 구간으로 추가한다. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`이 설정되면 해당 위치를 사용한다.
+
+저장소 루트에서 `npm run policy:check`, `npm run policy:enable`, `npm run policy:disable`로 확인·설치/갱신·제거한다. 모든 대상을 확인한 뒤 변경하며 기존 지침을 보존한다. 제거는 관리 구간만 대상으로 하며 설치 시 새로 만든 파일에 다른 내용이 없을 때만 파일 자체를 삭제한다. 관리 구간이 수정되거나 마커·경계·심볼릭 링크가 예상과 다르면 중단한다. 충돌 시 경로와 기존 내용을 먼저 확인하고 강제로 덮어쓰지 않는다. 정책 갱신 후 새 세션에서 지침 로딩과 MCP 인증을 각각 확인한다.
+
+## Workflow Skill
+
+`npm run install:workflow -- --check`로 확인하고 `npm run install:workflow`로 설치한다. 설치 경로는 `~/.agents/skills/development-workflow`(Codex·Pi), `~/.claude/skills/development-workflow`(Claude Code)이며 동일한 저장소 원본을 가리킨다. 충돌 시 기존 항목을 보존하고 부분 실패 시 이번 설치에서 만든 항목만 복구를 시도한다. 복구 실패는 오류로 보고된다.
+
+갱신은 원본의 Git 체크아웃을 검토 후 갱신하고 새 세션에서 호출을 확인한다. 저장소를 이동하거나 제거하려면 `ls -l ~/.agents/skills/development-workflow ~/.claude/skills/development-workflow`로 대상이 이 저장소를 가리키는 링크인지 확인한 뒤 해당 링크만 해제한다. 기존 파일이나 다른 저장소의 링크를 삭제하지 않는다.
+
+## 로컬 관리 환경
+
+[README의 관리 환경 설치](../README.md#개인-개발-지식-관리)는 Codex 설정의 `[mcp_servers.personal-knowledge]`와 `~/.agents/skills/manage-dev-knowledge` 링크를 추가한다. 설정 위치는 `CODEX_HOME` 또는 `~/.codex`다. `npm run build`는 로컬 `content/`를 인덱싱하며 공통 Skill 게시 목록이나 Worker 배포를 갱신하지 않는다. 지식 변경 후 로컬 인덱스를 다시 빌드한다.
+
+제거 전 `config.toml`의 해당 섹션과 Skill 링크가 이 저장소를 가리키는지 확인한다. 설정의 다른 부분을 보존하며 해당 서버 항목만 제거하고, 이 저장소의 관리 Skill 링크만 해제한다. 자동 제거 명령은 제공하지 않는다. 설정이나 링크가 예상과 다르면 중단하고 수동으로 확인한다. 새 세션에서 제거 여부를 확인한다. 원격 `my-context` 연결과 별개다.
