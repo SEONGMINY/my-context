@@ -25,7 +25,7 @@ test('관리 Skill 설치는 로컬 MCP 설정 없이 링크만 생성하고 재
     assert.equal(realpathSync(target), realpathSync(skill));
     assert.equal(run(home).status, 0);
     assert.equal(readFileSync(join(target, 'SKILL.md'), 'utf8').includes('개인 개발 지식 관리'), true);
-    assert.equal(run(home, '--force').status === 0, false);
+    assert.notEqual(run(home, '--force').status, 0);
     assert.equal(run(home, '--check').status, 0);
     assert.equal(existsSync(join(home, '.codex/config.toml')), false);
   } finally { rmSync(home, { recursive: true, force: true }); }
