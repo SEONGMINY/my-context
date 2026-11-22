@@ -114,6 +114,7 @@ test('정책 내용 변경은 정상 설치본만 갱신하고 불명확한 메�
   const older = current.replace(policy, oldBody).replace(/sha256=[a-f0-9]{64}/, 'sha256=' + hash);
   writeFileSync(join(home, p), older);
   assert.equal(JSON.parse(run('--check', home).stdout).results[0].status, 'outdated');
+  assert.equal(read(home, p), older, 'Checking an earlier opt-in must not install expanded permissions');
   assert.equal(run('--enable', home).status, 0);
   assert.equal(read(home, p), current);
   writeFileSync(join(home, p), read(home, p).replace('created=1', 'created=invalid'));
@@ -125,7 +126,7 @@ function requireDigest(value) {
 
 test('Skill 독립 행동 평가 자료는 비활성·활성·정정·MCP 누락을 포함한다', () => {
   const scenarios = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
-  const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only'];
+  const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only', 'mcp-name-only', 'implicit-workflow', 'adaptive-retrieval', 'explicit-exclusion', 'explicit-only-insight', 'no-relevant-asset', 'legacy-policy', 'sensitive-context'];
   assert.ok(expected.every((id) => scenarios.some((scenario) => scenario.id === id)));
   assert.equal(new Set(scenarios.map(({ id }) => id)).size, scenarios.length);
   assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
