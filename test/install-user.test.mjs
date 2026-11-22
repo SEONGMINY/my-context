@@ -30,11 +30,6 @@ test('관리 Skill 설치는 로컬 MCP 설정 없이 링크만 생성하고 재
     assert.equal(existsSync(join(home, '.codex/config.toml')), false);
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
-function requireNoConfig(home) {
-  const { existsSync } = requireNodeFs();
-  return !existsSync(join(home, '.codex/config.toml'));
-}
-function requireNodeFs() { return { existsSync: (path) => { try { lstatSync(path); return true; } catch (e) { if(e.code==='ENOENT') return false; throw e; } } }; }
 test('기존 관리 Skill 경로 충돌 시 사용자 파일을 보존한다', () => {
   const home = mkdtempSync(join(tmpdir(), 'my-context-manage-'));
   try {
