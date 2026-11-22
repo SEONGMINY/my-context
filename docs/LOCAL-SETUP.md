@@ -16,11 +16,34 @@
 
 원격 조회만 필요하면 로컬 설정은 필요하지 않다. [원격 연결 안내](../README.md#my-context-mcp-연결하기)
 
+### 경로별 지원 범위
+
+| 기능 | 원격 `my-context` MCP | 로컬 `personal-knowledge` MCP | 로컬 Skill |
+| --- | --- | --- | --- |
+| 개인 원칙 조회 | 게시된 원칙 | `content/`의 로컬 빌드 | 별도 자동 설치 대상 아님 |
+| 공통 Skill | 게시 목록의 Skill | 미포함 | 설치한 Skill만 사용 |
+| 배포 리비전 | `revision` 반환 | 운영 revision 계약 없음 | 현재 Git 원본 확인 |
+| 한국어 보완 검색 | Worker에서 제공 | 동일 보완 기능 없음 | MCP 검색 API 없음 |
+| 지식 변경 | 읽기 전용 | 조회용 | 관리 Skill과 승인 절차로 Git 원본 수정 |
+
+MCP 연결, Skill 설치, 에이전트의 실제 적용은 서로 다른 상태예요. [실사용 E2E](../test/workflow-evaluation.md)에서 구분해 확인해 주세요.
+
+
 ## 선택적 조회 정책
 
-`policies/asset-usage.md`의 공통 정책을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 관리 구간으로 추가한다. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`이 설정되면 해당 위치를 사용한다.
+`policies/asset-usage.md`의 공통 정책을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 관리 구간으로 추가해요. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`이 설정되면 해당 위치를 사용해요.
 
-저장소 루트에서 `npm run policy:check`, `npm run policy:enable`, `npm run policy:disable`로 확인·설치/갱신·제거한다. 확인 명령은 쓰지 않으며 `disabled`(미설치), `enabled`(현재 정책), `outdated`(이전 정책)를 보고한다. 새 정책은 개인 원칙뿐 아니라 관련 공통 Skill(인사이트 추출 포함)의 자율적 선택을 허용한다. Skill 선택은 추가 개인 자료 접근이나 지식 변경 권한을 부여하지 않는다. 기존 정책의 동의를 확대하지 않으며, 기존 설치본은 이전 범위로 유지된다. 변경 범위를 검토하고 동의하는 경우에만 `--enable`에 해당하는 명령을 다시 실행해 갱신한다. 모든 대상을 확인한 뒤 변경하며 기존 지침을 보존한다. 제거는 관리 구간만 대상으로 하며 설치 시 새로 만든 파일에 다른 내용이 없을 때만 파일 자체를 삭제한다. 관리 구간이 수정되거나 마커·경계·심볼릭 링크가 예상과 다르면 중단한다. 충돌 시 경로와 기존 내용을 먼저 확인하고 강제로 덮어쓰지 않는다. 정책 갱신 후 새 세션에서 지침 로딩과 MCP 연결·인증·실제 조회를 각각 확인한다. 설정만으로 도구나 MCP가 설치되지 않으며 모델의 적용도 보장되지 않는다. 상세 행동 조건은 [정책 원본](../policies/asset-usage.md)을 따른다.
+| 목적 | 명령 |
+| --- | --- |
+| 기존 정책 확인(쓰기 없음) | `npm run policy:check` |
+| 동의한 정책 설치·갱신 | `npm run policy:enable` |
+| 관리 구간 제거 | `npm run policy:disable` |
+
+확인 결과는 `disabled`(미설치), `enabled`(현재 정책), `outdated`(이전 정책)로 표시돼요. **기존 개인 원칙 전용 동의를 공통 Skill 자동 활용 동의로 확대하지 않아요.** `outdated`라면 변경된 범위를 검토하고 동의하는 경우에만 다시 활성화해 주세요. 새 정책은 관련 개인 원칙과 공통 Skill(인사이트 추출 포함)의 선택적 활용을 허용하지만, 추가 개인 자료 접근이나 지식 변경 권한을 부여하지 않아요.
+
+설치기는 **세 대상 파일을 먼저 확인**하고 기존 내용을 보존해요. 관리 구간만 변경·제거하며, 예상과 다른 마커·수정된 관리 구간·심볼릭 링크·설치 충돌을 발견하면 덮어쓰지 않고 중단해요. 변경 중 실패하면 이번에 변경한 항목의 복구를 시도하고 복구 실패도 보고해요. 기존 파일에 다른 내용이 있으면 관리 구간만 제거해요.
+
+활성화 후 새 세션에서 사용자 지침 로딩, MCP 연결·인증, 실제 조회를 각각 확인해 주세요. 정책 설정만으로 MCP가 설치되거나 AI의 실제 적용이 보장되지는 않아요. 상세 행동 조건은 [정책 원본](../policies/asset-usage.md)을 따라요.
 
 ## Workflow Skill
 
@@ -57,5 +80,9 @@ npm run install:user
 | 정책 `outdated` | 기존 동의 범위와 새 정책을 비교한 뒤 동의할 때만 갱신 |
 | 설치 충돌 | 기존 설정과 심볼릭 링크 소유·대상 확인. 무단 덮어쓰기 금지 |
 | 검색 결과 누락 | 로컬/운영 자산 범위, 게시 목록, 검색어, 운영 `revision` |
+| MCP는 연결되지만 도구가 없음 | 에이전트의 도구 노출, 서버 이름, 새 세션에서 `chub_list` 호출 |
+| 자산 조회 오류 | 검색 ID·`revision`을 확인하고 `chub_get`에 정확한 파일 경로 전달 |
+
+진단은 **연결·인증 → `chub_list` 호출 → 자산 게시·`revision` → `chub_search`·`chub_get` → 실제 에이전트 적용** 순서로 진행해요. 인증 실패, 미게시, 버전 차이와 모델 행동 실패를 구분해야 해요.
 
 설치 성공과 에이전트의 실제 도구 사용은 다르다. [E2E 가이드](../test/workflow-evaluation.md)에서 별도로 확인한다.
