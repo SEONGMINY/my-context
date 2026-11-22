@@ -15,7 +15,9 @@
 
 ## 운영 배포
 
-워크플로는 배포할 **Git 커밋**에서 자산을 읽어요. `content/`에서는 `SKILL.md` 또는 `DOC.md` 진입 파일이 있는 자산을 게시하고, `skills/`에서는 [배포 목록](../publish-skills.json)에 지정한 Skill만 게시해요. 각 게시 자산의 첨부 파일도 함께 포함해요. 파일을 저장소에 추가하는 것만으로 MCP에 게시되지는 않아요.
+운영 배포 대상은 Cloudflare Worker예요. `publish-release.mjs`·`serve-release.mjs`·`serve.mjs`의 로컬 HTTP 릴리스 경로는 `verify-release.mjs`에서 검증하는 별도 경로이며 운영 배포 절차가 아니에요.
+
+워크플로는 배포할 **Git 커밋**에서 자산을 읽어요. `content/`에서는 `SKILL.md` 또는 `DOC.md` 진입 파일이 있는 자산을, `skills/`에서는 [게시 목록](../publish-skills.json)에 지정한 Skill만 첨부와 함께 게시해요. 공통 Skill을 추가할 때 원격 게시를 의도한 경우에만 목록에 이름을 추가해 주세요. 필수 첨부 참조는 해당 자산 내부에서 조회할 수 있어야 해요. 외부 출처는 명시적인 URL로 구분해 주세요.
 
 배포 전에 `npm run worker -- deployments list --config wrangler.jsonc`로 정상 버전 ID를 기록해 주세요.
 
@@ -65,7 +67,7 @@ GitHub Actions를 사용할 수 없으면 Wrangler로 배포해 주세요.
 
 ## 이전 주소에서 전환
 
-이전 주소 `my-context.my-context.workers.dev`는 기존 연결을 지원해요. 이후 배포는 현재 운영 주소에만 적용돼요.
+이전 주소 `my-context.my-context.workers.dev`를 사용했다면 현재 운영 주소로 전환해 주세요. 기존 주소의 현재 가용성은 별도로 확인해야 해요. 이후 배포는 현재 운영 주소를 대상으로 해요.
 
 1. 이전 주소를 사용 중이면 [Codex 연결](../README.md#my-context-mcp-연결하기)을 갱신해 주세요.
 2. 새 연결에서 `chub_list`를 호출해 주세요.
