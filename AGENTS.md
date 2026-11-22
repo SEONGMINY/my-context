@@ -6,9 +6,9 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 
 - `content/` — 개인 지식 원본과 검색 진입 파일
 - `skills/` — 공통 Skill 원본과 첨부 파일
-- `policies/` — 특정 Skill과 독립적인 사용자 선택형 자산 활용 정책
+- `policies/` — 개발 작업에서 사용하는 기본 자동 참고 지침
 - `worker/` — 운영 MCP의 인증과 읽기 전용 조회
-- `scripts/` — 릴리스 빌드·검증, Skill·정책 설치
+- `scripts/` — 릴리스 빌드·검증, Skill·에이전트 지침 설치
 - `test/` — 인증·자산·Skill 설치·Workflow·원격 MCP 검증 및 실사용 E2E 가이드
 - `docs/`, `README.md` — 제품·운영 문서와 사용 안내
 
@@ -25,7 +25,7 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 
 ## 작업 기준
 
-- 개인 지식 조회는 명시적 요청이 기본이다. 사용자가 개인 범위에서 [선택적 조회 정책](policies/asset-usage.md)을 활성화한 경우에만 관련 자산을 조건부로 조회할 수 있다. 조회 권한과 지식 변경 승인은 별도이며, 대상 프로젝트의 계약을 우선한다. 지식 변경은 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
+- 관련 개발 원칙과 공통 Skill은 별도 ON/OFF 활성화 없이 [자동 참고 지침](policies/asset-usage.md)에 따라 자율적으로 조회할 수 있다. 현재 사용자가 금지하면 사용하지 않고, 대상 프로젝트 계약을 우선한다. 조회 권한과 지식 변경 승인은 별도이며 지식 변경은 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
 - 검색 인덱스와 Worker 번들은 커밋하지 않는다.
 - 자산 변경 시 [관리 Skill](skills/manage-dev-knowledge/SKILL.md) 또는 `skills/` 원본과 [게시 목록](publish-skills.json)을 확인한다. 게시 자산의 필수 첨부는 해당 자산 내부에서 조회 가능해야 하며 외부 출처는 명시적인 URL로 구분한다.
 - 변경 영역에 맞춰 [CI](.github/workflows/worker.yml)와 [package.json](package.json)의 검사를 실행한다. 의미적 변경은 [Workflow E2E](test/workflow-evaluation.md) 또는 [원칙 평가](test/principle-evaluation.md)로 구분한다. 검증 대상 리비전·실행 결과·미실행 사유를 PR에 기록한다.

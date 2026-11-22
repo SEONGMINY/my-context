@@ -9,7 +9,7 @@ description: "Use only when the user explicitly requests Context Hub/personal de
 
 이 파일의 실제 경로를 확인한다. `skills/manage-dev-knowledge` 디렉터리에서 두 단계 위를 저장소 루트로 사용한다. 연결 설정은 [README](../../README.md)를 참고한다.
 
-이 관리 Skill은 사용자가 지식의 조회나 변경 관리를 명시적으로 요청한 경우에 사용한다. **일반 작업에서 개인 자산을 읽는 행위는 이 Skill의 호출을 요구하지 않는다.** 읽기 권한은 사용자 요청 또는 별도로 활성화한 [선택적 자산 조회 정책](../../policies/asset-usage.md)에 의해 결정되며, 변경 권한은 별도로 승인받는다.
+이 관리 Skill은 사용자가 지식의 조회나 변경 관리를 명시적으로 요청한 경우에 사용한다. **일반 작업에서 개인 자산을 읽는 행위는 이 Skill의 호출을 요구하지 않는다.** 일반적인 개발 작업의 참고 조회는 [자동 참고 지침](../../policies/asset-usage.md)에 따라 관련성으로 결정하며, 변경 권한은 별도로 승인받는다.
 
 이 Skill이 조회를 수행할 때 원격 `my-context` MCP를 사용한다. 연결 또는 인증이 불가능하면 조회했다고 주장하지 않는다. 게시 전 변경은 Git 원본에서 확인하고, 배포 후 원격 MCP에서 확인한다.
 
