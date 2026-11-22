@@ -9,7 +9,7 @@ import { createAuthenticator } from './auth.mjs';
 
 const entries = new Map(release.entries.map((entry) => [entry.id, entry]));
 const authenticate = createAuthenticator();
-const assetUsageScope = 'Explicit current-task permission or an enabled opt-in policy is required. An older personal-principles or Playbook policy permits automatic personal-principle lookup only. Under that policy do not automatically discover or read common Skills under workflows/, including their attachments. A request to keep the legacy scope leaves that boundary in place.';
+const assetUsageScope = 'For development tasks, autonomously consider relevant published personal principles and workflows; no separate opt-in toggle or per-Skill invocation is required. Honor the current user\'s explicit exclusion of my-context and prioritize project requirements. Only retrieve relevant assets; do not request additional private data or treat reference access as permission to change knowledge.';
 const language = z.string().max(80).optional();
 const tags = z.string().max(512).optional();
 const getInput = {
@@ -111,11 +111,11 @@ function getAsset({ id, lang, version, file, full, revision }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: assetUsageScope + ' MCP access alone is not consent. Honor explicit exclusions and the scope of the installed policy. Within the allowed scope, choose relevant personal principles and common Skills autonomously; no additional per-Skill invocation is required. Skill use does not authorize new private-data access or knowledge changes. Respect current user and project instructions. Discover and read only what benefits the task; reuse relevant context and report unavailable information accurately.',
+    instructions: assetUsageScope + ' MCP connection alone does not install agent guidance or guarantee automatic invocation. When relevant, select personal principles and common Skills autonomously. The user may exclude my-context for the current task. Skill use does not authorize new private-data access or knowledge changes. Respect current user and project instructions. Discover and read only what benefits the task; reuse relevant context and report unavailable information accurately.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
-    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. ' + assetUsageScope + ' Find relevant assets using focused non-sensitive task keywords; choose and use them within the permitted scope. Use a small limit for discovery.',
+    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. ' + assetUsageScope + ' Find relevant assets using focused non-sensitive task keywords; choose and use only what is relevant and accessible. Use a small limit for discovery.',
     inputSchema: { query: z.string().max(512).optional().describe('Focused task or decision keywords; do not include source code, secrets, private prompts or customer data.'), tags, lang: language, limit: z.number().int().min(1).max(100).optional() },
     annotations,
   }, ({ limit = 20, ...filters }) => {
