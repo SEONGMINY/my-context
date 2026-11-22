@@ -1,107 +1,53 @@
 # my-context
 
-my-context는 여러 프로젝트에서 쓸 개발 원칙과 에이전트 작업 절차를 모아 둔 저장소예요. 자산 원본은 GitHub에서 관리하고, **MCP에서 필요한 내용을 조회하거나** 자주 쓰는 Skill을 로컬에 설치할 수 있어요.
+my-context는 여러 프로젝트에서 재사용할 개발 원칙과 AI 에이전트 작업 절차를 관리하는 저장소예요. 프로젝트가 바뀌어도 같은 판단 기준을 반복해서 설명하지 않도록, 필요한 내용을 MCP로 찾아 활용할 수 있어요.
 
-> **공개 범위:** 이 GitHub 저장소는 현재 공개(`public`) 상태예요. 커밋된 개인 지식은 GitHub에서 누구나 읽을 수 있고, Cloudflare Access 인증은 **운영 MCP 접속**에 적용돼요. 비공개 정보는 원본에 커밋하기 전에 공개 범위를 확인해 주세요.
+## 어떻게 동작하나요?
 
-## 포함된 항목
+```mermaid
+flowchart TB
+    A["my-context<br/>개인 개발 원칙 · 공통 Skill"]
+    B["MCP<br/>필요한 자산 검색 · 조회"]
+    C["AI 에이전트<br/>Codex · Pi · Claude Code"]
+    D["개발 프로젝트<br/>요구사항 · 코드 · 검증"]
+    A --> B --> C --> D
+```
 
-| 항목 | 언제 쓰나요? |
+my-context는 원칙과 절차를 제공하고, 실제 개발과 검증은 각 프로젝트에서 수행해요.
+
+## 이런 상황에서 사용해요
+
+| 이런 상황에서 | 무엇을 하나요? |
 | --- | --- |
-| [개발 작업 절차](skills/development-workflow/SKILL.md) | 요구사항 정리, 작업 분해, 검증 및 인계 |
-| [도메인 스토리텔링](skills/domain-storytelling/SKILL.md) | 인터뷰를 통한 현행 업무 파악과 개선 범위·요구사항 정리 |
-| [개발 인사이트 추출](skills/extract-development-insights/SKILL.md) | 개발 대화의 발언·결정·대안을 분석해 재사용 가능한 원칙 후보 발견 |
-| [책임 중심 설계](content/personal/lookup-responsibility-driven-design/knowledge.md) | 구성 요소의 책임 소유권, 자율성, 협력 관계 판단 |
-| [코드 명료성](content/personal/lookup-code-clarity/knowledge.md) | 이름, 함수 책임, 입출력 및 부작용의 명확성 검토 |
-| [구현 전략](content/personal/lookup-implementation-strategy/knowledge.md) | 구현 방향과 코드의 책임·의존성·동작 검토 |
-| [근거 기반 개선](content/personal/lookup-evidence-driven-improvement/knowledge.md) | 개선 필요성과 변경 효과를 근거로 판단 |
-| [실행 전략](content/personal/lookup-execution-strategy/knowledge.md) | 작업·맥락 의존성과 실행·정보 공유 방식 판단 |
-| [로드맵 계획](content/personal/lookup-roadmap-planning/knowledge.md) | 현재 구현 범위와 이후 확장 조건 구분 |
-| [맥락 기반 판단](content/personal/lookup-context-aware-reasoning/knowledge.md) | 질문과 상황에 적절한 판단 기준 선택 |
-| [위험 관리](content/personal/lookup-risk-management/knowledge.md) | 실패 가능성, 대응 방안과 잔여 위험 검토 |
-| [예방적 엔지니어링](content/personal/lookup-preventive-engineering/knowledge.md) | 반복 실패를 막을 구조적 통제의 필요성 판단 |
-| [테스트 작성 원칙](content/personal/lookup-testing-principles/knowledge.md) | 검증할 동작을 선택하고 테스트의 유효성 판단 |
-| [개발 지식 관리](skills/manage-dev-knowledge/SKILL.md) | 저장소의 개인 개발 지식 조회 및 승인된 변경 관리 |
+| [구현 방법이 고민될 때](content/personal/lookup-implementation-strategy/knowledge.md) | 기존 코드와 계약을 확인하고 구현 대안을 비교해요. |
+| [작업이 복잡해졌을 때](skills/development-workflow/SKILL.md) | 작업 의존성, 검증 및 인계 방식을 정리해요. |
+| [코드 구조가 복잡할 때](content/personal/lookup-responsibility-driven-design/knowledge.md) | 구성 요소의 책임과 협력 관계를 검토해요. |
+| [테스트를 정리할 때](content/personal/lookup-testing-principles/knowledge.md) | 중요한 동작과 검증할 테스트를 선택해요. |
+| [반복되는 문제가 있을 때](content/personal/lookup-preventive-engineering/knowledge.md) | 원인과 재발 방지 필요성을 판단해요. |
+| [개발 경험을 정리할 때](skills/extract-development-insights/SKILL.md) | 다른 프로젝트에도 쓸 수 있는 원칙 후보를 찾아요. |
 
 ## 시작하기
 
-| 목적 | 사용 경로 |
-| --- | --- |
-| 개인 원칙·게시된 공통 Skill 조회 | 원격 `my-context` MCP |
-| development-workflow 네이티브 호출 | [선택적 로컬 설치](#자주-사용한다면-설치하기) |
-| 관련 개인 원칙·공통 Skill의 선택적 자동 활용 | MCP + [사용자 범위 정책](docs/LOCAL-SETUP.md#선택적-조회-정책) |
-| 개인 지식 관리 | 저장소 원본 + [관리 Skill](#개인-개발-지식-관리) |
+원격 MCP는 저장소 클론 없이 사용할 수 있어요. 운영자가 허용한 이메일로 로그인해야 해요.
 
-원격 MCP는 게시된 개인 원칙과 공통 Skill을 제공해요. 로컬 관리 MCP(`personal-knowledge`)는 이 저장소의 `content/`만 별도로 빌드하며, 원격 Worker의 한국어 보완 검색·배포 리비전 응답을 보장하지 않아요. MCP 연결이나 로컬 Skill 설치만으로 자동 활용에 동의한 것은 아니며, 실제 자산 선택과 적용은 허용 범위 및 에이전트의 지침 적용에 달려 있어요.
-
-### my-context MCP 연결하기
-
-원격 MCP만 사용한다면 Skill 설치나 저장소 클론은 필요 없어요. 운영자가 허용한 이메일로 로그인해야 해요. [사용자 추가](docs/DEPLOYMENT.md#운영-사용자-추가)
-
-1. Codex에서 연결해 주세요.
-
+1. Codex에 연결해 주세요.
    ```bash
    codex mcp add my-context --url https://minylee.my-context.workers.dev/mcp
    ```
+2. 브라우저에서 로그인해 주세요. 필요하면 `codex mcp login my-context`를 실행해 주세요.
+3. 새 세션에서 `my-context의 chub_list를 호출해줘`라고 요청해 연결을 확인해 주세요.
+4. 작업을 요청해 보세요.
+   ```text
+   my-context를 사용해서 지금 구현하려는 기능의 설계를 검토해줘.
+   my-context를 참고해서 이 작업의 구현 계획을 세워줘.
+   ```
 
-2. 브라우저에서 로그인해 주세요. 로그인 안내가 없다면 `codex mcp login my-context`를 실행해 주세요.
-3. 새 세션에서 "my-context의 `chub_list`를 호출해줘"라고 요청해 연결을 확인해 주세요.
+기본적으로 자산은 명시적으로 요청할 때 조회해요. [선택적 자동 활용](docs/LOCAL-SETUP.md#선택적-조회-정책)은 별도 동의가 필요하며, MCP 연결이나 Skill 설치만으로 허용되지 않아요. 지식 변경과 배포에도 별도 승인이 필요해요.
 
-Pi나 Claude Code는 해당 버전의 연결·인증 절차를 따르고 실제 도구 호출로 확인해 주세요. [환경별 검증](test/workflow-evaluation.md)
+> **공개 범위:** 이 저장소의 원본은 공개되어 있어요. Cloudflare Access는 운영 MCP 접속만 제한하므로 비공개 정보를 커밋하기 전에 공개 범위를 확인해 주세요.
 
-### 작업에 맞는 자산 활용하기
+## 더 알아보기
 
-```text
-my-context 사용해서 구현 방향을 검토해줘.
-# 특정 자산을 지정해도 돼요.
-my-context에서 Implementation Strategy 원칙을 찾아 적용해줘.
-```
-
-자산 이름을 모르더라도 관련 원칙과 Skill을 찾아 필요한 내용만 읽도록 안내해요. 개인 원칙은 Workflow 없이도 요구사항 분석·설계·로드맵 검토 등에 사용할 수 있어요. 기본적으로 명시적 요청 시에만 읽어요. 관련 지식과 공통 Skill의 자동 활용을 원하면 [선택적 조회 정책](docs/LOCAL-SETUP.md#선택적-조회-정책)을 직접 활성화해 주세요. 기존 정책 사용자는 변경된 범위를 확인하고 다시 활성화해 주세요. 간단하거나 관련 없는 작업에서는 조회하지 않도록 안내하며 실제 자동 호출은 Host에 따라 달라요.
-
-이 정책은 에이전트의 행동 지침이며 서버의 접근 제어와는 달라요. 조회는 지식 변경·설치·배포를 승인하지 않으며 현재 프로젝트의 규칙과 사용자 지시를 우선해요.
-
-### MCP에서 필요한 자산만 조회하기
-
-```text
-사용자 요청 → chub_search(관련 자산 탐색) → 역할·revision 확인
-→ chub_get(필요한 파일 조회) → 프로젝트 계약과 대조 → 결과 보고
-```
-
-개인 원칙은 `SKILL.md` 진입 설명을 확인한 다음 `file: knowledge.md`로 본문을 조회해요. 공통 Skill은 `SKILL.md`에서 시작하고 필요한 참조만 `file`로 조회해요. 검색 결과의 `revision`을 조회에 전달하면 배포가 바뀐 경우 오류로 감지할 수 있어요. 자산을 읽은 것만으로 에이전트가 올바르게 적용했다고 판단하지 않아요.
-
-### 개발 Workflow 사용하기
-
-```text
-my-context에서 development-workflow를 찾아 이번 프로젝트에 적용해줘.
-필요한 참조만 읽고 새 Skill은 설치하지 마.
-```
-
-MCP에서 읽은 지침을 현재 작업에 적용하는 것과 로컬 Skill 설치는 달라요.
-
-### 자주 사용한다면 설치하기
-
-네이티브 호출이 필요하다면 `development-workflow`를 사용자 범위에 설치할 수 있어요. 저장소를 클론하고 [지원 환경 및 설치 안내](docs/LOCAL-SETUP.md#workflow-skill)에 따라 설치해 주세요. 다른 공통 Skill에는 전용 설치기가 없으며 관리 Skill은 별도 설치 경로를 사용해요. 로컬 Skill 설치가 MCP를 자동 연결하지는 않아요.
-
-### 다른 자산 사용하기
-
-```text
-my-context의 domain-storytelling을 사용해 현재 업무 흐름을 정리해줘.
-```
-
-```text
-my-context의 extract-development-insights로 이번 개발 대화의
-내 발언·대안·실제 결정을 구분하고 원칙 후보를 찾아줘. 저장하지 마.
-```
-
-인사이트 추출은 현재 사용자 요청과 자동 활용 동의 범위 안에서 AI가 도움이 된다고 판단하면 사용할 수 있어요. Skill을 사용한다고 해서 추가 개인 대화·비공개 자료에 접근하거나 지식을 변경할 권한이 생기지는 않아요. 지식 변경은 별도 관리 절차를 따라요.
-
-## 개인 개발 지식 관리
-
-원격 MCP는 읽기 전용이에요. 지식을 등록·수정·삭제하려면 저장소 원본과 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)의 승인 절차를 사용해 주세요. 이 Skill은 원격 게시 대상이 아니에요. Codex의 로컬 관리 MCP와 관리 Skill은 [로컬 관리 환경](docs/LOCAL-SETUP.md#로컬-관리-환경)에서 준비할 수 있어요.
-
-## 조회와 배포
-
-원격 MCP의 `chub_search`·`chub_list`는 자산을 찾고 역할(`role`)과 배포 `revision`을 반환해요. 조회에 해당 `revision`을 전달하면 배포 불일치를 감지할 수 있어요. `chub_get`은 기본 진입 파일만 읽으므로 개인 원칙 본문은 `file: knowledge.md`, 추가 참조는 해당 자산 내 파일 경로로 조회해요. `full: true`는 모든 첨부가 필요할 때만 사용해 주세요. 한국어 검색 결과가 없다면 영문 키워드도 시도해 보세요.
-
-로컬 Skill은 작업 디렉터리의 내용을 사용하고 원격 MCP는 배포된 Git 커밋을 사용해요. 검색·조회가 실패하면 연결, 인증, 게시 여부를 확인하고 사용에 성공했다고 가정하지 마세요. [운영 배포 및 리비전 확인](docs/DEPLOYMENT.md#배포-확인)
+- [로컬 설정](docs/LOCAL-SETUP.md) — 설치, 다른 에이전트 연결, 선택적 활용 정책
+- [개발 지식 관리](skills/manage-dev-knowledge/SKILL.md) — 개인 원칙 조회 및 승인된 변경
+- [개발 안내](AGENTS.md) · [운영과 배포](docs/DEPLOYMENT.md) — 유지보수, 배포와 검증
