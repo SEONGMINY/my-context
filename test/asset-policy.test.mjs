@@ -126,7 +126,7 @@ function requireDigest(value) {
 
 test('Skill 독립 행동 평가 자료는 비활성·활성·정정·MCP 누락을 포함한다', () => {
   const scenarios = JSON.parse(readFileSync(join(root, 'test/fixtures/asset-use-scenarios.json'), 'utf8'));
-  const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only', 'mcp-name-only', 'implicit-workflow', 'adaptive-retrieval', 'explicit-exclusion', 'explicit-only-insight', 'no-relevant-asset', 'legacy-policy', 'sensitive-context'];
+  const expected = ['requirements-without-workflow', 'architecture-without-workflow', 'parallel-without-workflow', 'small-change', 'disabled-by-default', 'no-mcp', 'user-correction', 'read-only', 'mcp-name-only', 'implicit-workflow', 'adaptive-retrieval', 'explicit-exclusion', 'autonomous-insight-choice', 'no-relevant-asset', 'legacy-policy', 'sensitive-context'];
   assert.ok(expected.every((id) => scenarios.some((scenario) => scenario.id === id)));
   assert.equal(new Set(scenarios.map(({ id }) => id)).size, scenarios.length);
   assert.ok(scenarios.every((scenario) => scenario.request && scenario.expected.length && scenario.forbidden.length));
@@ -175,6 +175,18 @@ test('로컬 Skill 메타데이터가 최초 읽기 전 동의 범위를 설명�
   assert.match(header, /기존 개인 원칙 전용 동의/);
   assert.match(header, /본문·첨부를 읽어 적용/);
   assert.match(header, /로컬·원격 모두 사용하지 않는다/);
-  assert.match(policy, /로컬에 설치된 Skill의 자동 발견은 사용 동의가 아니며/);
+  assert.match(policy, /설치나 MCP 연결만으로 자동 활용에 동의한 것은 아니다/);
   assert.match(skill, /첫 로딩 전 판단/);
+});
+
+
+test('인사이트 Skill은 자율 선택 가능하지만 추가 개인 자료 접근과 변경 권한을 확대하지 않는다', () => {
+  const skill = readFileSync(join(root, 'skills/extract-development-insights/SKILL.md'), 'utf8');
+  const header = skill.split('---', 3)[1];
+  assert.doesNotMatch(header, /Explicit request for insight extraction is required/);
+  assert.match(header, /enabled common-Skill opt-in/);
+  assert.match(header, /do not access additional private history or change stored knowledge without permission/);
+  assert.match(skill, /추가 개인 대화·경험 자료의 열람 동의/);
+  assert.match(policy, /기존 개인 원칙 전용 동의는 공통 Skill 자동 활용 동의가 아니다/);
+  assert.match(policy, /지식 등록·수정·삭제/);
 });

@@ -111,11 +111,11 @@ function getAsset({ id, lang, version, file, full, revision }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: assetUsageScope + ' MCP access alone is not consent. Honor explicit exclusions and the scope of the installed policy. An explicit request to use my-context authorizes relevant read-only discovery, not assets requiring a separate explicit task intent. Search for the current decision using minimal non-sensitive keywords, compare candidate descriptions and roles, then read only relevant entries and needed attachments. Knowledge informs judgment; procedures guide authorized work without duplicating overlapping steps. Respect each asset’s own activation conditions, current user and project rules. Do not infer write, installation, deployment or additional personal-data access permission. Reuse valid context; search again only for a new information need, and stop when sufficient or no new relevant results. If unavailable, report the limitation.',
+    instructions: assetUsageScope + ' MCP access alone is not consent. Honor explicit exclusions and the scope of the installed policy. Within the allowed scope, choose relevant personal principles and common Skills autonomously; no additional per-Skill invocation is required. Skill use does not authorize new private-data access or knowledge changes. Respect current user and project instructions. Discover and read only what benefits the task; reuse relevant context and report unavailable information accurately.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
-    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. ' + assetUsageScope + ' Search using focused non-sensitive intent keywords, compare candidate descriptions, roles and activation conditions; use a small limit for discovery. Preserve any explicit-request-only conditions. Try alternative English or Korean keywords if relevant candidates are missing. Do not call for unrelated work.',
+    description: 'Discover published personal principles and workflows for the current task, even when the user names only my-context. ' + assetUsageScope + ' Find relevant assets using focused non-sensitive task keywords; choose and use them within the permitted scope. Use a small limit for discovery.',
     inputSchema: { query: z.string().max(512).optional().describe('Focused task or decision keywords; do not include source code, secrets, private prompts or customer data.'), tags, lang: language, limit: z.number().int().min(1).max(100).optional() },
     annotations,
   }, ({ limit = 20, ...filters }) => {
@@ -123,7 +123,7 @@ function createServer() {
     return textResult({ revision: release.sha, results: matching.slice(0, limit).map(summary), total: matching.length });
   });
   server.registerTool('chub_get', {
-    description: 'Read a published asset. Default: only SKILL.md or DOC.md, without attachments. ' + assetUsageScope + ' For knowledge entries read knowledge.md when applying the principle; for workflows read only required attachments with file. Pass the discovery revision to avoid mixing releases. Reuse already loaded valid content. Use full:true only when every file is explicitly needed; it increases context size.',
+    description: 'Read a published asset. Default: only SKILL.md or DOC.md, without attachments. ' + assetUsageScope + ' Use knowledge.md for personal principles and file for needed attachments. Pass the discovery revision; reuse valid context. Use full:true only when all files are needed.',
     inputSchema: getInput,
     annotations,
   }, getAsset);
