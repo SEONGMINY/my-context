@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { search } from '@aisuite/chub/src/lib/bm25.js';
-import { searchKorean } from './korean-search.mjs';
+import { koreanTerms, searchKorean } from './korean-search.mjs';
 import { normalizeLanguage } from '@aisuite/chub/src/lib/normalize.js';
 import { z } from 'zod';
 import release from '../.generated/worker/release.json' with { type: 'json' };
@@ -39,14 +39,44 @@ function summary(entry) {
   };
 }
 
+function normalizeNamePhrase(value) {
+  return value.toLowerCase().replace(/[\s_-]+/g, ' ');
+}
+
+function namedAssets(query, bm25Ids) {
+  const segments = normalizeNamePhrase(query).match(/[a-z0-9]+(?: [a-z0-9]+)*/g) || [];
+  return bm25Ids.filter((id) => {
+    const name = normalizeNamePhrase(entries.get(id).name);
+    const displayName = id.startsWith('personal/') ? name.replace(/^lookup /, '') : name;
+    return displayName.includes(' ') &&
+      segments.some((segment) => ` ${segment} `.includes(` ${displayName} `));
+  });
+}
+
 function matchingEntries({ query, tags, lang }) {
   const term = query?.trim();
   let matching = release.entries;
   if (term) {
+    const normalized = term.normalize('NFC');
     const ids = new Set();
     if (entries.has(term)) ids.add(term);
-    for (const { id } of search(term, release.searchIndex)) ids.add(id);
-    if (/[가-힣]/.test(term)) for (const id of searchKorean(term, release.entries)) ids.add(id);
+    if (entries.has(normalized)) ids.add(normalized);
+
+    const bm25Ids = search(normalized, release.searchIndex).map(({ id }) => id);
+    const koreanIds = /[가-힣]/.test(normalized) ? searchKorean(normalized, release.entries) : [];
+    if (bm25Ids.length && koreanIds.length) {
+      for (const id of namedAssets(normalized, bm25Ids)) ids.add(id);
+    }
+
+    // Alternate ranks to keep either language's results visible under small limits.
+    // Prefer Korean first when its matches required at least two distinct terms.
+    const [first, second] = koreanIds.length && koreanTerms(normalized).length >= 2
+      ? [koreanIds, bm25Ids]
+      : [bm25Ids, koreanIds];
+    for (let rank = 0; rank < Math.max(first.length, second.length); rank++) {
+      if (rank < first.length) ids.add(first[rank]);
+      if (rank < second.length) ids.add(second[rank]);
+    }
     matching = [...ids].map((id) => entries.get(id)).filter(Boolean);
   }
   const requestedTags = tags?.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean) || [];

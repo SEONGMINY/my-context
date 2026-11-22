@@ -231,6 +231,39 @@ test('discovery distinguishes judgment from procedure and guards release consist
   assert.equal(parsed(stale).available, release.sha);
 });
 
+test('mixed discovery surfaces strong Korean matches alongside BM25 and keeps exact IDs first', async () => {
+  const searchIds = async (query, limit) =>
+    parsed(await callTool('chub_search', { query, limit })).results.map(({ id }) => id);
+
+  const implementationId = 'personal/lookup-implementation-strategy';
+  assert.deepEqual(await searchIds('workflow', 1), [skillId]);
+  assert.deepEqual(await searchIds('workflow 인터페이스', 1), [skillId]);
+  assert.deepEqual(await searchIds('기존 인터페이스 재사용', 1), [implementationId]);
+  assert.deepEqual(await searchIds('workflow 기존 인터페이스 재사용', 2), [implementationId, skillId]);
+  assert.deepEqual(await searchIds(skillId, 1), [skillId]);
+});
+
+test('mixed discovery prioritizes a full asset name over generic matches', async () => {
+  const cases = [
+    ['Domain Storytelling 요구사항 검토', 'workflows/domain-storytelling'],
+    ['Execution Strategy를 병렬 실행 판단에 활용', 'personal/lookup-execution-strategy'],
+    ['workflows/domain-storytelling 요구사항 검토', 'workflows/domain-storytelling'],
+    ['xDomain Storytelling 요구사항 검토', skillId],
+  ];
+  for (const [query, expected] of cases) {
+    const { results } = parsed(await callTool('chub_search', { query, limit: 1 }));
+    assert.equal(results[0]?.id, expected, query);
+  }
+});
+
+test('Korean discovery accepts canonically equivalent Unicode queries', async () => {
+  const query = '기존 인터페이스 재사용';
+  const composed = parsed(await callTool('chub_search', { query, limit: 3 }));
+  const decomposed = parsed(await callTool('chub_search', { query: query.normalize('NFD'), limit: 3 }));
+  assert.ok(composed.results.length > 0);
+  assert.deepEqual(decomposed, composed);
+});
+
 test('discovery protocol exposes opt-in scope, explicit-only intent and read-only tools', async () => {
   const init = await call('initialize', {
     protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'fixture', version: '1' },
