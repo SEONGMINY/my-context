@@ -10,7 +10,7 @@
 
 `policies/asset-usage.md`의 공통 정책을 Codex `~/.codex/AGENTS.md`, Pi `~/.pi/agent/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`에 관리 구간으로 추가한다. `CODEX_HOME`, `PI_CODING_AGENT_DIR`, `CLAUDE_CONFIG_DIR`이 설정되면 해당 위치를 사용한다.
 
-저장소 루트에서 `npm run policy:check`, `npm run policy:enable`, `npm run policy:disable`로 확인·설치/갱신·제거한다. 확인 명령은 쓰지 않으며 `disabled`(미설치), `enabled`(현재 정책), `outdated`(이전 정책)를 보고한다. 원본 검토 후 `--enable`에 해당하는 명령을 다시 실행하면 정상 설치본을 갱신한다. 모든 대상을 확인한 뒤 변경하며 기존 지침을 보존한다. 제거는 관리 구간만 대상으로 하며 설치 시 새로 만든 파일에 다른 내용이 없을 때만 파일 자체를 삭제한다. 관리 구간이 수정되거나 마커·경계·심볼릭 링크가 예상과 다르면 중단한다. 충돌 시 경로와 기존 내용을 먼저 확인하고 강제로 덮어쓰지 않는다. 정책 갱신 후 새 세션에서 지침 로딩과 MCP 연결·인증·실제 조회를 각각 확인한다. 설정만으로 도구나 MCP가 설치되지 않으며 모델의 적용도 보장되지 않는다. 상세 행동 조건은 [정책 원본](../policies/asset-usage.md)을 따른다.
+저장소 루트에서 `npm run policy:check`, `npm run policy:enable`, `npm run policy:disable`로 확인·설치/갱신·제거한다. 확인 명령은 쓰지 않으며 `disabled`(미설치), `enabled`(현재 정책), `outdated`(이전 정책)를 보고한다. 새 정책은 개인 원칙뿐 아니라 관련 공통 Skill의 선택적 자동 활용을 포함한다. 기존 정책의 동의를 확대하지 않으며, 기존 설치본은 이전 범위로 유지된다. 변경 범위를 검토하고 동의하는 경우에만 `--enable`에 해당하는 명령을 다시 실행해 갱신한다. 모든 대상을 확인한 뒤 변경하며 기존 지침을 보존한다. 제거는 관리 구간만 대상으로 하며 설치 시 새로 만든 파일에 다른 내용이 없을 때만 파일 자체를 삭제한다. 관리 구간이 수정되거나 마커·경계·심볼릭 링크가 예상과 다르면 중단한다. 충돌 시 경로와 기존 내용을 먼저 확인하고 강제로 덮어쓰지 않는다. 정책 갱신 후 새 세션에서 지침 로딩과 MCP 연결·인증·실제 조회를 각각 확인한다. 설정만으로 도구나 MCP가 설치되지 않으며 모델의 적용도 보장되지 않는다. 상세 행동 조건은 [정책 원본](../policies/asset-usage.md)을 따른다.
 
 ## Workflow Skill
 

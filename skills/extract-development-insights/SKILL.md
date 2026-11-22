@@ -1,6 +1,6 @@
 ---
 name: extract-development-insights
-description: "Use when a user explicitly asks to analyze their development conversations, project decisions, or engineering experience to discover reusable principles, philosophy, or methods. Trace user statements, alternatives, choices, and outcomes to available evidence; suggest insights without storing them."
+description: "Explicit request for insight extraction is required; generic my-context use or automatic asset opt-in is not sufficient. Use when a user explicitly asks to analyze their development conversations, project decisions, or engineering experience to discover reusable principles, philosophy, or methods. Trace user statements, alternatives, choices, and outcomes to available evidence; suggest insights without storing them."
 metadata:
   source: community
   tags: "development insights, engineering principles, retrospective, decisions, knowledge extraction"
