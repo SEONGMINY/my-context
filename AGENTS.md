@@ -12,6 +12,17 @@ my-context는 여러 프로젝트와 환경에서 개인 개발 지식과 공통
 - `test/` — 인증·자산·설치·Workflow·MCP 검증 및 실사용 E2E 가이드
 - `docs/`, `README.md` — 제품·운영 문서와 사용 안내
 
+## 변경 종류별 검증
+
+| 변경 | 우선 확인할 검사·근거 |
+| --- | --- |
+| 안내·운영 문서 | `node --test test/doc-links.test.mjs`, 실제 구현과 설명 대조 |
+| 개인 원칙 | `npm run test:integrity`, 의미 변경 시 [원칙 행동 평가](test/principle-evaluation.md) |
+| Skill·정책 | `npm run test:workflow`, `npm run test:integrity`, 영향이 있으면 [Workflow E2E](test/workflow-evaluation.md) |
+| Worker·릴리스 | `node --test test/worker-auth.test.mjs`, `node scripts/verify-release.mjs`, `npm run worker:build`, `node --test test/worker-mcp-use.test.mjs` |
+
+이 표는 선택의 출발점이며 CI 전체 검사를 대체하지 않는다. 실행하지 않은 검증은 `NOT_RUN`으로 기록한다.
+
 ## 작업 기준
 
 - 개인 지식 조회는 명시적 요청이 기본이다. 사용자가 개인 범위에서 [선택적 조회 정책](policies/asset-usage.md)을 활성화한 경우에만 관련 자산을 조건부로 조회할 수 있다. 조회 권한과 지식 변경 승인은 별도이며, 대상 프로젝트의 계약을 우선한다. 지식 변경은 [관리 Skill](skills/manage-dev-knowledge/SKILL.md)을 따른다.
