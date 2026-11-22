@@ -239,11 +239,16 @@ test('discovery protocol exposes opt-in scope, explicit-only intent and read-onl
   const initialized = (await init.json()).result;
   assert.equal(initialized.serverInfo.version, release.sha);
   assert.match(initialized.instructions, /MCP access alone is not consent/);
-  assert.match(initialized.instructions, /older policy limited to personal principles/);
+  assert.match(initialized.instructions, /permits automatic personal-principle lookup only/);
   const listed = await call('tools/list', {});
   const tools = (await listed.json()).result.tools;
   assert.equal(tools.length, 3);
   assert.ok(tools.every(({ annotations }) => annotations?.readOnlyHint === true));
+  for (const { description } of tools) {
+    assert.match(description, /Explicit current-task permission or an enabled opt-in policy is required/);
+    assert.match(description, /permits automatic personal-principle lookup only/);
+    assert.match(description, /do not automatically discover or read common Skills under workflows\//);
+  }
   const insight = parsed(await callTool('chub_search', {
     query: 'workflows/extract-development-insights', limit: 1,
   })).results[0];
