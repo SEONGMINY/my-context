@@ -164,6 +164,24 @@ test('관리 Skill은 MCP로 조회할 수 있고 원본 변경 도구는 노출
   assert.deepEqual((await listed.json()).result.tools.map(({ name }) => name).sort(), ['chub_get', 'chub_list', 'chub_search']);
 });
 
+
+test('신규 범용 Skill 두 개를 원격 MCP에서 검색하고 독립 본문으로 조회한다', async () => {
+  for (const [slug, heading] of [
+    ['product-understanding', '# 프로덕트 이해'],
+    ['documentation-review', '# 프로덕트 문서 검토'],
+  ]) {
+    const id = 'workflows/' + slug;
+    assert.ok(release.entries.some((entry) => entry.id === id), id);
+    const found = parsed(await callTool('chub_search', { query: id, limit: 2 }));
+    assert.ok(found.results.some((entry) => entry.id === id), id);
+    const fetched = await callTool('chub_get', { id, revision: found.revision });
+    assert.equal(fetched.isError, undefined);
+    assert.ok(fetched.content[0].text.includes(heading), id);
+  }
+  const tools = (await (await call('tools/list', {})).json()).result.tools;
+  assert.deepEqual(tools.map(({ name }) => name).sort(), ['chub_get', 'chub_list', 'chub_search']);
+});
+
 test('MCP 인증 없이 지침을 요청하면 > Skill 본문이 노출되지 않는다', async () => {
   // given: 인증된 클라이언트만 접근할 수 있는 MCP
   // when: 인증 정보 없이 조회 요청
