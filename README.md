@@ -49,12 +49,12 @@ AI는 관련 자산을 선택적으로 검색·조회하고 필요한 Workflow�
 
 관리 절차도 MCP로 읽을 수 있지만 **MCP는 읽기 전용**이에요. 실제 지식 원본의 등록·수정·게시에는 접근 가능한 Git 작업 환경과 사용자 승인이 필요해요.
 
-명시적 요청 없이 AI가 자율적으로 자산을 발견할 수도 있지만, 이는 에이전트·모델의 도구 선택에 따라 달라져요. 명시적인 `my-context 사용해서 ...` 요청이 기본 사용 방법이에요. 연결·인증 문제는 [진단 안내](docs/LOCAL-SETUP.md)를 참고해 주세요.
+명시적 요청 없이 AI가 자율적으로 자산을 발견할 수도 있지만, 이는 에이전트·모델의 도구 선택에 따라 달라져요. 명시적인 `my-context 사용해서 ...` 요청이 기본 사용 방법이에요. 연결·인증 문제는 [진단 안내](docs/MCP-USAGE.md)를 참고해 주세요.
 
 > **공개 범위:** Git 원본은 공개되어 있어요. Cloudflare Access는 운영 MCP 접속만 제한하므로 민감한 내용을 커밋하기 전에 공개 범위를 확인해 주세요.
 
 ## 더 알아보기
 
-- [MCP 연결과 진단](docs/LOCAL-SETUP.md)
+- [MCP 연결과 진단](docs/MCP-USAGE.md)
 - [개발 지식 관리](skills/manage-dev-knowledge/SKILL.md)
 - [개발 안내](AGENTS.md) · [운영과 배포](docs/DEPLOYMENT.md) · [E2E 검증](test/workflow-evaluation.md)
