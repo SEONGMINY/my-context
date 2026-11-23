@@ -151,6 +151,19 @@ test('인사이트 Skill과 독립 원칙을 게시하면 > 별도 Skill 호출 
   assert.equal(removed.isError, true);
 });
 
+test('관리 Skill은 설치 없이 MCP로 읽되 원본 변경 도구는 노출하지 않는다', async () => {
+  const managerId = 'workflows/manage-dev-knowledge';
+  const discovered = parsed(await callTool('chub_search', { query: managerId, limit: 3 }));
+  assert.ok(discovered.results.some(({ id }) => id === managerId));
+  const manager = await callTool('chub_get', { id: managerId, revision: discovered.revision });
+  assert.equal(manager.isError, undefined);
+  assert.match(manager.content[0].text, /# 개인 개발 지식 관리/);
+  assert.match(manager.content[0].text, /읽기 전용 MCP/);
+  assert.match(manager.content[0].text, /명시적 승인/);
+  const listed = await call('tools/list', {});
+  assert.deepEqual((await listed.json()).result.tools.map(({ name }) => name).sort(), ['chub_get', 'chub_list', 'chub_search']);
+});
+
 test('MCP 인증 없이 지침을 요청하면 > Skill 본문이 노출되지 않는다', async () => {
   // given: 인증된 클라이언트만 접근할 수 있는 MCP
   // when: 인증 정보 없이 조회 요청
