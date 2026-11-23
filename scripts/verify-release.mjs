@@ -130,7 +130,7 @@ try {
   await writeFile(tokenFile, `${token}\n`, { mode: 0o600 });
   git('init', '-q', '--template=');
   await Promise.all([
-    fixtureFile('publish-skills.json', '["sample-workflow"]\n'),
+    fixtureFile('publish-skills.json', '["sample-workflow", "manage-dev-knowledge"]\n'),
     fixtureFile('content/personal/sample-principle/SKILL.md', skill('sample-principle', 'sampleprinciple')),
     fixtureFile('skills/manage-dev-knowledge/SKILL.md', skill('manage-dev-knowledge', 'adminnotpublished')),
     fixtureFile(`skills/sample-workflow/${scriptPath}`, '#!/bin/sh\n# Synthetic attachment\n'),
@@ -165,11 +165,11 @@ try {
     await assert.rejects(call(name, { id: workflowId }), { code: -32602 });
   }
   assert.deepEqual(await search('sampleprinciple'), [principleId]);
-  assert.deepEqual(await search('adminnotpublished'), []);
+  assert.deepEqual(await search('adminnotpublished'), ['workflows/manage-dev-knowledge']);
   assert.deepEqual(await search('uncommittedsnapshot'), []);
   const listing = await call('chub_list', {});
-  assert.deepEqual(JSON.parse(listing.content[0].text).entries.map(({ id }) => id).sort(), [principleId, workflowId].sort());
-  assert.equal((await call('chub_get', { id: 'workflows/manage-dev-knowledge' })).isError, true);
+  assert.deepEqual(JSON.parse(listing.content[0].text).entries.map(({ id }) => id).sort(), [principleId, workflowId, 'workflows/manage-dev-knowledge'].sort());
+  assert.match(await get('workflows/manage-dev-knowledge'), /adminnotpublished/);
   assert.equal((await call('chub_get', { id: workflowId, file: '../SKILL.md' })).isError, true);
   assert.match(await get(workflowId, scriptPath), /Synthetic attachment/);
   await verifyWorkflow('firstsnapshot');
@@ -182,9 +182,9 @@ try {
   await verifyWorkflow('secondsnapshot');
   assert.deepEqual(await search('firstsnapshot'), []);
 
-  await fixtureFile('publish-skills.json', '["sample-workflow", "missing-workflow"]\n');
+  await fixtureFile('publish-skills.json', '["sample-workflow", "manage-dev-knowledge", "missing-workflow"]\n');
   await verifyRejectedRevision('Reject missing published skill', second);
-  await fixtureFile('publish-skills.json', '["sample-workflow"]\n');
+  await fixtureFile('publish-skills.json', '["sample-workflow", "manage-dev-knowledge"]\n');
   await fixtureFile('skills/sample-workflow/SKILL.md', '# Malformed fixture without a name\n');
   await verifyRejectedRevision('Reject failing Context Hub build', second);
 
