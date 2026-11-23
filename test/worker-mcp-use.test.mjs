@@ -41,12 +41,12 @@ function parsed(result) {
   return JSON.parse(result.content[0].text);
 }
 
-test('Skill이 로컬에 설치되지 않아도 MCP로 조회하면 > 게시된 본문과 참조 계약을 읽는다', async () => {
+test('MCP에서 개발 Workflow를 조회하면 > 게시된 본문과 참조 계약을 읽는다', async () => {
   // given: 실제 Worker 릴리스에는 개발 Workflow가 포함되어 있음
   assert.match(release.sha, /^[0-9a-f]{40}$/);
   assert.ok(release.entries.some((entry) => entry.id === skillId));
 
-  // when: Skill 설치기 실행 없이 기존 읽기 전용 MCP 도구만 호출
+  // when: 게시된 Workflow를 기존 읽기 전용 MCP 도구로 조회
   const discovered = parsed(await callTool('chub_search', { query: 'development-workflow' }));
   assert.equal(discovered.revision, release.sha);
   const discoveredId = discovered.results.find(({ id }) => id === skillId)?.id;
@@ -83,8 +83,8 @@ test('전체 조회를 명시하면 > 첨부를 포함하되 기본 조회 안�
   assert.match(all.content[0].text, /# 개발 작업 절차의 공통 계약/);
 });
 
-test('읽기 전용 MCP로 공개되지 않은 항목을 요청하면 > 오류를 반환하고 설치 도구를 노출하지 않는다', async () => {
-  // given: 네이티브 Skill 설치와 무관한 읽기 전용 MCP
+test('읽기 전용 MCP에서 잘못된 항목·경로는 오류를 반환한다', async () => {
+  // given: 읽기 전용 MCP
   // when: 등록된 도구 목록과 잘못된 조회를 요청
   const response = await call('tools/list', {});
   assert.equal(response.status, 200);
@@ -93,7 +93,7 @@ test('읽기 전용 MCP로 공개되지 않은 항목을 요청하면 > 오류�
   const missing = await callTool('chub_get', { id: 'workflows/unpublished-workflow' });
   const parent = await callTool('chub_get', { id: skillId, file: '../SKILL.md' });
 
-  // then: 서버는 설치 기능을 노출하지 않으며, 없는 자산과 잘못된 경로는 실패
+  // then: 읽기 전용 도구만 제공하며 없는 자산과 잘못된 경로는 실패
   assert.equal(missing.isError, true);
   assert.equal(parent.isError, true);
 });
@@ -149,6 +149,19 @@ test('인사이트 Skill과 독립 원칙을 게시하면 > 별도 Skill 호출 
   assert.equal(unrelated.total, 0, 'Unrelated Korean queries should not return every asset');
   const removed = await callTool('chub_get', { id: 'personal/lookup-development-principles' });
   assert.equal(removed.isError, true);
+});
+
+test('관리 Skill은 MCP로 조회할 수 있고 원본 변경 도구는 노출하지 않는다', async () => {
+  const managerId = 'workflows/manage-dev-knowledge';
+  const discovered = parsed(await callTool('chub_search', { query: managerId, limit: 3 }));
+  assert.ok(discovered.results.some(({ id }) => id === managerId));
+  const manager = await callTool('chub_get', { id: managerId, revision: discovered.revision });
+  assert.equal(manager.isError, undefined);
+  assert.match(manager.content[0].text, /# 개인 개발 지식 관리/);
+  assert.match(manager.content[0].text, /읽기 전용 MCP/);
+  assert.match(manager.content[0].text, /명시적 승인/);
+  const listed = await call('tools/list', {});
+  assert.deepEqual((await listed.json()).result.tools.map(({ name }) => name).sort(), ['chub_get', 'chub_list', 'chub_search']);
 });
 
 test('MCP 인증 없이 지침을 요청하면 > Skill 본문이 노출되지 않는다', async () => {
@@ -276,7 +289,7 @@ test('discovery protocol exposes default autonomous read-only workflows and perm
   const initialized = (await init.json()).result;
   assert.equal(initialized.serverInfo.version, release.sha);
   assert.match(initialized.instructions, /No separate opt-in toggle/);
-  assert.match(initialized.instructions, /does not install agent guidance or guarantee tool selection/);
+  assert.match(initialized.instructions, /does not guarantee tool selection/);
   const listed = await call('tools/list', {});
   const tools = (await listed.json()).result.tools;
   assert.equal(tools.length, 3);

@@ -19,7 +19,7 @@
 | --- | --- |
 | 안내 문서 | 상대 링크, 코드와 설명의 정합성. Worker 기능 변경으로 간주하지 않음 |
 | 개인 원칙 | 자산 무결성 및 필요 시 [원칙 행동 평가](../test/principle-evaluation.md) |
-| 공통 Skill·정책 | 설치·게시 계약, 권한 경계 및 필요 시 [Workflow E2E](../test/workflow-evaluation.md) |
+| 공통 Skill·정책 | 게시 계약, 권한 경계 및 필요 시 [Workflow E2E](../test/workflow-evaluation.md) |
 | Worker·릴리스 | 인증·MCP·릴리스 검증과 배포 후 실제 `revision` 확인 |
 
 구체적인 실행 명령과 CI 범위는 [워크플로](../.github/workflows/worker.yml)와 [AGENTS.md](../AGENTS.md)를 확인한다. **CI 통과는 에이전트 행동 검증이나 운영 배포 완료를 뜻하지 않는다.**

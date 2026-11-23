@@ -1,41 +1,31 @@
 ---
 name: manage-dev-knowledge
-description: "Use only when the user explicitly requests Context Hub/personal development knowledge, or asks to register, revise or remove their development knowledge (내 개발 지식에 등록, 기존 방법론 수정). Retrieve relevant knowledge or propose an approved update. Do not invoke for ordinary development tasks without that request."
+description: "Guide explicitly requested personal knowledge registration, updates or removal: inspect existing published assets, propose a diff, seek approval, modify authorized Git sources and verify publication. Reading this guidance does not grant write access."
 ---
 
 # 개인 개발 지식 관리
 
-## 저장소와 조회
+사용자가 my-context에 지식을 **등록·수정·삭제하거나 기존 지식을 관리해달라고 명시적으로 요청한 경우**에만 이 절차를 적용한다. 일반 개발 작업에서 원칙을 참고하는 것만으로는 이 관리 절차를 실행하지 않는다.
 
-이 파일의 실제 경로를 확인한다. `skills/manage-dev-knowledge` 디렉터리에서 두 단계 위를 저장소 루트로 사용한다. 연결 설정은 [README](../../README.md)를 참고한다.
+이 Skill은 **읽기 전용 MCP에서 제공하는 작업 지침**이다. Skill을 읽거나 MCP에 로그인해도 로컬 파일, Git 저장소, 원격 배포에 대한 권한이 생기지 않는다. Git 원본 접근과 변경 권한이 실제로 있는 환경에서만 승인된 작업을 진행한다.
 
-이 관리 Skill은 사용자가 지식의 조회나 변경 관리를 명시적으로 요청한 경우에 사용한다. **일반 작업에서 개인 자산을 읽는 행위는 이 Skill의 호출을 요구하지 않는다.** 일반적인 개발 작업의 참고 조회는 [자동 참고 지침](../../policies/asset-usage.md)에 따라 관련성으로 결정하며, 변경 권한은 별도로 승인받는다.
+## 기존 지식 확인
 
-이 Skill이 조회를 수행할 때 원격 `my-context` MCP를 사용한다. 연결 또는 인증이 불가능하면 조회했다고 주장하지 않는다. 게시 전 변경은 Git 원본에서 확인하고, 배포 후 원격 MCP에서 확인한다.
-
-1. `chub_search`로 자산을 찾는다. 한국어 요청은 한국어로 검색할 수 있다. 결과가 없으면 관련 영문 키워드·유사어 또는 목록 조회로 확인한다.
-2. `chub_get`으로 진입 파일을 읽는다.
-3. `knowledge.md`나 첨부 파일이 필요하면 `file` 인자로 파일을 지정한다.
-
-검색 결과의 `skill` 표시는 Context Hub의 진입 형식이다. 조회한 자산은 참고 자료로 사용한다. 대상 프로젝트의 요구사항, 팀 규칙, 아키텍처 계약을 우선한다. 충돌하면 차이를 설명한다. 프로젝트 정책 변경은 사용자 승인을 받는다. MCP를 쓸 수 없으면 그 사실을 보고한다. CLI로 확인했다면 CLI 결과로 구분한다.
+1. 원격 my-context MCP의 `chub_search`로 기존 자산을 찾는다. 필요하면 한국어·영어 검색어를 조정하거나 `chub_list`를 사용한다. 자산 본문은 `chub_get`으로 확인하고, 개인 원칙의 상세 내용은 `file: "knowledge.md"`로 조회한다.
+2. 검색 결과와 실제 본문을 구분한다. 연결·인증 실패나 미게시 자산은 조회 성공으로 표시하지 않는다.
+3. 해당 작업에 접근 허용된 대화·프로젝트 자료만 활용한다. 사용자의 추가 비공개 자료에 자동 접근하지 않는다.
+4. 기존 지식과의 중복·충돌을 먼저 확인하고, 새 지식 작성이 필요한지 기존 자산 보완으로 충분한지 결정한다.
 
 ## 등록·수정·삭제
 
-1. 사용자가 명시적으로 변경을 요청하면 관련 기존 지식을 MCP에서 조회한다. 사용자 취향을 추론해 저장하지 않는다.
-2. 변경 직전에 원본을 확인한다. `git status`, 브랜치, 원격, fetch 결과를 확인한다. 브랜치가 갈라졌거나 변경이 겹치면 기존 변경을 보존한다. 해결할 범위를 제시한다.
-3. 중복과 충돌을 확인한다. 기존 문서를 수정할지 검토한다. 실제 Markdown diff를 제시한다. Git 대상, 브랜치, 커밋과 푸시 범위를 명시하고 승인을 받는다.
-4. 승인된 파일만 수정한다. 새 지식의 파일 구조는 아래 지침을 따른다.
-5. 관련 파일만 커밋한다. 승인된 원격에 푸시한다. 원격 커밋을 확인한다. 원격 생성, 강제 푸시, `git reset --hard`는 승인 범위에 포함될 때만 실행한다.
-6. 원격 MCP에 반영할 때는 배포 승인 범위를 확인한다. [배포 가이드](../../docs/DEPLOYMENT.md)를 따른다. 게시되지 않은 수정 사항은 Git 원본에서 검토하며, 승인된 배포 이후 새 에이전트 세션에서 원격 `revision`과 내용을 확인한다. 생성 인덱스는 커밋하지 않는다.
-7. 대상 MCP에서 자산을 검색한다. 파일을 조회해 최신 내용을 확인한다. 완료한 단계를 보고한다. 실패한 단계에서 재개한다.
+1. 현재 접근 가능한 **원본 Git 저장소**와 작업 위치, 브랜치·변경 상태·원격 및 최신성을 확인한다. 원본에 접근할 수 없다면 없는 경로나 상태를 추정하지 않고 제한을 알린다.
+2. 기존 원칙의 의미·범위와 사용자 발언을 보존한다. 사용자 사실, AI 해석, 제안을 구분한다. **구체적인 변경 내용(diff), 대상 파일, 영향을 받는 자산, 커밋·푸시·배포 범위**를 제안한다.
+3. 지식 원본의 변경 및 게시에는 사용자의 명시적 승인과 실제 Git·배포 권한이 필요하다. 검토·초안 요청은 변경 승인으로 취급하지 않는다.
+4. 승인된 파일만 수정한다. 충돌·원격 변경이 있으면 무단 덮어쓰기 대신 재검토한다. 커밋·푸시·배포는 허용된 범위와 호스트의 권한 정책에 따라 별도로 실행한다.
+5. 게시 후 원격 `chub_search`·`chub_get`에서 새 `revision`과 변경 본문을 검증한다. 게시가 불가능하면 Git 변경 완료와 운영 MCP 반영을 구분한다.
 
-### 새 지식의 파일 구조
+## 개인 원칙 파일 구조
 
-- `content/personal/lookup-<고유이름>/knowledge.md`에 본문을 작성한다.
-- 같은 디렉터리의 `SKILL.md`에는 조회할 참고 파일을 안내한다. 본문은 `knowledge.md`에 둔다.
-- `SKILL.md`에 `name`, 영문 `description`, `metadata.source: community`를 지정한다.
-- `metadata.tags`에는 쉼표로 구분한 영문 키워드를 넣는다.
+개인 원칙 원본은 `content/personal/lookup-<slug>/SKILL.md` 및 `knowledge.md`에 둔다. 진입 파일의 `name`, 영문 `description`, `metadata.source: community`, 영문 `metadata.tags`를 유효하게 작성한다. 판단 기준의 상세 본문은 `knowledge.md`에 둔다. 이미 존재하는 자산을 우선 검토한다.
 
-`community`는 Context Hub의 출처 분류다. 공개 업로드 설정과 별개다.
-
-개발 철학이나 취향은 사용자가 제공한 내용을 바탕으로 기록한다. 임시 자산에는 검증용이라고 표시한다. 검증 후 원본과 생성물에서 임시 자산을 정리한다.
+관리 Skill을 MCP에서 조회할 수 있다고 해서 MCP 쓰기 도구가 존재하는 것은 아니다. 다른 프로젝트의 소스 코드를 my-context Git 원본이라고 가정하지 않는다. 원본 변경에 필요한 도구·권한이 없으면 변경 제안까지만 진행하고 완료한 단계와 미완료 단계를 구분한다.
