@@ -113,7 +113,7 @@ function getAsset({ id, lang, version, file, full, revision }) {
 
 function createServer() {
   const server = new McpServer({ name: 'my-context', version: release.sha }, {
-    instructions: assetUsageBoundary + ' ' + discoveryGuidance + ' Discover selectively, read only relevant results, and distinguish search success from applying an asset. An MCP connection does not install agent guidance or guarantee tool selection; report inaccessible content truthfully.',
+    instructions: assetUsageBoundary + ' ' + discoveryGuidance + ' Discover selectively, read only relevant results, and distinguish search success from applying an asset. An MCP connection does not guarantee tool selection; report inaccessible content truthfully.',
   });
   const annotations = { readOnlyHint: true };
   server.registerTool('chub_search', {
