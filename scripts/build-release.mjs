@@ -36,8 +36,8 @@ function publishedSkills(tree) {
   if (!Array.isArray(slugs) || slugs.some((slug) => typeof slug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))) {
     throw new Error(`${manifestPath} must be an array of lowercase skill slugs`);
   }
-  if (new Set(slugs).size !== slugs.length || slugs.includes('manage-dev-knowledge')) {
-    throw new Error(`${manifestPath} must contain unique reusable skills, excluding manage-dev-knowledge`);
+  if (new Set(slugs).size !== slugs.length) {
+    throw new Error(`${manifestPath} must contain unique published skills`);
   }
   for (const slug of slugs) {
     const entryPath = `skills/${slug}/SKILL.md`;
