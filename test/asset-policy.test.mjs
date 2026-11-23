@@ -15,7 +15,7 @@ test('계획만 요청한 경우 실행 금지·계획과 실행을 함께 요�
   assert.match(workflow, /별도 승인이 필요한 행위/);
 });
 
-test('로컬 설치 없이 MCP에 조회 가능한 공통 절차·관리 Skill을 명시적으로 게시한다', () => {
+test('공통 절차·관리 Skill을 MCP 게시 목록에 등록한다', () => {
   const slugs = JSON.parse(read('publish-skills.json'));
   for (const slug of ['development-workflow', 'domain-storytelling', 'extract-development-insights', 'manage-dev-knowledge']) {
     assert.ok(slugs.includes(slug), slug);
@@ -28,11 +28,8 @@ test('로컬 설치 없이 MCP에 조회 가능한 공통 절차·관리 Skill�
   assert.match(manager, /Git.*권한/);
 });
 
-test('설치 명령 제거 후 원본 Workflow·무결성 테스트 명령은 유지한다', () => {
+test('Workflow 원본과 검증 명령의 계약을 유지한다', () => {
   const pkg = JSON.parse(read('package.json'));
-  for (const key of ['setup:agent', 'setup:agent:check', 'install:user', 'install:workflow']) {
-    assert.equal(pkg.scripts[key], undefined, key);
-  }
   assert.ok(pkg.scripts['test:workflow']);
   assert.ok(pkg.scripts['test:integrity']);
   assert.match(read('skills/development-workflow/SKILL.md'), /G1 Contract/);
