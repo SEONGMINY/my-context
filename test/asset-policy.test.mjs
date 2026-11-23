@@ -55,3 +55,19 @@ test('프로덕트 이해와 문서 검토는 독립적이며 읽기 전용 계�
   assert.match(documentation, /문서·코드 수정/);
   assert.match(documentation, /독립 사용도 가능/);
 });
+
+
+test('세션 시작용 두 Skill은 독립적 읽기 전용이며 자동 실행을 보장하지 않는다', () => {
+  const product = read('skills/product-understanding/SKILL.md');
+  const documentation = read('skills/documentation-review/SKILL.md');
+  const guide = read('README.md');
+  const e2e = read('test/workflow-evaluation.md');
+  assert.match(product, /이 Skill은 읽기 전용/);
+  assert.match(product, /제품 이해를 먼저 수행/);
+  assert.match(documentation, /두 Skill을 함께 요청받았다면 제품 이해 결과/);
+  assert.match(documentation, /독립적으로 수행/);
+  assert.match(guide, /프로덕트 이해 → 문서 검토/);
+  assert.match(guide, /자동 실행을 보장하지 않으므로/);
+  assert.match(e2e, /전체 코드·문서 반복 탐색/);
+  assert.match(e2e, /NOT_RUN/);
+});
